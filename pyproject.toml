@@ -15,6 +15,9 @@ dependencies = [
   "httpx",
 ]
 
+[project.optional-dependencies]
+all = []
+
 [project.urls]
 Documentation = "https://mozilla-ai.github.io/any-guardrail/"
 Issues = "https://github.com/mozilla-ai/any-guardrail/issues"
