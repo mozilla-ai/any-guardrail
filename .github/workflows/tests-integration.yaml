@@ -1,0 +1,46 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+jobs:
+  run-integration-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: 3.13
+          activate-environment: true
+
+      - name: Install dependencies
+        run: |
+          uv sync --group tests --extra all
+
+      # cache the ~/.ollama/models directory
+      - uses: actions/cache@v4
+        with:
+          path: ~/.ollama
+          key: ${{ runner.os }}-ollama-models-${{ hashFiles('tests/conftest.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ollama-models-
+      - name: Setup Ollama
+        uses: ai-action/setup-ollama@v1
+
+      - name: Run ollama
+        run: |
+          ollama serve &
+          ollama pull llama3.2:1b
+
+      - name: Run Integration tests (parallel with xdist)
+        env:
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: pytest -v tests/integration -n auto

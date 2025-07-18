@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=48", "setuptools_scm[toml]>=6.3.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "any-guardrail"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+  "pydantic",
+  "openai",
+  "rich",
+  "httpx",
+]
+
+[project.urls]
+Documentation = "https://mozilla-ai.github.io/any-guardrail/"
+Issues = "https://github.com/mozilla-ai/any-guardrail/issues"
+Source = "https://github.com/mozilla-ai/any-guardrail"
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*"]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+
+[tool.pylint.messages_control]
+disable = [
+    "import-outside-toplevel",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.mypy]
+strict = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false # mypy gets confused by pytest decorators
+
+[[tool.mypy.overrides]]
+module = ["pytest", "mktestdocs", "pytest_lazy_fixtures", "syrupy.assertion"]
+ignore_missing_imports = true # pytest related modules are not found
+
+[tool.pytest.ini_options]
+timeout = 120
+
+[dependency-groups]
+dev = [
+  { include-group = "docs" },
+  { include-group = "lint" },
+  { include-group = "tests" },
+]
+
+docs = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings-python",
+  "mkdocs-include-markdown-plugin>=7.1.5",
+]
+
+
+lint = [
+  "pre-commit==4.2.0",
+  "pre-commit-uv==4.1.4",
+]
+
+tests = [
+  "pytest>=8,<9",
+  "pytest-asyncio>=0.26.0",
+  "mktestdocs>=0.2.4",
+  "pytest-xdist>=3.6.1",
+  "pytest-timeout",
+  "debugpy",
+]
+
+# For completeness, but 'uv sync --group dev' currently installs the others too.
+all = [
+  { include-group = "lint" },
+  { include-group = "tests" },
+  { include-group = "docs" },
+]

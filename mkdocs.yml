@@ -1,0 +1,73 @@
+site_name: any-guardrail
+
+repo_url: https://github.com/mozilla-ai/any-guardrail
+repo_name: any-guardrail
+
+nav:
+  - Intro: index.md
+  - Quickstart: quickstart.md
+  - Providers: providers.md
+  - API Reference:
+    - Completion: api/completion.md
+    - Exceptions: api/exceptions.md
+    - Helpers: api/helpers.md
+theme:
+  name: material
+  font:
+    text: Noto Sans
+    code: Noto Sans Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue gray
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: grey
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - accent: blue
+  logo: images/any-guardrail-logo-mark.png
+  favicon: images/any-guardrail_favicon.png
+  features:
+    - content.code.copy
+    - content.tabs.link
+    - content.action.edit
+    - navigation.expand
+    - navigation.footer
+
+extra_css:
+  - assets/custom.css
+
+extra_javascript:
+  - assets/custom.js
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+- search
+- include-markdown
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          show_root_heading: true
+          heading_level: 3
+
+hooks:
+  - scripts/hooks.py
+
+edit_uri: edit/main/docs/
