@@ -5,12 +5,6 @@ repo_name: any-guardrail
 
 nav:
   - Intro: index.md
-  - Quickstart: quickstart.md
-  - Providers: providers.md
-  - API Reference:
-    - Completion: api/completion.md
-    - Exceptions: api/exceptions.md
-    - Helpers: api/helpers.md
 theme:
   name: material
   font:
