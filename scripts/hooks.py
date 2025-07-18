@@ -268,16 +268,6 @@ def on_post_build(config, **kwargs):
     generate_llms_full_txt(docs_dir, site_dir, nav_config)
 
 
-def on_page_markdown(markdown, page, config, files):
-    """Inject provider table into markdown content during build."""
-    docs_dir = Path(config["docs_dir"])
-    project_root = docs_dir.parent
-    provider_dir = project_root / "src" / "any_guardrail" / "providers"
-
-    # Process the markdown content
-    return inject_provider_table_in_markdown(markdown, provider_dir)
-
-
 def on_pre_build(config, **kwargs):
     """Pre-build hook - currently unused but kept for potential future use."""
     pass
