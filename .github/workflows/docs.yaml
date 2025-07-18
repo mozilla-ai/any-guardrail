@@ -40,7 +40,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --group docs --extra all
+          uv sync --group docs
 
       - name: Build docs
         if: github.event_name == 'pull_request'
