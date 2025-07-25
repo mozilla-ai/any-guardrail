@@ -13,10 +13,18 @@ dependencies = [
   "openai",
   "rich",
   "httpx",
+  "transformers>=4.53.2",
+  "torch>=2.7.1",
+  "flow-judge[hf]>=0.1.2",
+  "huggingface-hub>=0.33.4",
+  "safetensors>=0.5.3",
 ]
 
 [project.optional-dependencies]
 all = []
+testing = [
+    "jupyterlab>=4.4.5",
+]
 
 [project.urls]
 Documentation = "https://mozilla-ai.github.io/any-guardrail/"
