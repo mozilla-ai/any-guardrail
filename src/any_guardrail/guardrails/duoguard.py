@@ -1,66 +1,108 @@
-"""
-Duoguard guardrail for multi-category safety classification using a sequence classification model.
-"""
 from any_guardrail.guardrails.guardrail import Guardrail
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-from typing import Any, Tuple, Dict
-from ..utils.constants import DUOGUARD_CATEGORIES, DEFAULT_THRESHOLD, LABEL_UNSAFE, LABEL_SAFE
+from typing import Tuple, Dict, List, Any
 
-class Duoguard(Guardrail):
+DUOGUARD_CATEGORIES = [
+    "Violent crimes",
+    "Non-violent crimes",
+    "Sex-related crimes",
+    "Child sexual exploitation",
+    "Specialized advice",
+    "Privacy",
+    "Intellectual property",
+    "Indiscriminate weapons",
+    "Hate",
+    "Suicide and self-harm",
+    "Sexual content",
+    "Jailbreak prompts",
+]
+
+DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
+
+
+class DuoGuard(Guardrail):
     """
-    Guardrail for multi-category safety classification using a sequence classification model.
+    Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES. For more information, please see the
+    model cards: https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21
     Args:
-        modelpath (str): Path to the model.
+        modelpath (str): HuggingFace path to model.
     """
-    def __init__(self, modelpath: str) -> None:
-        """
-        Initialize Duoguard with model path.
-        """
-        self.modelpath = modelpath
-        try:
-            self.model, self.tokenizer = self.model_instantiation()
-        except Exception as e:
-            raise RuntimeError(f"Failed to load model or tokenizer: {e}")
-        self.threshold = 0.5 # Taken from the Duoguard Model Card, but editable by the user
 
-    def classify(self, input_text: str, output_text: str = None) -> Tuple[str, Dict[str, str]]:
+    def __init__(self, modelpath: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
+        super().__init__(modelpath)
+        if self.modelpath in [
+            "DuoGuard/DuoGuard-0.5B",
+            "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
+            "DuoGuard/DuoGuard-1.5B-transfer",
+        ]:
+            self.model, self.tokenizer = self._model_instantiation()
+        else:
+            raise ValueError(
+                "Must instantiate model using one of the following paths: "
+                "\n\n DuoGuard/DuoGuard-0.5B \n DuoGuard/DuoGuard-1B-Llama-3.2-transfer \n DuoGuard/DuoGuard-1.5B-transfer"
+            )
+        self.threshold = threshold
+
+    def classify(self, input_text: str) -> Tuple[bool, Dict[str, bool]]:
         """
-        Classify input_text (and optionally output_text) for multiple safety categories.
-        Returns a tuple (overall_label, predicted_labels).
+        Classifies text based on DuoGuard categories.
+
+        Args:
+            input_text: text that you want to classify.
+        Returns:
+            overall_label: True if one of the safety categories is violated, False otherwise
+            predicted_labels: A mapping between the categories and which are violated. Follows the same schema as overall_label.
         """
-        try:
-            inputs = self.tokenizer(
-                        input_text,
-                        return_tensors="pt", 
-                    )
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-                logits = outputs.logits
-                probabilities = torch.sigmoid(logits)
-            #TODO: Move this to a constants file
-            categories = DUOGUARD_CATEGORIES
-            prob_vector = probabilities[0].tolist()
-            predicted_labels = {}
-            for cat_name, prob in zip(categories, prob_vector):
-                label = LABEL_UNSAFE if prob > self.threshold else LABEL_SAFE
-                predicted_labels[cat_name] = label
-            max_prob = max(prob_vector)
-            overall_label = LABEL_UNSAFE if max_prob > self.threshold else LABEL_SAFE
-        except Exception as e:
-            raise RuntimeError(f"Error during classification: {e}")
+        prob_vector = self._get_probabilities(input_text)
+        overall_label, predicted_labels = self._classification_decision(prob_vector)
         return overall_label, predicted_labels
 
-    def model_instantiation(self) -> tuple[Any, Any]:
+    def _model_instantiation(self) -> tuple[Any, Any]:
+        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
+        tokenizer.pad_token = tokenizer.eos_token
+        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        return model, tokenizer
+
+    def _get_probabilities(self, input_text: str) -> List[float]:
         """
-        Load the model and tokenizer from the given model path.
+        Processes the input text to obtain probabilities for each of the DuoGuard categories. It does this by looking at the
+        logits for each category name, and then converting the logits to probabilities. These probabilities will then be used
+        to determine whether, given a threshold, the input text violates any of the safety categories.
+
+        Args:
+            input_text: text that you want to classify.
         Returns:
-            model, tokenizer
+            A list of probabilities for each category.
         """
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(self.modelpath)
-            tokenizer.pad_token = tokenizer.eos_token
-            model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
-            return model, tokenizer
-        except Exception as e:
-            raise RuntimeError(f"Error loading model/tokenizer: {e}")
+        inputs = self.tokenizer(
+            input_text,
+            return_tensors="pt",
+        )
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            logits = outputs.logits
+            probabilities = torch.sigmoid(logits)
+        prob_vector = probabilities[0].tolist()
+
+        return prob_vector
+
+    def _classification_decision(self, prob_vector: List[float]) -> Tuple[bool, Dict[str, bool]]:
+        """
+        Performs the decision function, as described in the DuoGuard paper (see the huggingface documentation). Can be
+        overridden to define a new decision function using the probability vector.
+
+        Args:
+            prob_vector: a list of each probability that a category has been violated
+        Returns:
+            overall_label: True if one of the safety categories is violated, False otherwise
+            predicted_labels: A mapping between the categories and which are violated. Follows the same schema as overall_label.
+        """
+        categories = DUOGUARD_CATEGORIES
+        predicted_labels = {}
+        for cat_name, prob in zip(categories, prob_vector):
+            label = prob > self.threshold
+            predicted_labels[cat_name] = label
+        max_prob = max(prob_vector)
+        overall_label = max_prob > self.threshold
+        return overall_label, predicted_labels

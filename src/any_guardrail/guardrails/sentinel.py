@@ -1,50 +1,42 @@
-"""
-Sentinel guardrail for detecting jailbreak prompts using a sequence classification model.
-"""
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification  # type: ignore[attr-defined]
 from typing import Any
-from ..utils.constants import LABEL_UNSAFE, LABEL_SAFE, LABEL_JAILBREAK
+
+SENTINEL_INJECTION_LABEL = "jailbreak"
+
 
 class Sentinel(Guardrail):
     """
-    Guardrail for detecting jailbreak prompts using a sequence classification model.
+    Prompt injection detection encoder based model. For more information, please see the model card:
+    https://huggingface.co/qualifire/prompt-injection-sentinel
+
     Args:
-        modelpath (str): Path to the model.
+        modelpath (str): HuggingFace path to model.
     """
+
     def __init__(self, modelpath: str) -> None:
-        """
-        Initialize Sentinel with model path.
-        """
-        self.modelpath = modelpath
-        try:
-            self.model = self.model_instantiation()
-        except Exception as e:
-            raise RuntimeError(f"Failed to load model or tokenizer: {e}")
+        super().__init__(modelpath)
+        if self.modelpath in ["qualifire/prompt-injection-sentinel"]:
+            self.model, self.tokenizer = self._model_instantiation()
+        else:
+            raise ValueError(
+                "Must use the following keyword argument to instantiate model: qualifire/prompt-injection-sentinel"
+            )
 
-    def classify(self, input_text: str) -> str:
+    def classify(self, input_text: str) -> bool:
         """
-        Classify input_text for jailbreak prompts. Returns 'UNSAFE' or 'SAFE'.
-        """
-        try:
-            classification = self.model(input_text)
-            if classification[0]["label"] == LABEL_JAILBREAK:
-                return LABEL_UNSAFE
-            else:
-                return LABEL_SAFE
-        except Exception as e:
-            raise RuntimeError(f"Error during classification: {e}")
+        Classify some text to see if it contains a prompt injection attack.
 
-    def model_instantiation(self) -> Any:
-        """
-        Load the model and tokenizer from the given model path.
+        Args:
+            input_text: the text to classify for prompt injection attacks
         Returns:
-            pipeline object
+            True if there is a prompt injection attack, False otherwise
         """
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(self.modelpath)
-            model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
-            pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
-            return pipe
-        except Exception as e:
-            raise RuntimeError(f"Error loading model/tokenizer: {e}")
+        classification = self.model(input_text)
+        return classification[0]["label"] == SENTINEL_INJECTION_LABEL
+
+    def _model_instantiation(self) -> Any:
+        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+        return pipe

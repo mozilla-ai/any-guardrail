@@ -1,51 +1,45 @@
-"""
-Deepset guardrail for detecting injection attacks using a sequence classification model.
-"""
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification  # type: ignore[attr-defined]
 from typing import Any
-from ..utils.constants import LABEL_UNSAFE, LABEL_SAFE, LABEL_INJECTION_UPPER
+
+DEEPSET_INJECTION_LABEL = "INJECTION"
+
 
 class Deepset(Guardrail):
     """
-    Guardrail for detecting injection attacks using a sequence classification model.
+    Wrapper for prompt injection detection model from Deepset. Please see model card for more information.
+    https://huggingface.co/deepset/deberta-v3-base-injection
+
     Args:
-        modelpath (str): Path to the model.
+        modelpath (str): HuggingFace path to model
     """
+
     def __init__(self, modelpath: str) -> None:
-        """
-        Initialize Deepset with model path.
-        """
-        self.modelpath = modelpath
-        try:
-            self.model = self.model_instantiation()
-        except Exception as e:
-            raise RuntimeError(f"Failed to load model or tokenizer: {e}")
+        super().__init__(modelpath)
+        if self.modelpath in ["deepset/deberta-v3-base-injection"]:
+            self.model = self._model_instantiation()
+        else:
+            raise ValueError(
+                "Only supports deepset/deberta-v3-base-injection. Please use this path to instantiate model."
+            )
 
-    def classify(self, input_text: str) -> str:
+    def classify(self, input_text: str) -> bool:
         """
-        Classify input_text for injection attacks. Returns 'UNSAFE' or 'SAFE'.
-        """
-        try:
-            classification = self.model(input_text)
-            if classification[0]["label"] == LABEL_INJECTION_UPPER:
-                return LABEL_UNSAFE
-            else:
-                return LABEL_SAFE
-        except Exception as e:
-            raise RuntimeError(f"Error during classification: {e}")
+        Classifies whether the provided text is a prompt injection attack or not.
 
-    def model_instantiation(self) -> Any:
-        """
-        Load the model and tokenizer from the given model path.
+        Args:
+            input_text: the text that you want to check for prompt injection attacks
         Returns:
-            pipeline object
+            True if there is a prompt injection attack, False otherwise
         """
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(self.modelpath)
-            model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
-            pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
-            return pipe
-        except Exception as e:
-            raise RuntimeError(f"Error loading model/tokenizer: {e}")
+        classification = self.model(input_text)
+        return classification[0]["label"] == DEEPSET_INJECTION_LABEL
 
+    def _model_instantiation(self) -> Any:
+        """
+        Creates the pipeline object for this model from HuggingFace.
+        """
+        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+        return pipe

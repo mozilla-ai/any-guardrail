@@ -1,51 +1,48 @@
-"""
-Protectai guardrail for detecting injection attacks using a sequence classification model.
-"""
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification  # type: ignore[attr-defined]
 from typing import Any
-from ..utils.constants import LABEL_UNSAFE, LABEL_SAFE, LABEL_INJECTION_UPPER
 
-class Protectai(Guardrail):
+PROTECTAI_INJECTION_LABEL = "INJECTION"
+
+
+class ProtectAI(Guardrail):
     """
-    Guardrail for detecting injection attacks using a sequence classification model.
+    Prompt injection detection encoder based models. For more information, please see the model cards:
+    https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40
+
     Args:
-        modelpath (str): Path to the model.
+        modelpath (str): HuggingFace path to model.
     """
+
     def __init__(self, modelpath: str) -> None:
-        """
-        Initialize Protectai with model path.
-        """
-        self.modelpath = modelpath
-        try:
-            self.model = self.model_instantiation()
-        except Exception as e:
-            raise RuntimeError(f"Failed to load model or tokenizer: {e}")
+        super().__init__(modelpath)
+        if self.modelpath in [
+            "protectai/deberta-v3-base-prompt-injection",
+            "protectai/deberta-v3-small-prompt-injection-v2",
+            "protectai/deberta-v3-base-prompt-injection-v2",
+        ]:
+            self.model, self.tokenizer = self._model_instantiation()
+        else:
+            raise ValueError(
+                "Must use one of the following keyword arguments to instantiate model: "
+                "\n\n protectai/deberta-v3-base-prompt-injection \n protectai/deberta-v3-small-prompt-injection-v2 \n"
+                "protectai/deberta-v3-base-prompt-injection-v2"
+            )
 
     def classify(self, input_text: str) -> str:
         """
-        Classify input_text for injection attacks. Returns 'UNSAFE' or 'SAFE'.
-        """
-        try:
-            classification = self.model(input_text)
-            if classification[0]["label"] == LABEL_INJECTION_UPPER:
-                return LABEL_UNSAFE
-            else:
-                return LABEL_SAFE
-        except Exception as e:
-            raise RuntimeError(f"Error during classification: {e}")
+        Classify some text to see if it contains a prompt injection attack.
 
-    def model_instantiation(self) -> Any:
-        """
-        Load the model and tokenizer from the given model path.
+        Args:
+            input_text: the text to classify for prompt injection attacks
         Returns:
-            pipeline object
+            True if there is a prompt injection attack, False otherwise
         """
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(self.modelpath)
-            model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
-            pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
-            return pipe
-        except Exception as e:
-            raise RuntimeError(f"Error loading model/tokenizer: {e}")
+        classification = self.model(input_text)
+        return classification[0]["label"] == PROTECTAI_INJECTION_LABEL
 
+    def _model_instantiation(self) -> Any:
+        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+        return pipe
