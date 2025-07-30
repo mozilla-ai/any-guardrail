@@ -2,7 +2,7 @@ from any_guardrail.guardrails.guardrail import Guardrail
 from transformers import pipeline # type: ignore[attr-defined]
 from typing import Any
 
-PANGOLIN_INJECTION_LABEL = "UNSAFE"
+PANGOLIN_INJECTION_LABEL = "unsafe"
 
 class Pangolin(Guardrail):
     """
@@ -31,6 +31,7 @@ class Pangolin(Guardrail):
             True if there is a prompt injection attack, False otherwise
         """
         classification = self.model(input_text)
+        print(classification)
         return classification[0]["label"] == PANGOLIN_INJECTION_LABEL
 
     def _model_instantiation(self) -> Any:
