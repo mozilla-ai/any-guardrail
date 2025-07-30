@@ -24,7 +24,7 @@ class Jasper(Guardrail):
         """
         super().__init__(modelpath)
         if self.modelpath in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.model = self._model_instantiation()
         else:
             raise ValueError(
                 "Must use one of the following keyword arguments to instantiate model: "

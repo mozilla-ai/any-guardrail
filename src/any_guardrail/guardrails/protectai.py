@@ -21,7 +21,7 @@ class ProtectAI(Guardrail):
             "protectai/deberta-v3-small-prompt-injection-v2",
             "protectai/deberta-v3-base-prompt-injection-v2",
         ]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.model = self._model_instantiation()
         else:
             raise ValueError(
                 "Must use one of the following keyword arguments to instantiate model: "

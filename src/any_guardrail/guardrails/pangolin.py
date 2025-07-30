@@ -16,7 +16,7 @@ class Pangolin(Guardrail):
     def __init__(self, modelpath: str) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.model = self._model_instantiation()
         else:
             raise ValueError("Must use one of the following keyword arguments to instantiate model: " \
             "\n\n dcarpintero/pangolin-guard-large \n dcarpintero/pangolin-guard-base")
@@ -34,6 +34,7 @@ class Pangolin(Guardrail):
         return classification[0]["label"] == PANGOLIN_INJECTION_LABEL
 
     def _model_instantiation(self) -> Any:
+        print(self.modelpath)
         pipe = pipeline("text-classification", self.modelpath)
         return pipe
 

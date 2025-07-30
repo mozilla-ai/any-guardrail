@@ -17,7 +17,7 @@ class Sentinel(Guardrail):
     def __init__(self, modelpath: str) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["qualifire/prompt-injection-sentinel"]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.model = self._model_instantiation()
         else:
             raise ValueError(
                 "Must use the following keyword argument to instantiate model: qualifire/prompt-injection-sentinel"
