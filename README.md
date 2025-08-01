@@ -1,6 +1,6 @@
 <p align="center">
   <picture>
-    <img src="docs/images/any-guardrail-logo-mark.png" width="20%" alt="Project logo"/>
+    <img src="" width="20%" alt="Project logo"/>
   </picture>
 </p>
 
