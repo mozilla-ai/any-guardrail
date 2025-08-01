@@ -3,11 +3,11 @@ from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailMode
 
 
 class Guardrail(ABC):
-    def __init__(self, modelpath: str):
-        self.modelpath = modelpath
+    def __init__(self, model_identifier: str):
+        self.model_identifier = model_identifier
 
     @abstractmethod
-    def classify(self) -> ClassificationOutput:
+    def safety_review(self) -> ClassificationOutput:
         raise NotImplementedError("Each subclass will creat their own method.")
 
     @abstractmethod

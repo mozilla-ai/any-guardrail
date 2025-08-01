@@ -44,17 +44,17 @@ class GLIDER(Guardrail):
     highlights for what determined the score, and an integer score. For more information, see the model card:
     https://huggingface.co/PatronusAI/glider
     Args:
-        modelpath: HuggingFace path to model.
-        pass_criteria: A question or description of what you are classifying.
+        model_identifier: HuggingFace path to model.
+        pass_criteria: A question or description of what you are safety_reviewing.
         rubric: A scoring rubric, describing to the model how to score the provided data.
 
     Raise:
         ValueError: Can only use model path to GLIDER from HuggingFace.
     """
 
-    def __init__(self, modelpath: str, pass_criteria: str, rubric: str) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["PatronusAI/glider"]:
+    def __init__(self, model_identifier: str, pass_criteria: str, rubric: str) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["PatronusAI/glider"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("You must use the following model path: PatronusAI/glider")
@@ -62,7 +62,7 @@ class GLIDER(Guardrail):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def classify(self, input_text: str, output_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str, output_text: str) -> ClassificationOutput:
         """
         Uses the provided pass criteria and rubric to just the input and output text provided.
 
@@ -92,5 +92,5 @@ class GLIDER(Guardrail):
             raise TypeError("Using incorrect model type for GLIDER.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        pipe = pipeline("text-classification", self.modelpath)
+        pipe = pipeline("text-classification", self.model_identifier)
         return GuardrailModel(model=pipe)

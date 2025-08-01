@@ -11,22 +11,22 @@ class Deepset(Guardrail):
     https://huggingface.co/deepset/deberta-v3-base-injection
 
     Args:
-        modelpath: HuggingFace path to model
+        model_identifier: HuggingFace path to model
 
     Raises:
         ValueError: Only supports Deepset models from HuggingFace
     """
 
-    def __init__(self, modelpath: str) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["deepset/deberta-v3-base-injection"]:
+    def __init__(self, model_identifier: str) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["deepset/deberta-v3-base-injection"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
                 "Only supports deepset/deberta-v3-base-injection. Please use this path to instantiate model."
             )
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classifies whether the provided text is a prompt injection attack or not.
 
@@ -42,7 +42,7 @@ class Deepset(Guardrail):
             raise TypeError("Using incorrect model type for Deepset.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)

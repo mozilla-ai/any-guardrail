@@ -12,15 +12,15 @@ class Pangolin(Guardrail):
     https://huggingface.co/dcarpintero/pangolin-guard-large
 
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for Pangolin from HuggingFace
     """
 
-    def __init__(self, modelpath: str) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
+    def __init__(self, model_identifier: str) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -28,12 +28,12 @@ class Pangolin(Guardrail):
                 "\n\n dcarpintero/pangolin-guard-large \n dcarpintero/pangolin-guard-base"
             )
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
         Args:
-            input_text: the text to classify for prompt injection attacks
+            input_text: the text to safety_review for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
@@ -44,5 +44,5 @@ class Pangolin(Guardrail):
             raise TypeError("Using incorrect model type for Pangolin.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        pipe = pipeline("text-classification", self.modelpath)
+        pipe = pipeline("text-classification", self.model_identifier)
         return GuardrailModel(model=pipe)

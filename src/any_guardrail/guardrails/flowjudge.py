@@ -11,7 +11,7 @@ class FlowJudgeClass(Guardrail):
     Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric. Please see
     the model card for more information: https://huggingface.co/flowaicom/Flow-Judge-v0.1
     Args:
-        modelpath: Name of model. Only used for instantiation of FlowJudge.
+        model_identifier: Name of model. Only used for instantiation of FlowJudge.
         name: User defined metric name.
         criteria: User defined question that they want answered by FlowJudge model.
         rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
@@ -25,26 +25,26 @@ class FlowJudgeClass(Guardrail):
 
     def __init__(
         self,
-        modelpath: str,
+        model_identifier: str,
         name: str,
         criteria: str,
         rubric: Dict[int, str],
         required_inputs: List[str],
         required_output: str,
     ) -> None:
-        super().__init__(modelpath)
+        super().__init__(model_identifier)
         self.metric_name = name
         self.criteria = criteria
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self.define_metric_prompt
-        if modelpath in ["FlowJudge", "Flowjudge", "flowjudge"]:
+        if model_identifier in ["FlowJudge", "Flowjudge", "flowjudge"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")
 
-    def classify(self, input: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
+    def safety_review(self, input: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
         """
         Classifies the desired input and output according to the associated metric provided to the judge.
 

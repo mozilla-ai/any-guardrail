@@ -12,27 +12,27 @@ class HarmGuard(Guardrail):
     Prompt injection detection encoder based model. For more information, please see the model card:
     https://huggingface.co/hbseong/HarmAug-Guard
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model path for HarmGuard from HuggingFace
     """
 
-    def __init__(self, modelpath: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["hbseong/HarmAug-Guard"]:
+    def __init__(self, model_identifier: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["hbseong/HarmAug-Guard"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
         self.threshold = threshold
 
-    def classify(self, input_text: str, output_text: str = "") -> ClassificationOutput:
+    def safety_review(self, input_text: str, output_text: str = "") -> ClassificationOutput:
         """
         Classifies input text and, optionally, output text for prompt injection detection.
 
         Args:
-            input_text: the initial text that you want to classify
-            output_text: the subsequent text that you want to classify
+            input_text: the initial text that you want to safety_review
+            output_text: the subsequent text that you want to safety_review
 
         Returns:
             True if it is a prompt injection attack, False otherwise, and the associated final score.
@@ -55,7 +55,7 @@ class HarmGuard(Guardrail):
             raise TypeError("Did not instantiate tokenizer.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
         model.eval()
         return GuardrailModel(model=model, tokenizer=tokenizer)

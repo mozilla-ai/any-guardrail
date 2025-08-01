@@ -27,15 +27,15 @@ class DuoGuard(Guardrail):
     Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES. For more information, please see the
     model cards: https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
 
     Raises:
         ValueError: Only supports DuoGuard models from HuggingFace.
     """
 
-    def __init__(self, modelpath: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in [
+    def __init__(self, model_identifier: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in [
             "DuoGuard/DuoGuard-0.5B",
             "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
             "DuoGuard/DuoGuard-1.5B-transfer",
@@ -48,12 +48,12 @@ class DuoGuard(Guardrail):
             )
         self.threshold = threshold
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classifies text based on DuoGuard categories.
 
         Args:
-            input_text: text that you want to classify.
+            input_text: text that you want to safety_review.
         Returns:
             Whether the output is generally true (bool) and dictionary object with classifications for each category supported by
             DuoGuard.
@@ -63,9 +63,9 @@ class DuoGuard(Guardrail):
         return ClassificationOutput(unsafe=overall_label, explanation=predicted_labels)
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
         tokenizer.pad_token = tokenizer.eos_token
-        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
         return GuardrailModel(model=model, tokenizer=tokenizer)
 
     def _get_probabilities(self, input_text: str) -> List[float]:
@@ -75,7 +75,7 @@ class DuoGuard(Guardrail):
         to determine whether, given a threshold, the input text violates any of the safety categories.
 
         Args:
-            input_text: text that you want to classify.
+            input_text: text that you want to safety_review.
         Returns:
             A list of probabilities for each category.
         """

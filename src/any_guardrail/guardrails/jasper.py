@@ -11,15 +11,15 @@ class Jasper(Guardrail):
     https://huggingface.co/JasperLS/deberta-v3-base-injection
     https://huggingface.co/JasperLS/gelectra-base-injection
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for Jasper models from HuggingFace.
     """
 
-    def __init__(self, modelpath: str) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
+    def __init__(self, model_identifier: str) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -27,12 +27,12 @@ class Jasper(Guardrail):
                 "\n\n JasperLS/deberta-v3-base-injection \n JasperLS/gelectra-base-injection"
             )
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
         Args:
-            input_text: the text to classify for prompt injection attacks
+            input_text: the text to safety_review for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
@@ -43,7 +43,7 @@ class Jasper(Guardrail):
             raise TypeError("Using incorrect model type for Jasper models.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)

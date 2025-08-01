@@ -30,16 +30,16 @@ class ShieldGemma(Guardrail):
     Note we do not support the image classifier.
 
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
         policy: The safety policy to enforce.
 
     Raises:
-        ValueError: Can only use modelpaths to ShieldGemma from HuggingFace.
+        ValueError: Can only use model_identifiers to ShieldGemma from HuggingFace.
     """
 
-    def __init__(self, modelpath: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in ["google/shieldgemma-2b", "google/shieldgemma-9b", "google/shieldgemma-27b"]:
+    def __init__(self, model_identifier: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in ["google/shieldgemma-2b", "google/shieldgemma-9b", "google/shieldgemma-27b"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -50,12 +50,12 @@ class ShieldGemma(Guardrail):
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classify input_text according to the safety policy.
 
         Args:
-            input_text: the text you want to classify based on the policy
+            input_text: the text you want to safety_review based on the policy
         Returns:
             True if the text violates the policy, False otherwise
         """
@@ -77,6 +77,6 @@ class ShieldGemma(Guardrail):
             raise TypeError("Did not instantiate tokenizer.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
-        model = AutoModelForCausalLM.from_pretrained(self.modelpath, device_map="auto", torch_dtype=torch.bfloat16)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        model = AutoModelForCausalLM.from_pretrained(self.model_identifier, device_map="auto", torch_dtype=torch.bfloat16)
         return GuardrailModel(model=model, tokenizer=tokenizer)

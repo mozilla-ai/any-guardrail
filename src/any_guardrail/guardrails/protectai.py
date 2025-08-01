@@ -11,15 +11,15 @@ class ProtectAI(Guardrail):
     https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40
 
     Args:
-        modelpath: HuggingFace path to model.
+        model_identifier: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for ProtectAI from HuggingFace.
     """
 
-    def __init__(self, modelpath: str) -> None:
-        super().__init__(modelpath)
-        if self.modelpath in [
+    def __init__(self, model_identifier: str) -> None:
+        super().__init__(model_identifier)
+        if self.model_identifier in [
             "protectai/deberta-v3-base-prompt-injection",
             "protectai/deberta-v3-small-prompt-injection-v2",
             "protectai/deberta-v3-base-prompt-injection-v2",
@@ -32,12 +32,12 @@ class ProtectAI(Guardrail):
                 "protectai/deberta-v3-base-prompt-injection-v2"
             )
 
-    def classify(self, input_text: str) -> ClassificationOutput:
+    def safety_review(self, input_text: str) -> ClassificationOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
         Args:
-            input_text: the text to classify for prompt injection attacks
+            input_text: the text to safety_review for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
@@ -48,7 +48,7 @@ class ProtectAI(Guardrail):
             raise TypeError("Using incorrect model type to call ProtectAI.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)

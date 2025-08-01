@@ -15,9 +15,9 @@ class CallGuardrail:
     def list_all_supported_guardrails(self) -> List[str]:
         return list(self.model_registry.keys())
 
-    def call_guardrail(self, guardrail_path: str, **kwargs) -> Guardrail:  # type: ignore[no-untyped-def]
-        if guardrail_path in self.model_registry.keys():
-            return self.model_registry[guardrail_path](modelpath=guardrail_path, **kwargs)
+    def call_guardrail(self, guardrail_identifier: str, **kwargs) -> Guardrail:  # type: ignore[no-untyped-def]
+        if guardrail_identifier in self.model_registry.keys():
+            return self.model_registry[guardrail_identifier](model_identifier=guardrail_identifier, **kwargs)
         else:
             raise ValueError(
                 "We do not support the model you are trying to instantiate. Please use list_all_support_guardrails"
