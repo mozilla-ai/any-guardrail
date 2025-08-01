@@ -1,8 +1,8 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import AutoTokenizer, AutoModelForCausalLM, PreTrainedModel  # type: ignore[attr-defined]
 import torch
 from torch.nn.functional import softmax
-from typing import Any
 
 SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
 prompt is in violation of the defined safety policies.
@@ -30,14 +30,17 @@ class ShieldGemma(Guardrail):
     Note we do not support the image classifier.
 
     Args:
-        modelpath (str): HuggingFace path to model.
-        policy (str): The safety policy to enforce.
+        modelpath: HuggingFace path to model.
+        policy: The safety policy to enforce.
+
+    Raises:
+        ValueError: Can only use modelpaths to ShieldGemma from HuggingFace.
     """
 
     def __init__(self, modelpath: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["google/shieldgemma-2b", "google/shieldgemma-9b", "google/shieldgemma-27b"]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
                 "Must use one of the following keyword arguments to instantiate model: "
@@ -47,7 +50,7 @@ class ShieldGemma(Guardrail):
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
 
-    def classify(self, input_text: str) -> bool:
+    def classify(self, input_text: str) -> ClassificationOutput:
         """
         Classify input_text according to the safety policy.
 
@@ -57,17 +60,23 @@ class ShieldGemma(Guardrail):
             True if the text violates the policy, False otherwise
         """
         self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
-        inputs = self.tokenizer(self.system_prompt, return_tensors="pt")
-        with torch.no_grad():
-            logits = self.model(**inputs).logits
-        vocab = self.tokenizer.get_vocab()
-        selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
-        probabilities = softmax(selected_logits, dim=0)
-        score = probabilities[0].item()
+        if self.guardrail.tokenizer:
+            inputs = self.guardrail.tokenizer(self.system_prompt, return_tensors="pt")
+            if isinstance(self.guardrail.model, PreTrainedModel):
+                with torch.no_grad():
+                    logits = self.guardrail.model(**inputs).logits
+            else:
+                raise TypeError("Using wrong model type to instantiate Shield Gemma models.")
+            vocab = self.guardrail.tokenizer.get_vocab()
+            selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
+            probabilities = softmax(selected_logits, dim=0)
+            score = probabilities[0].item()
 
-        return score > self.threshold
+            return ClassificationOutput(unsafe=score > self.threshold)
+        else:
+            raise TypeError("Did not instantiate tokenizer.")
 
-    def _model_instantiation(self) -> tuple[Any, Any]:
+    def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
         model = AutoModelForCausalLM.from_pretrained(self.modelpath, device_map="auto", torch_dtype=torch.bfloat16)
-        return model, tokenizer
+        return GuardrailModel(model=model, tokenizer=tokenizer)

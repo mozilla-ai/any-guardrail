@@ -1,6 +1,6 @@
 from any_guardrail.guardrails.deepset import Deepset
 from any_guardrail.guardrails.duoguard import DuoGuard
-from any_guardrail.guardrails.flowjudge import FlowJudge
+from any_guardrail.guardrails.flowjudge import FlowJudgeClass
 from any_guardrail.guardrails.glider import GLIDER
 from any_guardrail.guardrails.harmguard import HarmGuard
 from any_guardrail.guardrails.injecguard import InjecGuard
@@ -15,9 +15,9 @@ model_regsitry = {
     "DuoGuard/DuoGuard-0.5B": DuoGuard,
     "DuoGuard/DuoGuard-1B-Llama-3.2-transfer": DuoGuard,
     "DuoGuard/DuoGuard-1.5B-transfer": DuoGuard,
-    "Flowjudge": FlowJudge,
-    "flowjudge": FlowJudge,
-    "FlowJudge": FlowJudge,
+    "Flowjudge": FlowJudgeClass,
+    "flowjudge": FlowJudgeClass,
+    "FlowJudge": FlowJudgeClass,
     "PatronusAI/glider": GLIDER,
     "hbseong/HarmAug-Guard": HarmGuard,
     "leolee99/InjecGuard": InjecGuard,

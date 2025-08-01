@@ -1,27 +1,34 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline # type: ignore[attr-defined]
-from typing import Any
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import pipeline, Pipeline  # type: ignore[attr-defined]
 
 PANGOLIN_INJECTION_LABEL = "unsafe"
 
+
 class Pangolin(Guardrail):
     """
-    Prompt injection detection encoder based models. For more information, please see the model card: 
+    Prompt injection detection encoder based models. For more information, please see the model card:
     https://huggingface.co/dcarpintero/pangolin-guard-base
     https://huggingface.co/dcarpintero/pangolin-guard-large
 
     Args:
-        modelpath (str): HuggingFace path to model.
+        modelpath: HuggingFace path to model.
+
+    Raises:
+        ValueError: Can only use model paths for Pangolin from HuggingFace
     """
+
     def __init__(self, modelpath: str) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
-            self.model = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
-            raise ValueError("Must use one of the following keyword arguments to instantiate model: " \
-            "\n\n dcarpintero/pangolin-guard-large \n dcarpintero/pangolin-guard-base")
+            raise ValueError(
+                "Must use one of the following keyword arguments to instantiate model: "
+                "\n\n dcarpintero/pangolin-guard-large \n dcarpintero/pangolin-guard-base"
+            )
 
-    def classify(self, input_text: str) -> bool:
+    def classify(self, input_text: str) -> ClassificationOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
@@ -30,12 +37,12 @@ class Pangolin(Guardrail):
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
-        classification = self.model(input_text)
-        print(classification)
-        return classification[0]["label"] == PANGOLIN_INJECTION_LABEL
+        if isinstance(self.guardrail.model, Pipeline):
+            classification = self.guardrail.model(input_text)
+            return ClassificationOutput(unsafe=classification[0]["label"] == PANGOLIN_INJECTION_LABEL)
+        else:
+            raise TypeError("Using incorrect model type for Pangolin.")
 
-    def _model_instantiation(self) -> Any:
-        print(self.modelpath)
+    def _model_instantiation(self) -> GuardrailModel:
         pipe = pipeline("text-classification", self.modelpath)
-        return pipe
-
+        return GuardrailModel(model=pipe)

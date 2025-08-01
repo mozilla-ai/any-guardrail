@@ -1,8 +1,8 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel # type: ignore[attr-defined]
 import torch.nn.functional as F
 import torch
-from typing import Any, Tuple
 
 HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 
@@ -12,18 +12,21 @@ class HarmGuard(Guardrail):
     Prompt injection detection encoder based model. For more information, please see the model card:
     https://huggingface.co/hbseong/HarmAug-Guard
     Args:
-        modelpath (str): HuggingFace path to model.
+        modelpath: HuggingFace path to model.
+
+    Raises:
+        ValueError: Can only use model path for HarmGuard from HuggingFace
     """
 
     def __init__(self, modelpath: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["hbseong/HarmAug-Guard"]:
-            self.model, self.tokenizer = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
             raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
         self.threshold = threshold
 
-    def classify(self, input_text: str, output_text: str = "") -> Tuple[bool, float]:
+    def classify(self, input_text: str, output_text: str = "") -> ClassificationOutput:
         """
         Classifies input text and, optionally, output text for prompt injection detection.
 
@@ -34,19 +37,25 @@ class HarmGuard(Guardrail):
         Returns:
             True if it is a prompt injection attack, False otherwise, and the associated final score.
         """
-        if output_text:
-            inputs = self.tokenizer(input_text, return_tensors="pt")
+        if self.guardrail.tokenizer:
+            if output_text:
+                inputs = self.guardrail.tokenizer(input_text, return_tensors="pt")
+            else:
+                inputs = self.guardrail.tokenizer(input_text, output_text, return_tensors="pt")
+            if isinstance(self.guardrail.model, PreTrainedModel):
+                with torch.no_grad():
+                    outputs = self.guardrail.model(**inputs)
+                    unsafe_prob = F.softmax(outputs.logits, dim=-1)[:, 1]
+                final_score = unsafe_prob.item()
+            else:
+                raise TypeError("Using incorrect model type for HarmGuard.")
+
+            return ClassificationOutput(unsafe=final_score > self.threshold, score=final_score)
         else:
-            inputs = self.tokenizer(input_text, output_text, return_tensors="pt")
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            unsafe_prob = F.softmax(outputs.logits, dim=-1)[:, 1]
-        final_score = unsafe_prob.item()
+            raise TypeError("Did not instantiate tokenizer.")
 
-        return final_score > self.threshold, final_score
-
-    def _model_instantiation(self) -> tuple[Any, Any]:
+    def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
         model.eval()
-        return model, tokenizer
+        return GuardrailModel(model=model, tokenizer=tokenizer)

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
 
 
 class Guardrail(ABC):
@@ -7,9 +7,9 @@ class Guardrail(ABC):
         self.modelpath = modelpath
 
     @abstractmethod
-    def classify(self) -> Any:
+    def classify(self) -> ClassificationOutput:
         raise NotImplementedError("Each subclass will creat their own method.")
 
     @abstractmethod
-    def _model_instantiation(self) -> Any:
+    def _model_instantiation(self) -> GuardrailModel:
         raise NotImplementedError("Each subclass will creat their own method.")

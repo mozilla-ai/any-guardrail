@@ -1,10 +1,6 @@
-"""
-GLIDER guardrail for rubric-based evaluation of text outputs.
-"""
-
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline  # type: ignore[attr-defined]
-from typing import Any
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import pipeline, Pipeline  # type: ignore[attr-defined]
 
 SYSTEM_PROMPT_GLIDER = """
 Analyze the following pass criteria carefully and score the text based on the rubric defined below.
@@ -48,25 +44,25 @@ class GLIDER(Guardrail):
     highlights for what determined the score, and an integer score. For more information, see the model card:
     https://huggingface.co/PatronusAI/glider
     Args:
-        modelpath (str): HuggingFace path to model.
-        pass_criteria (str): A question or description of what you are classifying.
-        rubric (str): A scoring rubric, describing to the model how to score the provided data.
+        modelpath: HuggingFace path to model.
+        pass_criteria: A question or description of what you are classifying.
+        rubric: A scoring rubric, describing to the model how to score the provided data.
+
+    Raise:
+        ValueError: Can only use model path to GLIDER from HuggingFace.
     """
 
     def __init__(self, modelpath: str, pass_criteria: str, rubric: str) -> None:
-        """
-        Initialize GLIDER with model path, pass criteria, and rubric.
-        """
         super().__init__(modelpath)
         if self.modelpath in ["PatronusAI/glider"]:
-            self.model = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
             raise ValueError("You must use the following model path: PatronusAI/glider")
         self.pass_criteria = pass_criteria
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def classify(self, input_text: str, output_text: str) -> str:
+    def classify(self, input_text: str, output_text: str) -> ClassificationOutput:
         """
         Uses the provided pass criteria and rubric to just the input and output text provided.
 
@@ -74,7 +70,7 @@ class GLIDER(Guardrail):
             input_text: the initial text
             output_text: the subsequent text
         Returns:
-            A string in the format provided by the system prompt
+            An explanation in the format provided by the system prompt
         """
         data = """
             <INPUT>
@@ -89,10 +85,12 @@ class GLIDER(Guardrail):
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
 
         message = [{"role": "user", "content": prompt}]
+        if isinstance(self.guardrail.model, Pipeline):
+            result = self.guardrail.model(message)
+            return ClassificationOutput(explanation=result)
+        else:
+            raise TypeError("Using incorrect model type for GLIDER.")
 
-        result = self.model(message)
-        return result
-
-    def _model_instantiation(self) -> Any:
+    def _model_instantiation(self) -> GuardrailModel:
         pipe = pipeline("text-classification", self.modelpath)
-        return pipe
+        return GuardrailModel(model=pipe)

@@ -1,6 +1,6 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification  # type: ignore[attr-defined]
-from typing import Any
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline  # type: ignore[attr-defined]
 
 DEEPSET_INJECTION_LABEL = "INJECTION"
 
@@ -11,19 +11,22 @@ class Deepset(Guardrail):
     https://huggingface.co/deepset/deberta-v3-base-injection
 
     Args:
-        modelpath (str): HuggingFace path to model
+        modelpath: HuggingFace path to model
+
+    Raises:
+        ValueError: Only supports Deepset models from HuggingFace
     """
 
     def __init__(self, modelpath: str) -> None:
         super().__init__(modelpath)
         if self.modelpath in ["deepset/deberta-v3-base-injection"]:
-            self.model = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
                 "Only supports deepset/deberta-v3-base-injection. Please use this path to instantiate model."
             )
 
-    def classify(self, input_text: str) -> bool:
+    def classify(self, input_text: str) -> ClassificationOutput:
         """
         Classifies whether the provided text is a prompt injection attack or not.
 
@@ -32,14 +35,14 @@ class Deepset(Guardrail):
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
-        classification = self.model(input_text)
-        return classification[0]["label"] == DEEPSET_INJECTION_LABEL
+        if isinstance(self.guardrail.model, Pipeline):
+            classification = self.guardrail.model(input_text)
+            return ClassificationOutput(unsafe=classification[0]["label"] == DEEPSET_INJECTION_LABEL)
+        else:
+            raise TypeError("Using incorrect model type for Deepset.")
 
-    def _model_instantiation(self) -> Any:
-        """
-        Creates the pipeline object for this model from HuggingFace.
-        """
+    def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
-        return pipe
+        return GuardrailModel(model=pipe)

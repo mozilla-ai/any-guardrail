@@ -1,10 +1,6 @@
-"""
-Jasper guardrails for detecting injection attacks using different sequence classification models.
-"""
-
 from any_guardrail.guardrails.guardrail import Guardrail
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification  # type: ignore[attr-defined]
-from typing import Any
+from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline  # type: ignore[attr-defined]
 
 JASPER_INJECTION_LABEL = "INJECTION"
 
@@ -15,23 +11,23 @@ class Jasper(Guardrail):
     https://huggingface.co/JasperLS/deberta-v3-base-injection
     https://huggingface.co/JasperLS/gelectra-base-injection
     Args:
-        modelpath (str): HuggingFace path to model.
+        modelpath: HuggingFace path to model.
+
+    Raises:
+        ValueError: Can only use model paths for Jasper models from HuggingFace.
     """
 
     def __init__(self, modelpath: str) -> None:
-        """
-        Initialize Jasper with model path.
-        """
         super().__init__(modelpath)
         if self.modelpath in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
-            self.model = self._model_instantiation()
+            self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
                 "Must use one of the following keyword arguments to instantiate model: "
                 "\n\n JasperLS/deberta-v3-base-injection \n JasperLS/gelectra-base-injection"
             )
 
-    def classify(self, input_text: str) -> bool:
+    def classify(self, input_text: str) -> ClassificationOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
@@ -40,11 +36,14 @@ class Jasper(Guardrail):
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
-        classification = self.model(input_text)
-        return classification[0]["label"] == JASPER_INJECTION_LABEL
+        if isinstance(self.guardrail.model, Pipeline):
+            classification = self.guardrail.model(input_text)
+            return ClassificationOutput(unsafe=classification[0]["label"] == JASPER_INJECTION_LABEL)
+        else:
+            raise TypeError("Using incorrect model type for Jasper models.")
 
-    def _model_instantiation(self) -> Any:
+    def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.modelpath)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.modelpath)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
-        return pipe
+        return GuardrailModel(model=pipe)
