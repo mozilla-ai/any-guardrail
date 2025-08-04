@@ -1,6 +1,3 @@
-from .api import list_all_supported_guardrails, create_guardrail
+from .api import GuardrailFactory
 
-__all__ = [
-    "list_all_supported_guardrails",
-    "create_guardrail",
-]
+__all__ = ["GuardrailFactory"]
