@@ -44,17 +44,17 @@ class FlowJudgeClass(Guardrail):
         else:
             raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")
 
-    def safety_review(self, input: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
+    def safety_review(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
         """
         Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:
-            input: A dictionary mapping the required input names to the inputs.
+            inputs: A dictionary mapping the required input names to the inputs.
             output: A dictionary mapping the required output name to the output.
         Return:
             A score from the RubricItems and feedback related to the rubric and criteria.
         """
-        eval_input = EvalInput(inputs=input, output=output)
+        eval_input = EvalInput(inputs=inputs, output=output)
         if isinstance(self.guardrail.model, FlowJudge):
             result = self.guardrail.model.evaluate(eval_input, save_results=False)
         else:

@@ -10,7 +10,7 @@ from any_guardrail.guardrails.protectai import ProtectAI
 from any_guardrail.guardrails.sentinel import Sentinel
 from any_guardrail.guardrails.shield_gemma import ShieldGemma
 
-model_regsitry = {
+model_registry = {
     "deepset/deberta-v3-base-injection": Deepset,
     "DuoGuard/DuoGuard-0.5B": DuoGuard,
     "DuoGuard/DuoGuard-1B-Llama-3.2-transfer": DuoGuard,

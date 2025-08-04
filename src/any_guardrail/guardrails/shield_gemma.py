@@ -78,5 +78,7 @@ class ShieldGemma(Guardrail):
 
     def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForCausalLM.from_pretrained(self.model_identifier, device_map="auto", torch_dtype=torch.bfloat16)
+        model = AutoModelForCausalLM.from_pretrained(
+            self.model_identifier, device_map="auto", torch_dtype=torch.bfloat16
+        )
         return GuardrailModel(model=model, tokenizer=tokenizer)
