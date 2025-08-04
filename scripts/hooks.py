@@ -3,6 +3,7 @@
 It also serves markdown files as text files for LLM consumption.
 It was initially written in collaboration with Claude 4 Sonnet.
 """
+
 import os
 import re
 from pathlib import Path
