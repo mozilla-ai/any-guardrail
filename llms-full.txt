@@ -26,5 +26,4 @@ This documentation is available in two AI-friendly formats:
 - **[llms-full.txt](https://mozilla-ai.github.io/any-guardrail/llms-full.txt)** - Complete documentation content concatenated into a single file
 
 
-
 ---
