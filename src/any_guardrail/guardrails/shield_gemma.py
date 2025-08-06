@@ -39,12 +39,17 @@ class ShieldGemma(Guardrail):
 
     def __init__(self, model_identifier: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
         super().__init__(model_identifier)
-        if self.model_identifier in ["google/shieldgemma-2b", "google/shieldgemma-9b", "google/shieldgemma-27b"]:
+        supported_models = [
+            "google/shieldgemma-2b",
+            "google/shieldgemma-9b",
+            "google/shieldgemma-27b",
+            "hf-internal-testing/tiny-random-gpt2",
+        ]
+        if self.model_identifier in supported_models:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
-                "Must use one of the following keyword arguments to instantiate model: "
-                "\n\n google/shieldgemma-2b \n google/shieldgemma-9b \n google/shieldgemma-27b"
+                f"Must use one of the following keyword arguments to instantiate model: \n\n {supported_models}"
             )
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
