@@ -59,9 +59,9 @@ class ShieldGemma(Guardrail):
         Returns:
             True if the text violates the policy, False otherwise
         """
-        self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
+        formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         if self.guardrail.tokenizer:
-            inputs = self.guardrail.tokenizer(self.system_prompt, return_tensors="pt")
+            inputs = self.guardrail.tokenizer(formatted_prompt, return_tensors="pt").to(self.guardrail.model.device)
             if isinstance(self.guardrail.model, PreTrainedModel):
                 with torch.no_grad():
                     logits = self.guardrail.model(**inputs).logits
