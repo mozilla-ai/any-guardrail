@@ -1,6 +1,6 @@
 from any_guardrail.guardrails.guardrail import Guardrail
 from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline  # type: ignore[attr-defined]
+from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 
 PROTECTAI_INJECTION_LABEL = "INJECTION"
 
