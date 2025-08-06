@@ -43,7 +43,7 @@ class ShieldGemma(Guardrail):
             "google/shieldgemma-2b",
             "google/shieldgemma-9b",
             "google/shieldgemma-27b",
-            "hf-internal-testing/tiny-random-gpt2",
+            "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
         ]
         if self.model_identifier in supported_models:
             self.guardrail = self._model_instantiation()

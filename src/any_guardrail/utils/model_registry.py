@@ -32,5 +32,5 @@ model_registry = {
     "google/shieldgemma-2b": ShieldGemma,
     "google/shieldgemma-9b": ShieldGemma,
     "google/shieldgemma-27b": ShieldGemma,
-    "hf-internal-testing/tiny-random-gpt2": ShieldGemma,
+    "hf-internal-testing/tiny-random-Gemma3ForCausalLM": ShieldGemma,
 }

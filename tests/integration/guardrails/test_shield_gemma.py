@@ -9,7 +9,7 @@ def test_shield_gemma_integration() -> None:
     factory = GuardrailFactory()
     # This is a randomly initialized model of tiny weights that will give random results but is useful for testing that
     # a HF model can be loaded and used. Just need to mock the tokenizer because shield_gemma is accessing 'Yes' and 'No' tokens
-    model_identifier = "hf-internal-testing/tiny-random-gpt2"
+    model_identifier = "hf-internal-testing/tiny-random-Gemma3ForCausalLM"
 
     mock_vocab = {"Yes": 100, "No": 101}
 
