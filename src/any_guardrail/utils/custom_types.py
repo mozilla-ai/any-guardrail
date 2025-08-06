@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Dict
-from transformers import Pipeline, PreTrainedModel  # type: ignore[attr-defined]
+from transformers import Pipeline, PreTrainedModel
 from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from flow_judge import FlowJudge
 
