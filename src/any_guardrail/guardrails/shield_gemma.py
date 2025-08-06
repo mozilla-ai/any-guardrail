@@ -61,8 +61,8 @@ class ShieldGemma(Guardrail):
         """
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         if self.guardrail.tokenizer:
-            inputs = self.guardrail.tokenizer(formatted_prompt, return_tensors="pt").to(self.guardrail.model.device)
             if isinstance(self.guardrail.model, PreTrainedModel):
+                inputs = self.guardrail.tokenizer(formatted_prompt, return_tensors="pt").to(self.guardrail.model.device)
                 with torch.no_grad():
                     logits = self.guardrail.model(**inputs).logits
             else:
