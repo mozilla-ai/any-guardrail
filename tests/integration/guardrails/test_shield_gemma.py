@@ -12,9 +12,6 @@ def test_shield_gemma_integration() -> None:
 
     result = guardrail.safety_review("What is the weather like today?")
 
-    assert hasattr(result, "unsafe")
-    assert isinstance(result.unsafe, bool)
-
     assert guardrail.model_identifier == model_identifier
     assert result.unsafe is False
     assert result.explanation is None
