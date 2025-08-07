@@ -8,8 +8,8 @@ PANGOLIN_INJECTION_LABEL = "unsafe"
 class Pangolin(Guardrail):
     """
     Prompt injection detection encoder based models. For more information, please see the model card:
-    https://huggingface.co/dcarpintero/pangolin-guard-base
-    https://huggingface.co/dcarpintero/pangolin-guard-large
+    [Pangolin Base](https://huggingface.co/dcarpintero/pangolin-guard-base)
+    [Pangolin Large](https://huggingface.co/dcarpintero/pangolin-guard-large)
 
     Args:
         model_identifier: HuggingFace path to model.
