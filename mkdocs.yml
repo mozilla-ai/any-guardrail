@@ -5,7 +5,7 @@ repo_name: any-guardrail
 
 nav:
   - Intro: index.md
-  - Quick Start: quick-start.md
+  - Quick Start: quickstart.md
   - API Reference:
       - Guardrails: api/guardrails.md
       - Guardrail Factory: api/guardrail_facotry.md
