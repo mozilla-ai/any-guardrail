@@ -43,7 +43,7 @@ class GLIDER(Guardrail):
     A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text. It outputs its reasoning,
     highlights for what determined the score, and an integer score. For more information, see the model card:
     [GLIDER](https://huggingface.co/PatronusAI/glider)
-    
+
     Args:
         model_identifier: HuggingFace path to model.
         pass_criteria: A question or description of what you are safety_reviewing.

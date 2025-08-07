@@ -11,7 +11,7 @@ class HarmGuard(Guardrail):
     """
     Prompt injection detection encoder based model. For more information, please see the model card:
     [HarmGuard](https://huggingface.co/hbseong/HarmAug-Guard)
-    
+
     Args:
         model_identifier: HuggingFace path to model.
 

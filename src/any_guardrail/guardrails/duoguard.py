@@ -26,7 +26,7 @@ class DuoGuard(Guardrail):
     """
     Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES. For more information, please see the
     model cards: [DuoGuard](https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21)
-    
+
     Args:
         model_identifier: HuggingFace path to model.
 

@@ -10,7 +10,7 @@ class Jasper(Guardrail):
     Prompt injection detection encoder based models. For more information, please see the model card:
     [Jasper Deberta](https://huggingface.co/JasperLS/deberta-v3-base-injection)
     [Jasper Gelectra](https://huggingface.co/JasperLS/gelectra-base-injection)
-    
+
     Args:
         model_identifier: HuggingFace path to model.
 

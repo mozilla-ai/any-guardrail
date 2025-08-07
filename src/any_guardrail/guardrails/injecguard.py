@@ -9,7 +9,7 @@ class InjecGuard(Guardrail):
     """
     Prompt injection detection encoder based model. For more information, please see the model card:
     [InjecGuard](https://huggingface.co/leolee99/InjecGuard)
-    
+
     Args:
         model_identifier: HuggingFace path to model.
 

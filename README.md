@@ -112,7 +112,7 @@ class YourGuardrail(Guardrail):
     def __init__(self, ...):
         super().__init__(model_identifier)
         self.guardrail = _model_instantiation(model_identifier, ...)
-    
+
     def safety_review(...):
         # Your implementation for reviewing text
 
@@ -136,4 +136,3 @@ model_registry= {
 ```
 
 From there, you should be all set!
-
