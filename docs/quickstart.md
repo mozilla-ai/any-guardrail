@@ -25,7 +25,7 @@ Make sure to agree to the terms and conditions of the model you are trying to ac
 
 ### Basic Usage
 
-The best way to use our package is to instantiate the `GuardrailFactory` first.
+The best way to use our package is to instantiate the `GuardrailFactory`. It provides a seamless interface for interacting with the guardrail models.
 
 ```python
 from any_guardrail.api import GuardrailFactory
