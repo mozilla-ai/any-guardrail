@@ -76,7 +76,7 @@ class ShieldGemma(Guardrail):
         else:
             raise TypeError("Did not instantiate tokenizer.")
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForCausalLM.from_pretrained(self.model_id, device_map="auto", torch_dtype=torch.bfloat16)
         return GuardrailModel(model=model, tokenizer=tokenizer)

@@ -10,7 +10,7 @@ class Guardrail(ABC):
     def __init__(self, model_id: str):
         self.model_id = model_id
         self._validate_model_id(model_id)
-        self.guardrail = self._model_instantiation()
+        self.guardrail = self._load_model()
 
     def _validate_model_id(self, model_id: str) -> None:
         if model_id not in self.SUPPORTED_MODELS:
@@ -24,7 +24,7 @@ class Guardrail(ABC):
         raise NotImplementedError("Each subclass will create their own method.")
 
     @abstractmethod
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         raise NotImplementedError("Each subclass will create their own method.")
 
 

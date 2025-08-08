@@ -61,7 +61,7 @@ class FlowJudgeClass(Guardrail):
             raise TypeError("Using the wrong GuardrailModel type for FlowJudge.")
         return GuardrailOutput(explanation=result.feedback, score=result.score)
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         """
         Constructs the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
         Returns:

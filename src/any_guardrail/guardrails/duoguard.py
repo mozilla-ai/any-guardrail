@@ -58,7 +58,7 @@ class DuoGuard(Guardrail):
         overall_label, predicted_labels = self._classification_decision(prob_vector)
         return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         tokenizer.pad_token = tokenizer.eos_token
         model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
