@@ -45,11 +45,11 @@ pip install any-guardrail
 
 ### Basic Usage
 
-`GuardrailFactory` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
+`AnyGuardrail` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
 
 ```python
-from any_guardrail import GuardrailFactory
-supported_guardrails = GuardrailFactory.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
+from any_guardrail import AnyGuardrail
+supported_guardrails = AnyGuardrail.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
 guardrail = factory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
 result = guardrail.safety_review("All smiles from me!")
 assert result.unsafe == False

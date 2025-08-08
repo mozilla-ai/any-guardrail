@@ -23,7 +23,7 @@ For more detailed examples, we recommend looking through the `guardrails` direct
 
 ### Step 2: Add your model to the `model_registry.py`
 
-Now that you have created `YourGuardrail`, you need add a model identifier to help the `GuardrailFactory` identify your guardrail. It will look something like this:
+Now that you have created `YourGuardrail`, you need add a model identifier to help the `AnyGuardrail` identify your guardrail. It will look something like this:
 
 ```python
 
