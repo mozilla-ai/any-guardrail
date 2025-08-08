@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
 import torch
 from typing import Tuple, Dict, List
@@ -34,22 +34,17 @@ class DuoGuard(Guardrail):
         ValueError: Only supports DuoGuard models from HuggingFace.
     """
 
+    SUPPORTED_MODELS = [
+        "DuoGuard/DuoGuard-0.5B",
+        "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
+        "DuoGuard/DuoGuard-1.5B-transfer",
+    ]
+
     def __init__(self, model_id: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        if self.model_id in [
-            "DuoGuard/DuoGuard-0.5B",
-            "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
-            "DuoGuard/DuoGuard-1.5B-transfer",
-        ]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must instantiate model using one of the following paths: "
-                "\n\n DuoGuard/DuoGuard-0.5B \n DuoGuard/DuoGuard-1B-Llama-3.2-transfer \n DuoGuard/DuoGuard-1.5B-transfer"
-            )
         self.threshold = threshold
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classifies text based on DuoGuard categories.
 
@@ -61,7 +56,7 @@ class DuoGuard(Guardrail):
         """
         prob_vector = self._get_probabilities(input_text)
         overall_label, predicted_labels = self._classification_decision(prob_vector)
-        return ClassificationOutput(unsafe=overall_label, explanation=predicted_labels)
+        return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
 
     def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]

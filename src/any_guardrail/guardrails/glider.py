@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, Pipeline
 
 SYSTEM_PROMPT_GLIDER = """
@@ -53,17 +53,15 @@ class GLIDER(Guardrail):
         ValueError: Can only use model path to GLIDER from HuggingFace.
     """
 
+    SUPPORTED_MODELS = ["PatronusAI/glider"]
+
     def __init__(self, model_id: str, pass_criteria: str, rubric: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["PatronusAI/glider"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("You must use the following model path: PatronusAI/glider")
         self.pass_criteria = pass_criteria
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def safety_review(self, input_text: str, output_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:
         """
         Uses the provided pass criteria and rubric to just the input and output text provided.
 
@@ -88,7 +86,7 @@ class GLIDER(Guardrail):
         message = [{"role": "user", "content": prompt}]
         if isinstance(self.guardrail.model, Pipeline):
             result = self.guardrail.model(message)
-            return ClassificationOutput(explanation=result)
+            return GuardrailOutput(explanation=result)
         else:
             raise TypeError("Using incorrect model type for GLIDER.")
 

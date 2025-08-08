@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
 import torch.nn.functional as F
 import torch
@@ -19,15 +19,13 @@ class HarmGuard(Guardrail):
         ValueError: Can only use model path for HarmGuard from HuggingFace
     """
 
+    SUPPORTED_MODELS = ["hbseong/HarmAug-Guard"]
+
     def __init__(self, model_id: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        if self.model_id in ["hbseong/HarmAug-Guard"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
         self.threshold = threshold
 
-    def safety_review(self, input_text: str, output_text: str = "") -> ClassificationOutput:
+    def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:
         """
         Classifies input text and, optionally, output text for prompt injection detection.
 
@@ -51,7 +49,7 @@ class HarmGuard(Guardrail):
             else:
                 raise TypeError("Using incorrect model type for HarmGuard.")
 
-            return ClassificationOutput(unsafe=final_score > self.threshold, score=final_score)
+            return GuardrailOutput(unsafe=final_score > self.threshold, score=final_score)
         else:
             raise TypeError("Did not instantiate tokenizer.")
 

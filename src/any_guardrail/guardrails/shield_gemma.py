@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, PreTrainedModel
 import torch
 from torch.nn.functional import softmax
@@ -37,25 +37,20 @@ class ShieldGemma(Guardrail):
         ValueError: Can only use model_ids to ShieldGemma from HuggingFace.
     """
 
+    SUPPORTED_MODELS = [
+        "google/shieldgemma-2b",
+        "google/shieldgemma-9b",
+        "google/shieldgemma-27b",
+        "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
+    ]
+
     def __init__(self, model_id: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        supported_models = [
-            "google/shieldgemma-2b",
-            "google/shieldgemma-9b",
-            "google/shieldgemma-27b",
-            "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
-        ]
-        if self.model_id in supported_models:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                f"Must use one of the following keyword arguments to instantiate model: \n\n {supported_models}"
-            )
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classify input_text according to the safety policy.
 
@@ -77,7 +72,7 @@ class ShieldGemma(Guardrail):
             probabilities = softmax(selected_logits, dim=0)
             score = probabilities[0].item()
 
-            return ClassificationOutput(unsafe=score > self.threshold)
+            return GuardrailOutput(unsafe=score > self.threshold)
         else:
             raise TypeError("Did not instantiate tokenizer.")
 
