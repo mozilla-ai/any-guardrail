@@ -17,7 +17,7 @@ pip install any-guardrail
 ```python
 from any_guardrail import GuardrailFactory
 supported_guardrails = GuardrailFactory.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
-guardrail = GuardrailFactory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
+guardrail = GuardrailFactory.create_guardrail(model_id="google/shieldgemma-2b", guardrail_name="shield_gemma")
 result = guardrail.safety_review("All smiles from me!")
 assert result.unsafe == False
 ```

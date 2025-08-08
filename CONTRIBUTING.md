@@ -21,17 +21,4 @@ class YourGuardrail(Guardrail):
 
 For more detailed examples, we recommend looking through the `guardrails` directory.
 
-### Step 2: Add your model to the `model_registry.py`
-
-Now that you have created `YourGuardrail`, you need add a model identifier to help the `GuardrailFactory` identify your guardrail. It will look something like this:
-
-```python
-
-model_registry= {
-    "already/implemented/guardrail": SomeGuardrail,
-    ...
-    "your/guardrail/identifier": YourGuardrail
-}
-```
-
 From there, you should be all set! Send a PR to our main repo, so we can review and add your guardrail.

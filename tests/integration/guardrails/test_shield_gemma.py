@@ -1,5 +1,6 @@
 from any_guardrail.api import GuardrailFactory
 
+from any_guardrail.guardrail import GuardrailName
 from any_guardrail.guardrails.shield_gemma import ShieldGemma
 
 
@@ -10,7 +11,10 @@ def test_shield_gemma_integration() -> None:
     model_id = "hf-internal-testing/tiny-random-Gemma3ForCausalLM"
 
     guardrail = GuardrailFactory.create_guardrail(
-        model_id, policy="Do not provide harmful or dangerous information", threshold=0.5
+        model_id=model_id,
+        guardrail_name=GuardrailName.SHIELD_GEMMA,
+        policy="Do not provide harmful or dangerous information",
+        threshold=0.5,
     )
     assert isinstance(guardrail, ShieldGemma)
 
