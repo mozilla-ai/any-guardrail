@@ -2,23 +2,19 @@
 
 If a guardrail is not available, fork this repo to add it and then issue a pull request. Please use the following steps:
 
-### Step 1: Create a `Guardrail` class
+### Create a new Class that Inherits from Guardrail
 
-We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail. To do so, implement the following:
+We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail. 
 
-```python
-class YourGuardrail(Guardrail):
-    def __init__(self, ...):
-        super().__init__(model_id)
-        self.guardrail = _load_model(model_id, ...)
+Create a new file in src/any_guardrail/guardrails for your guardrail, and create a class that inherits all the abstract 
+methods from Guardrail.
 
-    def validate(...):
-        # Your implementation for reviewing text
+See an existing guardrail for implementation hints.
 
-    def _load_model(...):
-        # Your implementation for instantiating a model
-```
+#### Add your provider to GuardrailName
 
-For more detailed examples, we recommend looking through the `guardrails` directory.
+Create a new enum value for your guardrail. The string should follow lower_case while the enum key should be UPPER_CASE.
+
+### Create PR
 
 From there, you should be all set! Send a PR to our main repo, so we can review and add your guardrail.
