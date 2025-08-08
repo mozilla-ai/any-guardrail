@@ -568,7 +568,6 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">result</span><span class="p">:</span> <span class="n">GuardrailOutput</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">&quot;All smiles from me!&quot;</span><span class="p">)</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">unsafe</span> <span class="o">==</span> <span class="kc">False</span>
 </span></code></pre></div>
-<p>We have an example notebook as well in <code>examples/Testing.ipynb</code>.</p>
 <h3 id="troubleshooting">Troubleshooting</h3>
 <p>Some of the models on HuggingFace require extra permissions to use. To do this, you'll need to create a HuggingFace profile and manually go through the permissions. Then, you'll need to download the HuggingFace Hub and login. One way to do this is:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>huggingface_hub
