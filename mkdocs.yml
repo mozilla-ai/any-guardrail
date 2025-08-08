@@ -8,7 +8,7 @@ nav:
   - Quick Start: quickstart.md
   - API Reference:
       - Guardrails: api/guardrails.md
-      - AnyGuardrail: api/api.md
+      - AnyGuardrail: api/any_guardrail.md
 theme:
   name: material
   font:
