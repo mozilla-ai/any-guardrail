@@ -14,7 +14,7 @@ Refer to the [Quickstart](./quickstart.md) for instructions on installation and 
 
 Refer to [Guardrails](./api/guardrails.md) for the parameters for each guardrail.
 
-Refer to [GuardrailFactory](./api/guardrail_facotry.md) for how to use the `GuardrailFactory` object.
+Refer to [GuardrailFactory](./api/guardrail_factory.md) for how to use the `GuardrailFactory` object.
 
 ## For AI Systems
 
