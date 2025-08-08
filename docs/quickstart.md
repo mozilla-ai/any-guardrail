@@ -1,27 +1,14 @@
-## Quickstart
-
 ### Requirements
 
 - Python 3.11 or newer
-- For guardrails that need permission granted on HuggingFace, make sure to get a HuggingFace access token as well. Then log into [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
 
 ### Installation
 
-To install, you can use `pip`:
+Install with `pip`:
 
 ```bash
 pip install any-guardrail
 ```
-
-If you plan to use HuggingFace models that require extra permissions, please log into the HuggingFace Hub:
-
-```bash
-pip install --upgrade huggingface_hub
-
-hf auth login
-```
-
-Make sure to agree to the terms and conditions of the model you are trying to access as well.
 
 ### Basic Usage
 
@@ -34,3 +21,17 @@ guardrail = GuardrailFactory.create_guardrail(support_guardrails[0])  # will cre
 result = guardrail.safety_review("All smiles from me!")
 assert result.unsafe == False
 ```
+
+We have an example notebook as well in `examples/Testing.ipynb`.
+
+### Troubleshooting
+
+Some of the models on HuggingFace require extra permissions to use. To do this, you'll need to create a HuggingFace profile and manually go through the permissions. Then, you'll need to download the HuggingFace Hub and login. One way to do this is:
+
+```bash
+pip install --upgrade huggingface_hub
+
+hf auth login
+```
+
+More information can be found here: [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
