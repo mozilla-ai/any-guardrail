@@ -24,7 +24,7 @@ class FlowJudgeClass(Guardrail):
         ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
     """
 
-    SUPPORTED_MODELS = ["FlowJudge", "Flowjudge", "flowjudge"]
+    SUPPORTED_MODELS = ["FlowJudge"]
 
     def __init__(
         self,
