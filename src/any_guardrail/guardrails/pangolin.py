@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, Pipeline
 
 PANGOLIN_INJECTION_LABEL = "unsafe"

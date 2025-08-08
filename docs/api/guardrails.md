@@ -1,4 +1,3 @@
-## Guardrails
 
 ::: any_guardrail.guardrails.deepset
 ::: any_guardrail.guardrails.duoguard
