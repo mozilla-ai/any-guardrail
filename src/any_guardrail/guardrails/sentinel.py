@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 
 SENTINEL_INJECTION_LABEL = "jailbreak"
@@ -26,7 +26,7 @@ class Sentinel(Guardrail):
                 "Must use the following keyword argument to instantiate model: qualifire/prompt-injection-sentinel"
             )
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
@@ -37,7 +37,7 @@ class Sentinel(Guardrail):
         """
         if isinstance(self.guardrail.model, Pipeline):
             classification = self.guardrail.model(input_text)
-            return ClassificationOutput(unsafe=classification[0]["label"] == SENTINEL_INJECTION_LABEL)
+            return GuardrailOutput(unsafe=classification[0]["label"] == SENTINEL_INJECTION_LABEL)
         else:
             raise TypeError("Using incorrect model type for Sentinel.")
 

@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
 import torch
 from typing import Tuple, Dict, List
@@ -49,7 +49,7 @@ class DuoGuard(Guardrail):
             )
         self.threshold = threshold
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classifies text based on DuoGuard categories.
 
@@ -61,7 +61,7 @@ class DuoGuard(Guardrail):
         """
         prob_vector = self._get_probabilities(input_text)
         overall_label, predicted_labels = self._classification_decision(prob_vector)
-        return ClassificationOutput(unsafe=overall_label, explanation=predicted_labels)
+        return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
 
     def _model_instantiation(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]

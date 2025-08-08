@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, PreTrainedModel
 import torch
 from torch.nn.functional import softmax
@@ -55,7 +55,7 @@ class ShieldGemma(Guardrail):
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classify input_text according to the safety policy.
 
@@ -77,7 +77,7 @@ class ShieldGemma(Guardrail):
             probabilities = softmax(selected_logits, dim=0)
             score = probabilities[0].item()
 
-            return ClassificationOutput(unsafe=score > self.threshold)
+            return GuardrailOutput(unsafe=score > self.threshold)
         else:
             raise TypeError("Did not instantiate tokenizer.")
 

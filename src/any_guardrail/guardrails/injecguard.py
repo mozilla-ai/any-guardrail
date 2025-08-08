@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 
 INJECGUARD_LABEL = "injection"
@@ -24,7 +24,7 @@ class InjecGuard(Guardrail):
         else:
             raise ValueError("Must use the following keyword argument to instantiate model: leolee99/InjecGuard")
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classify some text to see if it contains a prompt injection attack.
 
@@ -35,7 +35,7 @@ class InjecGuard(Guardrail):
         """
         if isinstance(self.guardrail.model, Pipeline):
             classification = self.guardrail.model(input_text)
-            return ClassificationOutput(unsafe=classification[0]["label"] == INJECGUARD_LABEL)
+            return GuardrailOutput(unsafe=classification[0]["label"] == INJECGUARD_LABEL)
         else:
             raise TypeError("Using incorrect model type for InjecGuard.")
 

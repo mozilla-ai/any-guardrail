@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 
 
 class Guardrail(ABC):
@@ -8,9 +8,9 @@ class Guardrail(ABC):
         self.model_id = model_id
 
     @abstractmethod
-    def safety_review(self, *args: Any, **kwargs: Any) -> ClassificationOutput:
+    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:
         """
-        Abstract method for safety review. Each subclass implements its own signature.
+        Abstract method for validating some input. Each subclass implements its own signature.
         """
         raise NotImplementedError("Each subclass will create their own method.")
 

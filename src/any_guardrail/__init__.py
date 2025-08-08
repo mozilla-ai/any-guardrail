@@ -1,3 +1,3 @@
-from .api import GuardrailFactory
+from .api import AnyGuardrail
 
-__all__ = ["GuardrailFactory"]
+__all__ = ["AnyGuardrail"]

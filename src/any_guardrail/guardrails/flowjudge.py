@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.utils.custom_types import GuardrailOutput, GuardrailModel
 from flow_judge import FlowJudge, EvalInput
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf
@@ -45,7 +45,7 @@ class FlowJudgeClass(Guardrail):
         else:
             raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")
 
-    def safety_review(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
+    def validate(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> GuardrailOutput:
         """
         Classifies the desired input and output according to the associated metric provided to the judge.
 
@@ -60,7 +60,7 @@ class FlowJudgeClass(Guardrail):
             result = self.guardrail.model.evaluate(eval_input, save_results=False)
         else:
             raise TypeError("Using the wrong GuardrailModel type for FlowJudge.")
-        return ClassificationOutput(explanation=result.feedback, score=result.score)
+        return GuardrailOutput(explanation=result.feedback, score=result.score)
 
     def _model_instantiation(self) -> GuardrailModel:
         """
