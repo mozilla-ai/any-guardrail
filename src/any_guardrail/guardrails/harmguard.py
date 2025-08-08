@@ -13,15 +13,15 @@ class HarmGuard(Guardrail):
     [HarmGuard](https://huggingface.co/hbseong/HarmAug-Guard)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model path for HarmGuard from HuggingFace
     """
 
-    def __init__(self, model_identifier: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in ["hbseong/HarmAug-Guard"]:
+    def __init__(self, model_id: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_id)
+        if self.model_id in ["hbseong/HarmAug-Guard"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
@@ -56,7 +56,7 @@ class HarmGuard(Guardrail):
             raise TypeError("Did not instantiate tokenizer.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         model.eval()
         return GuardrailModel(model=model, tokenizer=tokenizer)

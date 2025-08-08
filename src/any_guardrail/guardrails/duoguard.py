@@ -28,15 +28,15 @@ class DuoGuard(Guardrail):
     model cards: [DuoGuard](https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Only supports DuoGuard models from HuggingFace.
     """
 
-    def __init__(self, model_identifier: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in [
+    def __init__(self, model_id: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_id)
+        if self.model_id in [
             "DuoGuard/DuoGuard-0.5B",
             "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
             "DuoGuard/DuoGuard-1.5B-transfer",
@@ -64,9 +64,9 @@ class DuoGuard(Guardrail):
         return ClassificationOutput(unsafe=overall_label, explanation=predicted_labels)
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         tokenizer.pad_token = tokenizer.eos_token
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         return GuardrailModel(model=model, tokenizer=tokenizer)
 
     def _get_probabilities(self, input_text: str) -> List[float]:

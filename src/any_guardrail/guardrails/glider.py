@@ -45,7 +45,7 @@ class GLIDER(Guardrail):
     [GLIDER](https://huggingface.co/PatronusAI/glider)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
         pass_criteria: A question or description of what you are safety_reviewing.
         rubric: A scoring rubric, describing to the model how to score the provided data.
 
@@ -53,9 +53,9 @@ class GLIDER(Guardrail):
         ValueError: Can only use model path to GLIDER from HuggingFace.
     """
 
-    def __init__(self, model_identifier: str, pass_criteria: str, rubric: str) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in ["PatronusAI/glider"]:
+    def __init__(self, model_id: str, pass_criteria: str, rubric: str) -> None:
+        super().__init__(model_id)
+        if self.model_id in ["PatronusAI/glider"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("You must use the following model path: PatronusAI/glider")
@@ -93,5 +93,5 @@ class GLIDER(Guardrail):
             raise TypeError("Using incorrect model type for GLIDER.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        pipe = pipeline("text-classification", self.model_identifier)
+        pipe = pipeline("text-classification", self.model_id)
         return GuardrailModel(model=pipe)

@@ -11,15 +11,15 @@ class ProtectAI(Guardrail):
     [ProtectA](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for ProtectAI from HuggingFace.
     """
 
-    def __init__(self, model_identifier: str) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in [
+    def __init__(self, model_id: str) -> None:
+        super().__init__(model_id)
+        if self.model_id in [
             "protectai/deberta-v3-base-prompt-injection",
             "protectai/deberta-v3-small-prompt-injection-v2",
             "protectai/deberta-v3-base-prompt-injection-v2",
@@ -48,7 +48,7 @@ class ProtectAI(Guardrail):
             raise TypeError("Using incorrect model type to call ProtectAI.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)

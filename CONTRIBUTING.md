@@ -9,8 +9,8 @@ We have an abstract `Guardrail` class that has the minimum api required to creat
 ```python
 class YourGuardrail(Guardrail):
     def __init__(self, ...):
-        super().__init__(model_identifier)
-        self.guardrail = _model_instantiation(model_identifier, ...)
+        super().__init__(model_id)
+        self.guardrail = _model_instantiation(model_id, ...)
 
     def safety_review(...):
         # Your implementation for reviewing text
