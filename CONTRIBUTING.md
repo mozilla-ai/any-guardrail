@@ -10,12 +10,12 @@ We have an abstract `Guardrail` class that has the minimum api required to creat
 class YourGuardrail(Guardrail):
     def __init__(self, ...):
         super().__init__(model_id)
-        self.guardrail = _model_instantiation(model_id, ...)
+        self.guardrail = _load_model(model_id, ...)
 
     def validate(...):
         # Your implementation for reviewing text
 
-    def _model_instantiation(...):
+    def _load_model(...):
         # Your implementation for instantiating a model
 ```
 

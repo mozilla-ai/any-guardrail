@@ -90,6 +90,6 @@ class GLIDER(Guardrail):
         else:
             raise TypeError("Using incorrect model type for GLIDER.")
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         pipe = pipeline("text-classification", self.model_id)
         return GuardrailModel(model=pipe)

@@ -53,7 +53,7 @@ class HarmGuard(Guardrail):
         else:
             raise TypeError("Did not instantiate tokenizer.")
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         model.eval()

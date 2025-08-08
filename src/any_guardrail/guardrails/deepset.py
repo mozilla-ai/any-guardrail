@@ -34,7 +34,7 @@ class Deepset(Guardrail):
         else:
             raise TypeError("Using incorrect model type for Deepset.")
 
-    def _model_instantiation(self) -> GuardrailModel:
+    def _load_model(self) -> GuardrailModel:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
