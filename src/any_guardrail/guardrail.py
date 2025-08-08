@@ -3,6 +3,7 @@ from typing import Any
 from any_guardrail.types import ClassificationOutput, GuardrailModel
 from enum import Enum
 
+
 class Guardrail(ABC):
     def __init__(self, model_id: str):
         self.model_id = model_id

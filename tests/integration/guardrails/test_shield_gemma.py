@@ -1,6 +1,4 @@
-from any_guardrail.api import GuardrailFactory
-
-from any_guardrail.guardrail import GuardrailName
+from any_guardrail import GuardrailFactory, GuardrailName
 from any_guardrail.guardrails.shield_gemma import ShieldGemma
 
 
