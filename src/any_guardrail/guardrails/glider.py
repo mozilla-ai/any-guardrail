@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
-from transformers import pipeline, Pipeline
+from any_guardrail.types import GuardrailOutput
+from transformers import pipeline
 
 SYSTEM_PROMPT_GLIDER = """
 Analyze the following pass criteria carefully and score the text based on the rubric defined below.
@@ -84,12 +84,9 @@ class GLIDER(Guardrail):
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
 
         message = [{"role": "user", "content": prompt}]
-        if isinstance(self.guardrail.model, Pipeline):
-            result = self.guardrail.model(message)
-            return GuardrailOutput(explanation=result)
-        else:
-            raise TypeError("Using incorrect model type for GLIDER.")
+        result = self.model(message)
+        return GuardrailOutput(explanation=result[0]["label"])
 
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         pipe = pipeline("text-classification", self.model_id)
-        return GuardrailModel(model=pipe)
+        self.model = pipe

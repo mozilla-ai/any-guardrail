@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
-from transformers import pipeline, Pipeline
+from any_guardrail.types import GuardrailOutput
+from transformers import pipeline
 
 PANGOLIN_INJECTION_LABEL = "unsafe"
 
@@ -32,12 +32,9 @@ class Pangolin(Guardrail):
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
-        if isinstance(self.guardrail.model, Pipeline):
-            classification = self.guardrail.model(input_text)
-            return GuardrailOutput(unsafe=classification[0]["label"] == PANGOLIN_INJECTION_LABEL)
-        else:
-            raise TypeError("Using incorrect model type for Pangolin.")
+        classification = self.model(input_text)
+        return GuardrailOutput(unsafe=classification[0]["label"] == PANGOLIN_INJECTION_LABEL)
 
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         pipe = pipeline("text-classification", self.model_id)
-        return GuardrailModel(model=pipe)
+        self.model = pipe

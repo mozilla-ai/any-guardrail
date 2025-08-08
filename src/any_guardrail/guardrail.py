@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from any_guardrail.types import GuardrailOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput
 from enum import Enum
 
 
@@ -10,7 +10,7 @@ class Guardrail(ABC):
     def __init__(self, model_id: str):
         self.model_id = model_id
         self._validate_model_id(model_id)
-        self.guardrail = self._load_model()
+        self._load_model()
 
     def _validate_model_id(self, model_id: str) -> None:
         if model_id not in self.SUPPORTED_MODELS:
@@ -24,7 +24,7 @@ class Guardrail(ABC):
         raise NotImplementedError("Each subclass will create their own method.")
 
     @abstractmethod
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         raise NotImplementedError("Each subclass will create their own method.")
 
 

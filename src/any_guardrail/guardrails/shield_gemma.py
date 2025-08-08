@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
-from transformers import AutoTokenizer, AutoModelForCausalLM, PreTrainedModel
+from any_guardrail.types import GuardrailOutput
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from torch.nn.functional import softmax
 
@@ -60,23 +60,18 @@ class ShieldGemma(Guardrail):
             True if the text violates the policy, False otherwise
         """
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
-        if self.guardrail.tokenizer:
-            if isinstance(self.guardrail.model, PreTrainedModel):
-                inputs = self.guardrail.tokenizer(formatted_prompt, return_tensors="pt").to(self.guardrail.model.device)
-                with torch.no_grad():
-                    logits = self.guardrail.model(**inputs).logits
-            else:
-                raise TypeError("Using wrong model type to instantiate Shield Gemma models.")
-            vocab = self.guardrail.tokenizer.get_vocab()
-            selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
-            probabilities = softmax(selected_logits, dim=0)
-            score = probabilities[0].item()
+        inputs = self.tokenizer(formatted_prompt, return_tensors="pt").to(self.model.device)
+        with torch.no_grad():
+            logits = self.model(**inputs).logits
+        vocab = self.tokenizer.get_vocab()
+        selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
+        probabilities = softmax(selected_logits, dim=0)
+        score = probabilities[0].item()
 
-            return GuardrailOutput(unsafe=score > self.threshold)
-        else:
-            raise TypeError("Did not instantiate tokenizer.")
+        return GuardrailOutput(unsafe=score > self.threshold)
 
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForCausalLM.from_pretrained(self.model_id, device_map="auto", torch_dtype=torch.bfloat16)
-        return GuardrailModel(model=model, tokenizer=tokenizer)
+        self.model = model
+        self.tokenizer = tokenizer

@@ -1,5 +1,5 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput
 from flow_judge import FlowJudge, EvalInput
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf
@@ -55,13 +55,10 @@ class FlowJudgeClass(Guardrail):
             A score from the RubricItems and feedback related to the rubric and criteria.
         """
         eval_input = EvalInput(inputs=inputs, output=output)
-        if isinstance(self.guardrail.model, FlowJudge):
-            result = self.guardrail.model.evaluate(eval_input, save_results=False)
-        else:
-            raise TypeError("Using the wrong GuardrailModel type for FlowJudge.")
+        result = self.model.evaluate(eval_input, save_results=False)
         return GuardrailOutput(explanation=result.feedback, score=result.score)
 
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         """
         Constructs the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
         Returns:
@@ -69,7 +66,7 @@ class FlowJudgeClass(Guardrail):
         """
         model = Hf(flash_attention=False)
         judge = FlowJudge(metric=self.metric_prompt, model=model)  # type: ignore[arg-type]
-        return GuardrailModel(model=judge)
+        self.model = judge
 
     def define_metric_prompt(self) -> Metric:
         """
