@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import ClassificationOutput, GuardrailModel
 from flow_judge import FlowJudge, EvalInput
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf

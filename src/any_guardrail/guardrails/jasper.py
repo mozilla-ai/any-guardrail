@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import ClassificationOutput, GuardrailModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 
 JASPER_INJECTION_LABEL = "INJECTION"

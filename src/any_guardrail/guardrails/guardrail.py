@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import ClassificationOutput, GuardrailModel
 
 
 class Guardrail(ABC):
