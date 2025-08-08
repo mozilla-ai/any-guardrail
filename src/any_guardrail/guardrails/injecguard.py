@@ -17,12 +17,10 @@ class InjecGuard(Guardrail):
         ValueError: Can only use the model path for InjecGuard from HuggingFace
     """
 
+    SUPPORTED_MODELS = ["leolee99/InjecGuard"]
+
     def __init__(self, model_id: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["leolee99/InjecGuard"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("Must use the following keyword argument to instantiate model: leolee99/InjecGuard")
 
     def validate(self, input_text: str) -> GuardrailOutput:
         """

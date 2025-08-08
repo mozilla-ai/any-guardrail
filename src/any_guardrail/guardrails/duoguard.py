@@ -34,19 +34,14 @@ class DuoGuard(Guardrail):
         ValueError: Only supports DuoGuard models from HuggingFace.
     """
 
+    SUPPORTED_MODELS = [
+        "DuoGuard/DuoGuard-0.5B",
+        "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
+        "DuoGuard/DuoGuard-1.5B-transfer",
+    ]
+
     def __init__(self, model_id: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        if self.model_id in [
-            "DuoGuard/DuoGuard-0.5B",
-            "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
-            "DuoGuard/DuoGuard-1.5B-transfer",
-        ]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must instantiate model using one of the following paths: "
-                "\n\n DuoGuard/DuoGuard-0.5B \n DuoGuard/DuoGuard-1B-Llama-3.2-transfer \n DuoGuard/DuoGuard-1.5B-transfer"
-            )
         self.threshold = threshold
 
     def validate(self, input_text: str) -> GuardrailOutput:

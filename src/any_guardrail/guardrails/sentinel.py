@@ -17,14 +17,10 @@ class Sentinel(Guardrail):
         ValueError: Can only use model path for Sentinel from HuggingFace.
     """
 
+    SUPPORTED_MODELS = ["qualifire/prompt-injection-sentinel"]
+
     def __init__(self, model_id: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["qualifire/prompt-injection-sentinel"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must use the following keyword argument to instantiate model: qualifire/prompt-injection-sentinel"
-            )
 
     def validate(self, input_text: str) -> GuardrailOutput:
         """

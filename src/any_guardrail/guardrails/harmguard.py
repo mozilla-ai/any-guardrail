@@ -19,12 +19,10 @@ class HarmGuard(Guardrail):
         ValueError: Can only use model path for HarmGuard from HuggingFace
     """
 
+    SUPPORTED_MODELS = ["hbseong/HarmAug-Guard"]
+
     def __init__(self, model_id: str, threshold: float = HARMGUARD_DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        if self.model_id in ["hbseong/HarmAug-Guard"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
         self.threshold = threshold
 
     def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:

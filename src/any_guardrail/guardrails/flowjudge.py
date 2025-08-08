@@ -24,6 +24,8 @@ class FlowJudgeClass(Guardrail):
         ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
     """
 
+    SUPPORTED_MODELS = ["FlowJudge"]
+
     def __init__(
         self,
         model_id: str,
@@ -33,17 +35,14 @@ class FlowJudgeClass(Guardrail):
         required_inputs: List[str],
         required_output: str,
     ) -> None:
-        super().__init__(model_id)
         self.metric_name = name
         self.criteria = criteria
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self.define_metric_prompt
-        if model_id in ["FlowJudge", "Flowjudge", "flowjudge"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")
+        # Do super init after setting all attributes, since model_instantiation needs all attributes to be set
+        super().__init__(model_id)
 
     def validate(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> GuardrailOutput:
         """

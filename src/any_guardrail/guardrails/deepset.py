@@ -17,14 +17,7 @@ class Deepset(Guardrail):
         ValueError: Only supports Deepset models from HuggingFace
     """
 
-    def __init__(self, model_id: str) -> None:
-        super().__init__(model_id)
-        if self.model_id in ["deepset/deberta-v3-base-injection"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Only supports deepset/deberta-v3-base-injection. Please use this path to instantiate model."
-            )
+    SUPPORTED_MODELS = ["deepset/deberta-v3-base-injection"]
 
     def validate(self, input_text: str) -> GuardrailOutput:
         """

@@ -18,15 +18,10 @@ class Pangolin(Guardrail):
         ValueError: Can only use model paths for Pangolin from HuggingFace
     """
 
+    SUPPORTED_MODELS = ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]
+
     def __init__(self, model_id: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must use one of the following keyword arguments to instantiate model: "
-                "\n\n dcarpintero/pangolin-guard-large \n dcarpintero/pangolin-guard-base"
-            )
 
     def validate(self, input_text: str) -> GuardrailOutput:
         """
