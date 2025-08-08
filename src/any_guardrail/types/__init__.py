@@ -1,3 +1,3 @@
-from .guardrail import GuardrailModel, GuardrailOutput
+from .guardrail import GuardrailOutput
 
-__all__ = ["GuardrailModel", "GuardrailOutput"]
+__all__ = ["GuardrailOutput"]

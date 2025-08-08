@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
+from any_guardrail.types import GuardrailOutput
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch.nn.functional as F
 import torch
 
@@ -36,25 +36,20 @@ class HarmGuard(Guardrail):
         Returns:
             True if it is a prompt injection attack, False otherwise, and the associated final score.
         """
-        if self.guardrail.tokenizer:
-            if output_text:
-                inputs = self.guardrail.tokenizer(input_text, return_tensors="pt")
-            else:
-                inputs = self.guardrail.tokenizer(input_text, output_text, return_tensors="pt")
-            if isinstance(self.guardrail.model, PreTrainedModel):
-                with torch.no_grad():
-                    outputs = self.guardrail.model(**inputs)
-                    unsafe_prob = F.softmax(outputs.logits, dim=-1)[:, 1]
-                final_score = unsafe_prob.item()
-            else:
-                raise TypeError("Using incorrect model type for HarmGuard.")
-
-            return GuardrailOutput(unsafe=final_score > self.threshold, score=final_score)
+        if output_text:
+            inputs = self.tokenizer(input_text, return_tensors="pt")
         else:
-            raise TypeError("Did not instantiate tokenizer.")
+            inputs = self.tokenizer(input_text, output_text, return_tensors="pt")
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            unsafe_prob = F.softmax(outputs.logits, dim=-1)[:, 1]
+        final_score = unsafe_prob.item()
 
-    def _load_model(self) -> GuardrailModel:
+        return GuardrailOutput(unsafe=final_score > self.threshold, score=final_score)
+
+    def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         model.eval()
-        return GuardrailModel(model=model, tokenizer=tokenizer)
+        self.model = model
+        self.tokenizer = tokenizer

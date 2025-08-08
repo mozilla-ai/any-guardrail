@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput, GuardrailModel
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
+from any_guardrail.types import GuardrailOutput
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from typing import Tuple, Dict, List
 
@@ -58,11 +58,12 @@ class DuoGuard(Guardrail):
         overall_label, predicted_labels = self._classification_decision(prob_vector)
         return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
 
-    def _load_model(self) -> GuardrailModel:
+    def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         tokenizer.pad_token = tokenizer.eos_token
         model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        return GuardrailModel(model=model, tokenizer=tokenizer)
+        self.model = model
+        self.tokenizer = tokenizer
 
     def _get_probabilities(self, input_text: str) -> List[float]:
         """
@@ -75,22 +76,16 @@ class DuoGuard(Guardrail):
         Returns:
             A list of probabilities for each category.
         """
-        if self.guardrail.tokenizer:
-            inputs = self.guardrail.tokenizer(
-                input_text,
-                return_tensors="pt",
-            )
-            if isinstance(self.guardrail.model, PreTrainedModel):
-                with torch.no_grad():
-                    outputs = self.guardrail.model(**inputs)
-                    logits = outputs.logits
-                    probabilities = torch.sigmoid(logits)
-                prob_vector = probabilities[0].tolist()
-            else:
-                raise TypeError("Using the incorrect model type for DuoGuard")
-            return prob_vector
-        else:
-            raise TypeError("Did not instantiate tokenizer.")
+        inputs = self.tokenizer(
+            input_text,
+            return_tensors="pt",
+        )
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            logits = outputs.logits
+            probabilities = torch.sigmoid(logits)
+        prob_vector = probabilities[0].tolist()
+        return prob_vector
 
     def _classification_decision(self, prob_vector: List[float]) -> Tuple[bool, Dict[str, bool]]:
         """
