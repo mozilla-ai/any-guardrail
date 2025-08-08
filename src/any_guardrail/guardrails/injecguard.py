@@ -27,7 +27,7 @@ class InjecGuard(Guardrail):
         Classify some text to see if it contains a prompt injection attack.
 
         Args:
-            input_text: the text to safety_review for prompt injection attacks
+            input_text: the text to validate for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
         """

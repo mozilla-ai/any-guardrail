@@ -49,7 +49,7 @@ class DuoGuard(Guardrail):
         Classifies text based on DuoGuard categories.
 
         Args:
-            input_text: text that you want to safety_review.
+            input_text: text that you want to validate.
         Returns:
             Whether the output is generally true (bool) and dictionary object with classifications for each category supported by
             DuoGuard.
@@ -71,7 +71,7 @@ class DuoGuard(Guardrail):
         to determine whether, given a threshold, the input text violates any of the safety categories.
 
         Args:
-            input_text: text that you want to safety_review.
+            input_text: text that you want to validate.
         Returns:
             A list of probabilities for each category.
         """

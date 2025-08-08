@@ -30,8 +30,8 @@ class HarmGuard(Guardrail):
         Classifies input text and, optionally, output text for prompt injection detection.
 
         Args:
-            input_text: the initial text that you want to safety_review
-            output_text: the subsequent text that you want to safety_review
+            input_text: the initial text that you want to validate
+            output_text: the subsequent text that you want to validate
 
         Returns:
             True if it is a prompt injection attack, False otherwise, and the associated final score.

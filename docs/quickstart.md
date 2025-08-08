@@ -18,7 +18,7 @@ pip install any-guardrail
 from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 supported_guardrails = AnyGuardrail.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
 guardrail = AnyGuardrail.create_guardrail(model_id="google/shieldgemma-2b", guardrail_name=GuardrailName.SHIELD_GEMMA)
-result: GuardrailOutput = guardrail.safety_review("All smiles from me!")
+result: GuardrailOutput = guardrail.validate("All smiles from me!")
 assert result.unsafe == False
 ```
 
