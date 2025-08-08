@@ -10,7 +10,8 @@ HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 class HarmGuard(Guardrail):
     """
     Prompt injection detection encoder based model. For more information, please see the model card:
-    https://huggingface.co/hbseong/HarmAug-Guard
+    [HarmGuard](https://huggingface.co/hbseong/HarmAug-Guard)
+
     Args:
         model_identifier: HuggingFace path to model.
 

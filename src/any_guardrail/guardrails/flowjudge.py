@@ -9,7 +9,8 @@ from typing import Dict, List
 class FlowJudgeClass(Guardrail):
     """
     Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric. Please see
-    the model card for more information: https://huggingface.co/flowaicom/Flow-Judge-v0.1
+    the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1)
+
     Args:
         model_identifier: Name of model. Only used for instantiation of FlowJudge.
         name: User defined metric name.

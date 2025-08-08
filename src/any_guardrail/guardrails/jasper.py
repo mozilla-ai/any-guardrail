@@ -8,8 +8,9 @@ JASPER_INJECTION_LABEL = "INJECTION"
 class Jasper(Guardrail):
     """
     Prompt injection detection encoder based models. For more information, please see the model card:
-    https://huggingface.co/JasperLS/deberta-v3-base-injection
-    https://huggingface.co/JasperLS/gelectra-base-injection
+    [Jasper Deberta](https://huggingface.co/JasperLS/deberta-v3-base-injection)
+    [Jasper Gelectra](https://huggingface.co/JasperLS/gelectra-base-injection)
+
     Args:
         model_identifier: HuggingFace path to model.
 

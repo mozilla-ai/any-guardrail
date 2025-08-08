@@ -8,7 +8,7 @@ SENTINEL_INJECTION_LABEL = "jailbreak"
 class Sentinel(Guardrail):
     """
     Prompt injection detection encoder based model. For more information, please see the model card:
-    https://huggingface.co/qualifire/prompt-injection-sentinel
+    [Sentinel](https://huggingface.co/qualifire/prompt-injection-sentinel)
 
     Args:
         model_identifier: HuggingFace path to model.

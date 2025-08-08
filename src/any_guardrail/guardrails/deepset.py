@@ -7,8 +7,8 @@ DEEPSET_INJECTION_LABEL = "INJECTION"
 
 class Deepset(Guardrail):
     """
-    Wrapper for prompt injection detection model from Deepset. Please see model card for more information.
-    https://huggingface.co/deepset/deberta-v3-base-injection
+    Wrapper for prompt injection detection model from Deepset. Please see model card for more information:
+    [Deepset](https://huggingface.co/deepset/deberta-v3-base-injection)
 
     Args:
         model_identifier: HuggingFace path to model

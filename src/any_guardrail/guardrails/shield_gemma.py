@@ -25,7 +25,7 @@ DEFAULT_THRESHOLD: float = 0.5
 class ShieldGemma(Guardrail):
     """
     Wrapper class for Google ShieldGemma models. For more information, please visit the model cards:
-    https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789
+    [Shield Gemma](https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789)
 
     Note we do not support the image classifier.
 
