@@ -4,8 +4,8 @@ from any_guardrail.utils.custom_types import ClassificationOutput, GuardrailMode
 
 
 class Guardrail(ABC):
-    def __init__(self, model_identifier: str):
-        self.model_identifier = model_identifier
+    def __init__(self, model_id: str):
+        self.model_id = model_id
 
     @abstractmethod
     def safety_review(self, *args: Any, **kwargs: Any) -> ClassificationOutput:

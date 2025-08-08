@@ -30,22 +30,22 @@ class ShieldGemma(Guardrail):
     Note we do not support the image classifier.
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
         policy: The safety policy to enforce.
 
     Raises:
-        ValueError: Can only use model_identifiers to ShieldGemma from HuggingFace.
+        ValueError: Can only use model_ids to ShieldGemma from HuggingFace.
     """
 
-    def __init__(self, model_identifier: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
-        super().__init__(model_identifier)
+    def __init__(self, model_id: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
+        super().__init__(model_id)
         supported_models = [
             "google/shieldgemma-2b",
             "google/shieldgemma-9b",
             "google/shieldgemma-27b",
             "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
         ]
-        if self.model_identifier in supported_models:
+        if self.model_id in supported_models:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -82,8 +82,6 @@ class ShieldGemma(Guardrail):
             raise TypeError("Did not instantiate tokenizer.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForCausalLM.from_pretrained(
-            self.model_identifier, device_map="auto", torch_dtype=torch.bfloat16
-        )
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, device_map="auto", torch_dtype=torch.bfloat16)
         return GuardrailModel(model=model, tokenizer=tokenizer)

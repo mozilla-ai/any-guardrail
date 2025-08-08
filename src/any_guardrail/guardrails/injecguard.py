@@ -11,15 +11,15 @@ class InjecGuard(Guardrail):
     [InjecGuard](https://huggingface.co/leolee99/InjecGuard)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use the model path for InjecGuard from HuggingFace
     """
 
-    def __init__(self, model_identifier: str) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in ["leolee99/InjecGuard"]:
+    def __init__(self, model_id: str) -> None:
+        super().__init__(model_id)
+        if self.model_id in ["leolee99/InjecGuard"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("Must use the following keyword argument to instantiate model: leolee99/InjecGuard")
@@ -40,7 +40,7 @@ class InjecGuard(Guardrail):
             raise TypeError("Using incorrect model type for InjecGuard.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)

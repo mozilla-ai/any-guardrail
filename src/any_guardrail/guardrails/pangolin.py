@@ -12,15 +12,15 @@ class Pangolin(Guardrail):
     [Pangolin Large](https://huggingface.co/dcarpintero/pangolin-guard-large)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for Pangolin from HuggingFace
     """
 
-    def __init__(self, model_identifier: str) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
+    def __init__(self, model_id: str) -> None:
+        super().__init__(model_id)
+        if self.model_id in ["dcarpintero/pangolin-guard-large", "dcarpintero/pangolin-guard-base"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -44,5 +44,5 @@ class Pangolin(Guardrail):
             raise TypeError("Using incorrect model type for Pangolin.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        pipe = pipeline("text-classification", self.model_identifier)
+        pipe = pipeline("text-classification", self.model_id)
         return GuardrailModel(model=pipe)

@@ -12,7 +12,7 @@ class FlowJudgeClass(Guardrail):
     the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1)
 
     Args:
-        model_identifier: Name of model. Only used for instantiation of FlowJudge.
+        model_id: Name of model. Only used for instantiation of FlowJudge.
         name: User defined metric name.
         criteria: User defined question that they want answered by FlowJudge model.
         rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
@@ -26,21 +26,21 @@ class FlowJudgeClass(Guardrail):
 
     def __init__(
         self,
-        model_identifier: str,
+        model_id: str,
         name: str,
         criteria: str,
         rubric: Dict[int, str],
         required_inputs: List[str],
         required_output: str,
     ) -> None:
-        super().__init__(model_identifier)
+        super().__init__(model_id)
         self.metric_name = name
         self.criteria = criteria
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self.define_metric_prompt
-        if model_identifier in ["FlowJudge", "Flowjudge", "flowjudge"]:
+        if model_id in ["FlowJudge", "Flowjudge", "flowjudge"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")

@@ -12,15 +12,15 @@ class Jasper(Guardrail):
     [Jasper Gelectra](https://huggingface.co/JasperLS/gelectra-base-injection)
 
     Args:
-        model_identifier: HuggingFace path to model.
+        model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model paths for Jasper models from HuggingFace.
     """
 
-    def __init__(self, model_identifier: str) -> None:
-        super().__init__(model_identifier)
-        if self.model_identifier in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
+    def __init__(self, model_id: str) -> None:
+        super().__init__(model_id)
+        if self.model_id in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
             self.guardrail = self._model_instantiation()
         else:
             raise ValueError(
@@ -44,7 +44,7 @@ class Jasper(Guardrail):
             raise TypeError("Using incorrect model type for Jasper models.")
 
     def _model_instantiation(self) -> GuardrailModel:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_identifier)  # type: ignore[no-untyped-call]
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_identifier)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         return GuardrailModel(model=pipe)
