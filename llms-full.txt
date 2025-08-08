@@ -26,7 +26,7 @@ Refer to the [Quickstart](#./quickstart.md) for instructions on installation and
 
 Refer to [Guardrails](#./api/guardrails.md) for the parameters for each guardrail.
 
-Refer to [GuardrailFactory](#./api/guardrail_factory.md) for how to use the `GuardrailFactory` object.
+Refer to [AnyGuardrail](#./api/any_guardrail.md) for how to use the `AnyGuardrail` object.
 
 ## For AI Systems
 
@@ -56,13 +56,13 @@ pip install any-guardrail
 
 ### Basic Usage
 
-`GuardrailFactory` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
+`AnyGuardrail` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
 
 ```python
-from any_guardrail import GuardrailFactory
-supported_guardrails = GuardrailFactory.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
-guardrail = GuardrailFactory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
-result = guardrail.safety_review("All smiles from me!")
+from any_guardrail import AnyGuardrail, GuardrailOutput
+supported_guardrails = AnyGuardrail.list_all_supported_guardrails()
+guardrail = AnyGuardrail.create(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
+result: GuardrailOutput = guardrail.validate("All smiles from me!")
 assert result.unsafe == False
 ```
 
@@ -103,12 +103,13 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 ---
 
-## api/guardrail_factory.md
+## api/any_guardrail.md
 
-<!-- Source: api/guardrail_factory.md -->
+<!-- Source: api/any_guardrail.md -->
 
+## AnyGuardrail
 
-::: any_guardrail.api
+::: any_guardrail.api.AnyGuardrail
 
 
 ---

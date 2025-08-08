@@ -5,4 +5,4 @@
 - [Introduction](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/index.md)
 - [Quickstart](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/quickstart.md)
 - [Api - Guardrails](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails.md)
-- [Api - Guardrail Factory](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrail_factory.md)
+- [Api - Any Guardrail](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/any_guardrail.md)
