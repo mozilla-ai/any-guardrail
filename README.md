@@ -55,8 +55,6 @@ result = guardrail.safety_review("All smiles from me!")
 assert result.unsafe == False
 ```
 
-We have an example notebook as well in `examples/Testing.ipynb`.
-
 ## Troubleshooting
 
 Some of the models on HuggingFace require extra permissions to use. To do this, you'll need to create a HuggingFace profile and manually go through the permissions. Then, you'll need to download the HuggingFace Hub and login. One way to do this is:
