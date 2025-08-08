@@ -4,9 +4,9 @@ If a guardrail is not available, fork this repo to add it and then issue a pull 
 
 ### Create a new Class that Inherits from Guardrail
 
-We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail. 
+We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail.
 
-Create a new file in src/any_guardrail/guardrails for your guardrail, and create a class that inherits all the abstract 
+Create a new file in src/any_guardrail/guardrails for your guardrail, and create a class that inherits all the abstract
 methods from Guardrail.
 
 See an existing guardrail for implementation hints.
