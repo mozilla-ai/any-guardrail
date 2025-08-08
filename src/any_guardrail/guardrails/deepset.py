@@ -19,9 +19,6 @@ class Deepset(Guardrail):
 
     SUPPORTED_MODELS = ["deepset/deberta-v3-base-injection"]
 
-    def __init__(self, model_id: str) -> None:
-        super().__init__(model_id)
-
     def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classifies whether the provided text is a prompt injection attack or not.
