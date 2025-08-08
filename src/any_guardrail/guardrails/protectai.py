@@ -17,20 +17,14 @@ class ProtectAI(Guardrail):
         ValueError: Can only use model paths for ProtectAI from HuggingFace.
     """
 
+    SUPPORTED_MODELS = [
+        "protectai/deberta-v3-base-prompt-injection",
+        "protectai/deberta-v3-small-prompt-injection-v2",
+        "protectai/deberta-v3-base-prompt-injection-v2",
+    ]
+
     def __init__(self, model_id: str) -> None:
         super().__init__(model_id)
-        if self.model_id in [
-            "protectai/deberta-v3-base-prompt-injection",
-            "protectai/deberta-v3-small-prompt-injection-v2",
-            "protectai/deberta-v3-base-prompt-injection-v2",
-        ]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must use one of the following keyword arguments to instantiate model: "
-                "\n\n protectai/deberta-v3-base-prompt-injection \n protectai/deberta-v3-small-prompt-injection-v2 \n"
-                "protectai/deberta-v3-base-prompt-injection-v2"
-            )
 
     def safety_review(self, input_text: str) -> ClassificationOutput:
         """

@@ -18,15 +18,10 @@ class Jasper(Guardrail):
         ValueError: Can only use model paths for Jasper models from HuggingFace.
     """
 
+    SUPPORTED_MODELS = ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]
+
     def __init__(self, model_id: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["JasperLS/deberta-v3-base-injection", "JasperLS/gelectra-base-injection"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                "Must use one of the following keyword arguments to instantiate model: "
-                "\n\n JasperLS/deberta-v3-base-injection \n JasperLS/gelectra-base-injection"
-            )
 
     def safety_review(self, input_text: str) -> ClassificationOutput:
         """

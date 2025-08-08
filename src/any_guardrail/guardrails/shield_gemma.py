@@ -37,20 +37,15 @@ class ShieldGemma(Guardrail):
         ValueError: Can only use model_ids to ShieldGemma from HuggingFace.
     """
 
+    SUPPORTED_MODELS = [
+        "google/shieldgemma-2b",
+        "google/shieldgemma-9b",
+        "google/shieldgemma-27b",
+        "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
+    ]
+
     def __init__(self, model_id: str, policy: str, threshold: float = DEFAULT_THRESHOLD) -> None:
         super().__init__(model_id)
-        supported_models = [
-            "google/shieldgemma-2b",
-            "google/shieldgemma-9b",
-            "google/shieldgemma-27b",
-            "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
-        ]
-        if self.model_id in supported_models:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError(
-                f"Must use one of the following keyword arguments to instantiate model: \n\n {supported_models}"
-            )
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold

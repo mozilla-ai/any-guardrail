@@ -53,12 +53,10 @@ class GLIDER(Guardrail):
         ValueError: Can only use model path to GLIDER from HuggingFace.
     """
 
+    SUPPORTED_MODELS = ["PatronusAI/glider"]
+
     def __init__(self, model_id: str, pass_criteria: str, rubric: str) -> None:
         super().__init__(model_id)
-        if self.model_id in ["PatronusAI/glider"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("You must use the following model path: PatronusAI/glider")
         self.pass_criteria = pass_criteria
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
