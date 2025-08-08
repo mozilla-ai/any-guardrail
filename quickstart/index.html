@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quickstart" class="md-skip">
+        <a href="#requirements" class="md-skip">
           Skip to content
         </a>
       
@@ -330,16 +330,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quickstart
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quickstart">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       Requirements
@@ -347,8 +337,8 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       Installation
@@ -356,8 +346,8 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Usage
@@ -365,9 +355,13 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
   
 </li>
       
@@ -497,16 +491,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quickstart
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quickstart">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       Requirements
@@ -514,8 +498,8 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       Installation
@@ -523,8 +507,8 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Usage
@@ -532,9 +516,13 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
   
 </li>
       
@@ -564,30 +552,30 @@
 
   <h1>Quick Start</h1>
 
-<h2 id="quickstart">Quickstart</h2>
 <h3 id="requirements">Requirements</h3>
 <ul>
 <li>Python 3.11 or newer</li>
-<li>For guardrails that need permission granted on HuggingFace, make sure to get a HuggingFace access token as well. Then log into <a href="https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command">HuggingFace Hub</a></li>
 </ul>
 <h3 id="installation">Installation</h3>
-<p>To install, you can use <code>pip</code>:</p>
+<p>Install with <code>pip</code>:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>any-guardrail
 </span></code></pre></div>
-<p>If you plan to use HuggingFace models that require extra permissions, please log into the HuggingFace Hub:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>huggingface_hub
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>hf<span class="w"> </span>auth<span class="w"> </span>login
-</span></code></pre></div>
-<p>Make sure to agree to the terms and conditions of the model you are trying to access as well.</p>
 <h3 id="basic-usage">Basic Usage</h3>
 <p><code>GuardrailFactory</code> provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">any_guardrail</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuardrailFactory</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">supported_guardrails</span> <span class="o">=</span> <span class="n">GuardrailFactory</span><span class="o">.</span><span class="n">list_all_supported_guardrails</span><span class="p">()</span> <span class="c1"># This will out a list of all guardrail identifiers</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">guardrail</span> <span class="o">=</span> <span class="n">GuardrailFactory</span><span class="o">.</span><span class="n">create_guardrail</span><span class="p">(</span><span class="n">support_guardrails</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># will create Deepset&#39;s deberta prompt injection defense model</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">safety_review</span><span class="p">(</span><span class="s2">&quot;All smiles from me!&quot;</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">unsafe</span> <span class="o">==</span> <span class="kc">False</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">any_guardrail</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuardrailFactory</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">supported_guardrails</span> <span class="o">=</span> <span class="n">GuardrailFactory</span><span class="o">.</span><span class="n">list_all_supported_guardrails</span><span class="p">()</span> <span class="c1"># This will out a list of all guardrail identifiers</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">guardrail</span> <span class="o">=</span> <span class="n">GuardrailFactory</span><span class="o">.</span><span class="n">create_guardrail</span><span class="p">(</span><span class="n">support_guardrails</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># will create Deepset&#39;s deberta prompt injection defense model</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">safety_review</span><span class="p">(</span><span class="s2">&quot;All smiles from me!&quot;</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">unsafe</span> <span class="o">==</span> <span class="kc">False</span>
 </span></code></pre></div>
+<p>We have an example notebook as well in <code>examples/Testing.ipynb</code>.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<p>Some of the models on HuggingFace require extra permissions to use. To do this, you'll need to create a HuggingFace profile and manually go through the permissions. Then, you'll need to download the HuggingFace Hub and login. One way to do this is:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>huggingface_hub
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>hf<span class="w"> </span>auth<span class="w"> </span>login
+</span></code></pre></div>
+<p>More information can be found here: <a href="https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command">HuggingFace Hub</a></p>
 
 
 
