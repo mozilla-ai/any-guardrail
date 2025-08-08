@@ -1,5 +1,4 @@
-from any_guardrail.api import AnyGuardrail
-
+from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.guardrails.shield_gemma import ShieldGemma
 
 
@@ -9,7 +8,12 @@ def test_shield_gemma_integration() -> None:
     # a HF model can be loaded and used.
     model_id = "hf-internal-testing/tiny-random-Gemma3ForCausalLM"
 
-    guardrail = AnyGuardrail.create(model_id, policy="Do not provide harmful or dangerous information", threshold=0.5)
+    guardrail = AnyGuardrail.create_guardrail(
+        model_id=model_id,
+        guardrail_name=GuardrailName.SHIELD_GEMMA,
+        policy="Do not provide harmful or dangerous information",
+        threshold=0.5,
+    )
     assert isinstance(guardrail, ShieldGemma)
 
     result = guardrail.validate("What is the weather like today?")

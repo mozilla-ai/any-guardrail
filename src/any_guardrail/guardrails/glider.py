@@ -1,4 +1,4 @@
-from any_guardrail.guardrails.guardrail import Guardrail
+from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, Pipeline
 
@@ -46,7 +46,7 @@ class GLIDER(Guardrail):
 
     Args:
         model_id: HuggingFace path to model.
-        pass_criteria: A question or description of what you are safety_reviewing.
+        pass_criteria: A question or description of what you are validating.
         rubric: A scoring rubric, describing to the model how to score the provided data.
 
     Raise:

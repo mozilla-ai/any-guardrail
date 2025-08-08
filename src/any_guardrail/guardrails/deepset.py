@@ -1,4 +1,4 @@
-from any_guardrail.guardrails.guardrail import Guardrail
+from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 

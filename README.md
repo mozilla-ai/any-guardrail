@@ -25,7 +25,7 @@ LLM Guardrail and Judge models can be seen as a combination of an LLM + some cla
 
 ## Our Approach
 
-`any-guardrail` is meant to provide the minimum amount of access necessary to implement the guardrails in your pipeline. We do this by providing taking care of the loading and instantiation of a model or pipeline in the backend, and providing a `safety_review` function to classify.
+`any-guardrail` is meant to provide the minimum amount of access necessary to implement the guardrails in your pipeline. We do this by providing taking care of the loading and instantiation of a model or pipeline in the backend, and providing a `validate` function to classify.
 
 Some guardrails are extremely customizable and we allow for that customization as well. We recommend reading our [docs](https://mozilla-ai.github.io/any-guardrail/) to see how to build more customized use cases.
 
@@ -48,10 +48,10 @@ pip install any-guardrail
 `AnyGuardrail` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
 
 ```python
-from any_guardrail import AnyGuardrail
+from any_guardrail import AnyGuardrail, GuardrailName
 supported_guardrails = AnyGuardrail.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
-guardrail = factory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
-result = guardrail.safety_review("All smiles from me!")
+guardrail = factory.create_guardrail(model_id="google/shieldgemma-2b", guardrail_name=GuardrailName.SHIELD_GEMMA)
+result = guardrail.validate("All smiles from me!")
 assert result.unsafe == False
 ```
 

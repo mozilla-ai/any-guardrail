@@ -1,4 +1,4 @@
-from any_guardrail.guardrails.guardrail import Guardrail
+from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, PreTrainedModel
 import torch
@@ -55,7 +55,7 @@ class ShieldGemma(Guardrail):
         Classify input_text according to the safety policy.
 
         Args:
-            input_text: the text you want to safety_review based on the policy
+            input_text: the text you want to validate based on the policy
         Returns:
             True if the text violates the policy, False otherwise
         """
