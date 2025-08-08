@@ -1398,7 +1398,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Wrapper for prompt injection detection model from Deepset. Please see model card for more information:
@@ -1689,7 +1689,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES. For more information, please see the
@@ -1872,7 +1872,7 @@ model cards: <a href="https://huggingface.co/collections/DuoGuard/duoguard-model
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        Classifies text based on DuoGuard categories.</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">            input_text: text that you want to safety_review.</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">            input_text: text that you want to validate.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">            Whether the output is generally true (bool) and dictionary object with classifications for each category supported by</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">            DuoGuard.</span>
@@ -1894,7 +1894,7 @@ model cards: <a href="https://huggingface.co/collections/DuoGuard/duoguard-model
 </span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">        to determine whether, given a threshold, the input text violates any of the safety categories.</span>
 </span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>
 </span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            input_text: text that you want to safety_review.</span>
+</span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            input_text: text that you want to validate.</span>
 </span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">            A list of probabilities for each category.</span>
 </span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -1983,7 +1983,7 @@ model cards: <a href="https://huggingface.co/collections/DuoGuard/duoguard-model
             </td>
             <td>
               <div class="doc-md-description">
-                <p>text that you want to safety_review.</p>
+                <p>text that you want to validate.</p>
               </div>
             </td>
             <td>
@@ -2016,7 +2016,7 @@ model cards: <a href="https://huggingface.co/collections/DuoGuard/duoguard-model
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    Classifies text based on DuoGuard categories.</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        input_text: text that you want to safety_review.</span>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        input_text: text that you want to validate.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="sd">        Whether the output is generally true (bool) and dictionary object with classifications for each category supported by</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        DuoGuard.</span>
@@ -2089,7 +2089,7 @@ model cards: <a href="https://huggingface.co/collections/DuoGuard/duoguard-model
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric. Please see
@@ -2650,7 +2650,7 @@ Returns:
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text. It outputs its reasoning,
@@ -2694,7 +2694,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A question or description of what you are safety_reviewing.</p>
+                <p>A question or description of what you are validating.</p>
               </div>
             </td>
             <td>
@@ -2795,7 +2795,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    Args:</span>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        model_id: HuggingFace path to model.</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        pass_criteria: A question or description of what you are safety_reviewing.</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        pass_criteria: A question or description of what you are validating.</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        rubric: A scoring rubric, describing to the model how to score the provided data.</span>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    Raise:</span>
@@ -3042,7 +3042,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based model. For more information, please see the model card:
@@ -3183,8 +3183,8 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Classifies input text and, optionally, output text for prompt injection detection.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">            input_text: the initial text that you want to safety_review</span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            output_text: the subsequent text that you want to safety_review</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">            input_text: the initial text that you want to validate</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            output_text: the subsequent text that you want to validate</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>
 </span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">            True if it is a prompt injection attack, False otherwise, and the associated final score.</span>
@@ -3260,7 +3260,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the initial text that you want to safety_review</p>
+                <p>the initial text that you want to validate</p>
               </div>
             </td>
             <td>
@@ -3276,7 +3276,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the subsequent text that you want to safety_review</p>
+                <p>the subsequent text that you want to validate</p>
               </div>
             </td>
             <td>
@@ -3343,8 +3343,8 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Classifies input text and, optionally, output text for prompt injection detection.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        input_text: the initial text that you want to safety_review</span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        output_text: the subsequent text that you want to safety_review</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        input_text: the initial text that you want to validate</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        output_text: the subsequent text that you want to validate</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>
 </span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        True if it is a prompt injection attack, False otherwise, and the associated final score.</span>
@@ -3430,7 +3430,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based model. For more information, please see the model card:
@@ -3556,7 +3556,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">            input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">            input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -3620,7 +3620,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text to safety_review for prompt injection attacks</p>
+                <p>the text to validate for prompt injection attacks</p>
               </div>
             </td>
             <td>
@@ -3653,7 +3653,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -3727,7 +3727,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based models. For more information, please see the model card:
@@ -3856,7 +3856,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">            True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -3920,7 +3920,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text to safety_review for prompt injection attacks</p>
+                <p>the text to validate for prompt injection attacks</p>
               </div>
             </td>
             <td>
@@ -3953,7 +3953,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">    Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -4027,7 +4027,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based models. For more information, please see the model card:
@@ -4154,7 +4154,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">        Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">            input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">            True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -4216,7 +4216,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text to safety_review for prompt injection attacks</p>
+                <p>the text to validate for prompt injection attacks</p>
               </div>
             </td>
             <td>
@@ -4249,7 +4249,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span class="sd">    Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -4323,7 +4323,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based models. For more information, please see the model cards:
@@ -4457,7 +4457,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">            input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">            True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -4521,7 +4521,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text to safety_review for prompt injection attacks</p>
+                <p>the text to validate for prompt injection attacks</p>
               </div>
             </td>
             <td>
@@ -4554,7 +4554,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">        input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a><span class="sd">        True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -4628,7 +4628,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Prompt injection detection encoder based model. For more information, please see the model card:
@@ -4754,7 +4754,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">        Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">            input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">            input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">            True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -4818,7 +4818,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text to safety_review for prompt injection attacks</p>
+                <p>the text to validate for prompt injection attacks</p>
               </div>
             </td>
             <td>
@@ -4851,7 +4851,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span class="sd">    Classify some text to see if it contains a prompt injection attack.</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        input_text: the text to safety_review for prompt injection attacks</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span class="sd">        input_text: the text to validate for prompt injection attacks</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="sd">        True if there is a prompt injection attack, False otherwise</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -4925,7 +4925,7 @@ highlights for what determined the score, and an integer score. For more informa
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="any_guardrail.guardrails.guardrail.Guardrail">Guardrail</span></code></p>
+              Bases: <code><span title="any_guardrail.guardrail.Guardrail">Guardrail</span></code></p>
 
 
         <p>Wrapper class for Google ShieldGemma models. For more information, please visit the model cards:
@@ -5100,7 +5100,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        Classify input_text according to the safety policy.</span>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        Args:</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">            input_text: the text you want to safety_review based on the policy</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">            input_text: the text you want to validate based on the policy</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        Returns:</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">            True if the text violates the policy, False otherwise</span>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -5174,7 +5174,7 @@ highlights for what determined the score, and an integer score. For more informa
             </td>
             <td>
               <div class="doc-md-description">
-                <p>the text you want to safety_review based on the policy</p>
+                <p>the text you want to validate based on the policy</p>
               </div>
             </td>
             <td>
@@ -5218,7 +5218,7 @@ highlights for what determined the score, and an integer score. For more informa
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    Classify input_text according to the safety policy.</span>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        input_text: the text you want to safety_review based on the policy</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        input_text: the text you want to validate based on the policy</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        True if the text violates the policy, False otherwise</span>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    &quot;&quot;&quot;</span>
