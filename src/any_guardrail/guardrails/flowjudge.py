@@ -1,5 +1,5 @@
 from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from flow_judge import FlowJudge, EvalInput
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf
@@ -24,6 +24,8 @@ class FlowJudgeClass(Guardrail):
         ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
     """
 
+    SUPPORTED_MODELS = ["FlowJudge"]
+
     def __init__(
         self,
         model_id: str,
@@ -33,19 +35,16 @@ class FlowJudgeClass(Guardrail):
         required_inputs: List[str],
         required_output: str,
     ) -> None:
-        super().__init__(model_id)
         self.metric_name = name
         self.criteria = criteria
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self.define_metric_prompt
-        if model_id in ["FlowJudge", "Flowjudge", "flowjudge"]:
-            self.guardrail = self._model_instantiation()
-        else:
-            raise ValueError("You must use one of the following key word arguments: FlowJudge, Flowjudge, flowjudge.")
+        # Do super init after setting all attributes, since model_instantiation needs all attributes to be set
+        super().__init__(model_id)
 
-    def safety_review(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> ClassificationOutput:
+    def validate(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> GuardrailOutput:
         """
         Classifies the desired input and output according to the associated metric provided to the judge.
 
@@ -60,7 +59,7 @@ class FlowJudgeClass(Guardrail):
             result = self.guardrail.model.evaluate(eval_input, save_results=False)
         else:
             raise TypeError("Using the wrong GuardrailModel type for FlowJudge.")
-        return ClassificationOutput(explanation=result.feedback, score=result.score)
+        return GuardrailOutput(explanation=result.feedback, score=result.score)
 
     def _model_instantiation(self) -> GuardrailModel:
         """

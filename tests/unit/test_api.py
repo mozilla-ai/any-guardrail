@@ -1,5 +1,6 @@
 from pathlib import Path
-from any_guardrail.guardrail import GuardrailName
+import pytest
+from any_guardrail import AnyGuardrail, GuardrailName
 
 
 def test_all_guardrails_in_enum() -> None:
@@ -44,3 +45,8 @@ def test_guardrail_enum_values_match_module_names() -> None:
         f"In modules but not enum: {actual_modules - enum_modules}\n"
         f"In enum but not modules: {enum_modules - actual_modules}"
     )
+
+
+def test_create_guardrail_with_invalid_id_raises_error() -> None:
+    with pytest.raises(ValueError, match="Only supports"):
+        AnyGuardrail.create_guardrail(guardrail_name=GuardrailName.SHIELD_GEMMA, model_id="invalid_id", policy="Help")

@@ -7,7 +7,7 @@ import inspect
 import re
 
 
-class GuardrailFactory:
+class AnyGuardrail:
     """Factory class for creating guardrail instances."""
 
     @classmethod

@@ -1,17 +1,25 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from enum import Enum
 
 
 class Guardrail(ABC):
+    SUPPORTED_MODELS: list[str]
+
     def __init__(self, model_id: str):
         self.model_id = model_id
+        self._validate_model_id(model_id)
+        self.guardrail = self._model_instantiation()
+
+    def _validate_model_id(self, model_id: str) -> None:
+        if model_id not in self.SUPPORTED_MODELS:
+            raise ValueError(f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model.")
 
     @abstractmethod
-    def safety_review(self, *args: Any, **kwargs: Any) -> ClassificationOutput:
+    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:
         """
-        Abstract method for safety review. Each subclass implements its own signature.
+        Abstract method for validating some input. Each subclass implements its own signature.
         """
         raise NotImplementedError("Each subclass will create their own method.")
 

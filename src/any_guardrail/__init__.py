@@ -1,4 +1,4 @@
-from .api import GuardrailFactory
+from .api import AnyGuardrail
 from .guardrail import GuardrailName
 
-__all__ = ["GuardrailFactory", "GuardrailName"]
+__all__ = ["AnyGuardrail", "GuardrailName"]
