@@ -6,7 +6,7 @@ from flow_judge import FlowJudge
 
 
 @dataclass
-class ClassificationOutput:
+class GuardrailOutput:
     unsafe: Optional[bool] = None
     explanation: Optional[str | Dict[str, bool]] = None
     score: Optional[float | int] = None

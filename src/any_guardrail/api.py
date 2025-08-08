@@ -1,22 +1,15 @@
 from any_guardrail.utils.model_registry import model_registry
 from any_guardrail.guardrails.guardrail import Guardrail
-from typing import List, Any
+from typing import Any
 
 
-class GuardrailFactory:
+class AnyGuardrail:
     """Factory class for creating and managing guardrail instances."""
 
-    # This is a class variable so that it can be accessed by the create_guardrail method
-    # and the list_all_supported_guardrails method
-    model_registry = model_registry
+    supported_guardrails = list(model_registry.keys())
 
     @classmethod
-    def list_all_supported_guardrails(cls) -> List[str]:
-        """List all supported guardrails."""
-        return list(cls.model_registry.keys())
-
-    @classmethod
-    def create_guardrail(cls, model_id: str, **kwargs: Any) -> Guardrail:
+    def create(cls, model_id: str, **kwargs: Any) -> Guardrail:
         """Create a guardrail instance.
 
         Args:
@@ -26,8 +19,8 @@ class GuardrailFactory:
         Returns:
             A guardrail instance.
         """
-        if model_id in cls.model_registry.keys():
-            registry = cls.model_registry[model_id](model_id=model_id, **kwargs)
+        if model_id in model_registry.keys():
+            registry = model_registry[model_id](model_id=model_id, **kwargs)
             if not isinstance(registry, Guardrail):
                 raise ValueError(f"{model_id} is not of type Guardrail. Please use the correct model identifier.")
             return registry

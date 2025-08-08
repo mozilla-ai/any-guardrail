@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, Pipeline
 
 DEEPSET_INJECTION_LABEL = "INJECTION"
@@ -26,7 +26,7 @@ class Deepset(Guardrail):
                 "Only supports deepset/deberta-v3-base-injection. Please use this path to instantiate model."
             )
 
-    def safety_review(self, input_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str) -> GuardrailOutput:
         """
         Classifies whether the provided text is a prompt injection attack or not.
 
@@ -37,7 +37,7 @@ class Deepset(Guardrail):
         """
         if isinstance(self.guardrail.model, Pipeline):
             classification = self.guardrail.model(input_text)
-            return ClassificationOutput(unsafe=classification[0]["label"] == DEEPSET_INJECTION_LABEL)
+            return GuardrailOutput(unsafe=classification[0]["label"] == DEEPSET_INJECTION_LABEL)
         else:
             raise TypeError("Using incorrect model type for Deepset.")
 

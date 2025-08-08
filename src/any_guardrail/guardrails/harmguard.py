@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, PreTrainedModel
 import torch.nn.functional as F
 import torch
@@ -27,7 +27,7 @@ class HarmGuard(Guardrail):
             raise ValueError("Must use the following keyword argument to instantiate model: hbseong/HarmAug-Guard")
         self.threshold = threshold
 
-    def safety_review(self, input_text: str, output_text: str = "") -> ClassificationOutput:
+    def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:
         """
         Classifies input text and, optionally, output text for prompt injection detection.
 
@@ -51,7 +51,7 @@ class HarmGuard(Guardrail):
             else:
                 raise TypeError("Using incorrect model type for HarmGuard.")
 
-            return ClassificationOutput(unsafe=final_score > self.threshold, score=final_score)
+            return GuardrailOutput(unsafe=final_score > self.threshold, score=final_score)
         else:
             raise TypeError("Did not instantiate tokenizer.")
 

@@ -1,5 +1,5 @@
 from any_guardrail.guardrails.guardrail import Guardrail
-from any_guardrail.types import ClassificationOutput, GuardrailModel
+from any_guardrail.types import GuardrailOutput, GuardrailModel
 from transformers import pipeline, Pipeline
 
 SYSTEM_PROMPT_GLIDER = """
@@ -63,7 +63,7 @@ class GLIDER(Guardrail):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def safety_review(self, input_text: str, output_text: str) -> ClassificationOutput:
+    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:
         """
         Uses the provided pass criteria and rubric to just the input and output text provided.
 
@@ -88,7 +88,7 @@ class GLIDER(Guardrail):
         message = [{"role": "user", "content": prompt}]
         if isinstance(self.guardrail.model, Pipeline):
             result = self.guardrail.model(message)
-            return ClassificationOutput(explanation=result)
+            return GuardrailOutput(explanation=result)
         else:
             raise TypeError("Using incorrect model type for GLIDER.")
 
