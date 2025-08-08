@@ -3,7 +3,7 @@
 ### Requirements
 
 - Python 3.11 or newer
-- For guardrails that need permission granted on HuggingFace, make sure to get a HuggingFace access token as well. The log into [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
+- For guardrails that need permission granted on HuggingFace, make sure to get a HuggingFace access token as well. Then log into [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
 
 ### Installation
 
@@ -25,29 +25,13 @@ Make sure to agree to the terms and conditions of the model you are trying to ac
 
 ### Basic Usage
 
-The best way to use our package is to instantiate the `GuardrailFactory`. It provides a seamless interface for interacting with the guardrail models.
+`GuardrailFactory` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
 
 ```python
-from any_guardrail.api import GuardrailFactory
-
-factory = GuardrailFactory
-```
-
-`GuardrailFactory` has a couple of functions to make using the package easier.
-First, you can use:
-
-```python
-factory.list_all_supported_models()
-```
-
-This will output all of our support model names that you can pass into our `GuardrailFactory`. Here is how to do it:
-
-```python
-guardrail = factory.create_guardrail("model/identifier/or/path")
-```
-
-This will now give you the designated guardrail, which you can then use to review text output.
-
-```python
-guardrail.safety_review("<text I want to review>")
+from any_guardrail import GuardrailFactory
+factory = GuardrailFactory()
+supported_guardrails = factory.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
+guardrail = factory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
+result = guardrail.safety_review("All smiles from me!")
+assert result.unsafe == False
 ```

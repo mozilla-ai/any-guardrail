@@ -34,19 +34,33 @@ Some guardrails are extremely customizable and we allow for that customization a
 ### Requirements
 
 - Python 3.11 or newer
-- For guardrails that need permission granted on HuggingFace, make sure to get a HuggingFace access token as well. The log into [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
 
 ### Installation
 
-#### Using `pip`
-
-To install, you can use `pip`:
+Install with `pip`:
 
 ```bash
 pip install any-guardrail
 ```
 
-If you plan to use HuggingFace models that require extra permissions, please log into the HuggingFace Hub:
+### Basic Usage
+
+`GuardrailFactory` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
+
+```python
+from any_guardrail import GuardrailFactory
+factory = GuardrailFactory()
+supported_guardrails = factory.list_all_supported_guardrails() # This will out a list of all guardrail identifiers
+guardrail = factory.create_guardrail(support_guardrails[0])  # will create Deepset's deberta prompt injection defense model
+result = guardrail.safety_review("All smiles from me!")
+assert result.unsafe == False
+```
+
+We have an example notebook as well in `examples/Testing.ipynb`.
+
+## Troubleshooting
+
+Some of the models on HuggingFace require extra permissions to use. To do this, you'll need to create a HuggingFace profile and manually go through the permissions. Then, you'll need to download the HuggingFace Hub and login. One way to do this is:
 
 ```bash
 pip install --upgrade huggingface_hub
@@ -54,85 +68,8 @@ pip install --upgrade huggingface_hub
 hf auth login
 ```
 
-Make sure to agree to the terms and conditions of the model you are trying to access as well.
+More information can be found here: [HuggingFace Hub](https://huggingface.co/docs/huggingface_hub/en/quick-start#login-command)
 
-#### Using `uv`
+## Contributing to `any-guardrail`
 
-If you would like to use the package from the GitHub repo, you can do use `uv`:
-
-```bash
-uv sync
-
-uv venv
-
-source .venv/bin/activate
-```
-
-### Basic Usage
-
-The best way to use our package is to instantiate the `GuardrailFactory` first.
-
-```python
-from any_guardrail.api import GuardrailFactory
-
-factory = GuardrailFactory
-```
-
-`GuardrailFactory` has a couple of functions to make using the package easier.
-First, you can use:
-
-```python
-factory.list_all_supported_models()
-```
-
-This will output all of our support model names that you can pass into our `GuardrailFactory`. Here is how to do it:
-
-```python
-guardrail = factory.create_guardrail("model/identifier/or/path")
-```
-
-This will now give you the designated guardrail, which you can then use to review text output.
-
-```python
-guardrail.safety_review("<text I want to review>")
-```
-
-We have an example notebook to help as well in `examples/Testing.ipynb`.
-
-## Advanced Usage
-
-If a guardrail is not available, fork this repo to add it and then issue a pull request. Please use the following steps:
-
-### Step 1: Create a `Guardrail` class
-
-We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail. To do so, implement the following:
-
-```python
-class YourGuardrail(Guardrail):
-    def __init__(self, ...):
-        super().__init__(model_identifier)
-        self.guardrail = _model_instantiation(model_identifier, ...)
-
-    def safety_review(...):
-        # Your implementation for reviewing text
-
-    def _model_instantiation(...):
-        # Your implementation for instantiating a model
-```
-
-For more detailed examples, we recommend looking through the `guardrails` directory.
-
-### Step 2: Add your model to the `model_registry.py`
-
-Now that you have created `YourGuardrail`, you need add a model identifier to help the `GuardrailFactory` identify your guardrail. It will look something like this:
-
-```python
-
-model_registry= {
-    "already/implemented/guardrail": SomeGuardrail,
-    ...
-    "your/guardrail/identifier": YourGuardrail
-}
-```
-
-From there, you should be all set!
+The guardrail space is ever growing. If there is a guardrail that you'd like us to support, please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details.
