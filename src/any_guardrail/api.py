@@ -16,6 +16,20 @@ class AnyGuardrail:
         return list(GuardrailName)
 
     @classmethod
+    def get_single_guardrail_model_ids(cls, guardrail_name: GuardrailName) -> List[str]:
+        """Get the model IDs supported by a specific guardrail."""
+        guardrail_class = cls._get_guardrail_class(guardrail_name)
+        return guardrail_class.SUPPORTED_MODELS
+
+    @classmethod
+    def get_all_guardrail_model_ids(cls) -> List[str]:
+        """Get all model IDs supported by all guardrails."""
+        model_ids = set()
+        for guardrail_name in cls.get_supported_guardrails():
+            model_ids.update(cls.get_single_guardrail_model_ids(guardrail_name))
+        return list(model_ids)
+
+    @classmethod
     def create_guardrail(cls, guardrail_name: GuardrailName, model_id: str, **kwargs: Any) -> Guardrail:
         """Create a guardrail instance.
 
@@ -27,6 +41,11 @@ class AnyGuardrail:
         Returns:
             A guardrail instance.
         """
+        guardrail_class = cls._get_guardrail_class(guardrail_name)
+        return guardrail_class(model_id, **kwargs)
+
+    @classmethod
+    def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> Guardrail:
         guardrail_module_name = f"{guardrail_name.value}"
         module_path = f"any_guardrail.guardrails.{guardrail_module_name}"
 
@@ -35,6 +54,5 @@ class AnyGuardrail:
         candidate_name = "".join(p.capitalize() for p in parts if p)
         guardrail_class = getattr(module, candidate_name, None)
         if inspect.isclass(guardrail_class) and issubclass(guardrail_class, Guardrail):
-            return guardrail_class(model_id=model_id, **kwargs)
-
+            return guardrail_class
         raise ImportError(f"Could not resolve guardrail class for '{guardrail_module_name}' in {module.__name__}")
