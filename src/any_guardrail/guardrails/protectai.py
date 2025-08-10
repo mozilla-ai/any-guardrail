@@ -5,7 +5,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassifica
 PROTECTAI_INJECTION_LABEL = "INJECTION"
 
 
-class ProtectAI(Guardrail):
+class Protectai(Guardrail):
     """
     Prompt injection detection encoder based models. For more information, please see the model cards:
     [ProtectA](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40)

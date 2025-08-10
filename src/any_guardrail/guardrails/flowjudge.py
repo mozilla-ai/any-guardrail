@@ -6,7 +6,7 @@ from flow_judge.models import Hf
 from typing import Dict, List
 
 
-class FlowJudgeClass(Guardrail):
+class Flowjudge(Guardrail):
     """
     Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric. Please see
     the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1)

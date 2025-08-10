@@ -38,7 +38,7 @@ Your output must be in the following format:
 """
 
 
-class GLIDER(Guardrail):
+class Glider(Guardrail):
     """
     A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text. It outputs its reasoning,
     highlights for what determined the score, and an integer score. For more information, see the model card:
