@@ -1,6 +1,7 @@
 from pathlib import Path
 import pytest
 from any_guardrail import AnyGuardrail, GuardrailName
+from any_guardrail.guardrail import Guardrail
 
 
 def test_all_guardrails_in_enum() -> None:
@@ -50,3 +51,13 @@ def test_guardrail_enum_values_match_module_names() -> None:
 def test_create_guardrail_with_invalid_id_raises_error() -> None:
     with pytest.raises(ValueError, match="Only supports"):
         AnyGuardrail.create_guardrail(guardrail_name=GuardrailName.SHIELD_GEMMA, model_id="invalid_id", policy="Help")
+
+
+def test_get_guardrail_class_all_valid_names() -> None:
+    """Test that all guardrail names can be resolved to their classes."""
+    for guardrail_name in GuardrailName:
+        guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
+        assert guardrail_class is not None, f"Guardrail class for {guardrail_name} could not be resolved"
+        assert issubclass(guardrail_class, Guardrail), (
+            f"Guardrail class {guardrail_class} for {guardrail_name} is not a subclass of Guardrail"
+        )
