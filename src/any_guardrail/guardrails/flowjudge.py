@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
-from flow_judge import FlowJudge, EvalInput
+from flow_judge import FlowJudge, EvalInput, EvalOutput
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf
 from typing import Dict, List
@@ -40,8 +40,7 @@ class FlowJudgeClass(Guardrail):
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
-        self.metric_prompt = self.define_metric_prompt
-        # Do super init after setting all attributes, since model_instantiation needs all attributes to be set
+        self.metric_prompt = self._define_metric_prompt()
         super().__init__(model_id)
 
     def validate(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> GuardrailOutput:
@@ -54,21 +53,21 @@ class FlowJudgeClass(Guardrail):
         Return:
             A score from the RubricItems and feedback related to the rubric and criteria.
         """
-        eval_input = EvalInput(inputs=inputs, output=output)
-        result = self.model.evaluate(eval_input, save_results=False)
+        eval_input = self._pre_processing(inputs, output)
+        result = self._inference(eval_input)
         return GuardrailOutput(explanation=result.feedback, score=result.score)
 
     def _load_model(self) -> None:
         """
         Constructs the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
         Returns:
-            judge (FlowJudge): The evaluation model.
+            judge: The evaluation model.
         """
         model = Hf(flash_attention=False)
         judge = FlowJudge(metric=self.metric_prompt, model=model)  # type: ignore[arg-type]
         self.model = judge
 
-    def define_metric_prompt(self) -> Metric:
+    def _define_metric_prompt(self) -> Metric:
         """
         Constructs the Metric object needed to instantiate the FlowJudge model.
         Returns:
@@ -95,3 +94,9 @@ class FlowJudgeClass(Guardrail):
             rubric_item = RubricItem(score=key, description=value)
             processed_rubric.append(rubric_item)
         return processed_rubric
+
+    def _pre_processing(self, inputs: List[Dict[str, str]], output: Dict[str, str]) -> EvalInput:
+        return EvalInput(inputs=inputs, output=output)
+
+    def _inference(self, eval_input: EvalInput) -> EvalOutput:
+        return self.model.evaluate(eval_input, save_results=False)

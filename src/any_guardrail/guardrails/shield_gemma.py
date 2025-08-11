@@ -59,19 +59,30 @@ class ShieldGemma(Guardrail):
         Returns:
             True if the text violates the policy, False otherwise
         """
-        formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
-        inputs = self.tokenizer(formatted_prompt, return_tensors="pt").to(self.model.device)
-        with torch.no_grad():
-            logits = self.model(**inputs).logits
-        vocab = self.tokenizer.get_vocab()
-        selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
-        probabilities = softmax(selected_logits, dim=0)
-        score = probabilities[0].item()
-
-        return GuardrailOutput(unsafe=score > self.threshold)
+        preprocessed_input = self._pre_processing(input_text)
+        logits = self._inference(preprocessed_input)
+        unsafe = self._post_processing(logits)
+        return GuardrailOutput(unsafe=unsafe)
 
     def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         model = AutoModelForCausalLM.from_pretrained(self.model_id, device_map="auto", torch_dtype=torch.bfloat16)
         self.model = model
         self.tokenizer = tokenizer
+
+    def _pre_processing(self, input_text: str) -> torch.Tensor:
+        formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
+        inputs = self.tokenizer(formatted_prompt, return_tensors="pt").to(self.model.device)
+        return inputs
+
+    def _inference(self, inputs: torch.Tensor) -> torch.FloatTensor:
+        with torch.no_grad():
+            logits = self.model(**inputs).logits
+        return logits
+
+    def _post_processing(self, logits: torch.FloatTensor) -> bool:
+        vocab = self.tokenizer.get_vocab()
+        selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
+        probabilities = softmax(selected_logits, dim=0)
+        score = probabilities[0].item()
+        return score > self.threshold
