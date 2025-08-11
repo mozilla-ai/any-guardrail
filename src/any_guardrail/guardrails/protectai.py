@@ -9,9 +9,10 @@ PROTECTAI_INJECTION_LABEL = "INJECTION"
 
 
 class Protectai(Guardrail):
-    """
-    Prompt injection detection encoder based models. For more information, please see the model cards:
-    [ProtectA](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40)
+    """Prompt injection detection encoder based models.
+
+    For more information, please see the model cards:
+    [ProtectA](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40).
 
     Args:
         model_id: HuggingFace path to model.
@@ -31,9 +32,10 @@ class Protectai(Guardrail):
         """Classify some text to see if it contains a prompt injection attack.
 
         Args:
-            input_text: the text to validate for prompt injection attacks
+            input_text: the text to validate for prompt injection attacks.
+
         Returns:
-            True if there is a prompt injection attack, False otherwise
+            True if there is a prompt injection attack, False otherwise.
 
         """
         classification = self._inference(input_text)

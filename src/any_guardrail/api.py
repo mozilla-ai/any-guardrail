@@ -15,13 +15,13 @@ class AnyGuardrail:
         return list(GuardrailName)
 
     @classmethod
-    def get_single_guardrail_model_ids(cls, guardrail_name: GuardrailName) -> List[str]:
+    def get_single_guardrail_model_ids(cls, guardrail_name: GuardrailName) -> list[str]:
         """Get the model IDs supported by a specific guardrail."""
         guardrail_class = cls._get_guardrail_class(guardrail_name)
         return guardrail_class.SUPPORTED_MODELS
 
     @classmethod
-    def get_all_guardrail_model_ids(cls) -> List[str]:
+    def get_all_guardrail_model_ids(cls) -> list[str]:
         """Get all model IDs supported by all guardrails."""
         model_ids = set()
         for guardrail_name in cls.get_supported_guardrails():
