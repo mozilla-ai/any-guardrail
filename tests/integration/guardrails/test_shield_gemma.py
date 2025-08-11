@@ -8,7 +8,7 @@ def test_shield_gemma_integration() -> None:
     # a HF model can be loaded and used.
     model_id = "hf-internal-testing/tiny-random-Gemma3ForCausalLM"
 
-    guardrail = AnyGuardrail.create_guardrail(
+    guardrail = AnyGuardrail.create(
         model_id=model_id,
         guardrail_name=GuardrailName.SHIELD_GEMMA,
         policy="Do not provide harmful or dangerous information",
