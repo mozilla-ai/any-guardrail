@@ -15,18 +15,18 @@ class AnyGuardrail:
         return list(GuardrailName)
 
     @classmethod
-    def get_single_guardrail_model_ids(cls, guardrail_name: GuardrailName) -> list[str]:
+    def get_supported_model(cls, guardrail_name: GuardrailName) -> list[str]:
         """Get the model IDs supported by a specific guardrail."""
         guardrail_class = cls._get_guardrail_class(guardrail_name)
         return guardrail_class.SUPPORTED_MODELS
 
     @classmethod
-    def get_all_guardrail_model_ids(cls) -> list[str]:
+    def get_all_supported_models(cls) -> dict[GuardrailName, list[str]]:
         """Get all model IDs supported by all guardrails."""
-        model_ids = set()
+        model_ids = {}
         for guardrail_name in cls.get_supported_guardrails():
-            model_ids.update(cls.get_single_guardrail_model_ids(guardrail_name))
-        return list(model_ids)
+            model_ids[guardrail_name] = cls.get_supported_model(guardrail_name)
+        return model_ids
 
     @classmethod
     def create(cls, guardrail_name: GuardrailName, model_id: str, **kwargs: Any) -> Guardrail:
