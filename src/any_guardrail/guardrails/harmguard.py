@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Any, Tuple
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
@@ -51,18 +51,18 @@ class HarmGuard(Guardrail):
         self.model = model
         self.tokenizer = tokenizer
 
-    def _pre_processing(self, input_text: str, output_text: str) -> torch.Tensor:
+    def _pre_processing(self, input_text: str, output_text: str) -> Any:
         if output_text:
             return self.tokenizer(input_text, return_tensors="pt")
         else:
             return self.tokenizer(input_text, output_text, return_tensors="pt")
 
-    def _inference(self, inputs: torch.Tensor) -> torch.Tensor:
+    def _inference(self, inputs: torch.Tensor) -> Any:
         with torch.no_grad():
             outputs = self.model(**inputs)
         return outputs
 
-    def _post_processing(self, outputs: torch.Tensor) -> Tuple[bool, float]:
+    def _post_processing(self, outputs: Any) -> Tuple[bool, float]:
         unsafe_prob = F.softmax(outputs.logits, dim=-1)[:, 1]
         final_score = unsafe_prob.item()
         return final_score > self.threshold, final_score

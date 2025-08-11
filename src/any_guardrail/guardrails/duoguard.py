@@ -1,8 +1,9 @@
+from typing import Any, Tuple, Dict, List
+
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-from typing import Tuple, Dict, List
 
 DUOGUARD_CATEGORIES = [
     "Violent crimes",
@@ -66,13 +67,13 @@ class DuoGuard(Guardrail):
         self.model = model
         self.tokenizer = tokenizer
 
-    def _pre_processing(self, input_text: str) -> torch.Tensor:
+    def _pre_processing(self, input_text: str) -> Any:
         inputs = self.tokenizer(
             input_text,
             return_tensors="pt",
         )
         return inputs
-    
+
     def _inference(self, inputs: torch.Tensor) -> List[float]:
         """
         Processes the input text to obtain probabilities for each of the DuoGuard categories. It does this by looking at the

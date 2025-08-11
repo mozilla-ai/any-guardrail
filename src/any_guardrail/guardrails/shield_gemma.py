@@ -1,3 +1,5 @@
+from typing import Any
+
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -70,12 +72,12 @@ class ShieldGemma(Guardrail):
         self.model = model
         self.tokenizer = tokenizer
 
-    def _pre_processing(self, input_text: str) -> torch.Tensor:
+    def _pre_processing(self, input_text: str) -> Any:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         inputs = self.tokenizer(formatted_prompt, return_tensors="pt").to(self.model.device)
         return inputs
 
-    def _inference(self, inputs: torch.Tensor) -> torch.FloatTensor:
+    def _inference(self, inputs: Any) -> Any:
         with torch.no_grad():
             logits = self.model(**inputs).logits
         return logits

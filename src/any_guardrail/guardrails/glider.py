@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Any, List, Dict
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
@@ -97,5 +97,5 @@ class GLIDER(Guardrail):
         message = [{"role": "user", "content": prompt}]
         return message
 
-    def _inference(self, message: List[Dict[str, str]]) -> str:
+    def _inference(self, message: List[Dict[str, str]]) -> Any:
         return self.model(message)[0]["generated_text"]

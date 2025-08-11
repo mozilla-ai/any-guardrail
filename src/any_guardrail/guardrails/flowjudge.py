@@ -64,7 +64,7 @@ class FlowJudgeClass(Guardrail):
             judge: The evaluation model.
         """
         model = Hf(flash_attention=False)
-        judge = FlowJudge(metric=self.metric_prompt, model=model)  # type: ignore[arg-type]
+        judge = FlowJudge(metric=self.metric_prompt, model=model)
         self.model = judge
 
     def _define_metric_prompt(self) -> Metric:
