@@ -54,8 +54,9 @@ class DuoGuard(Guardrail):
             Whether the output is generally true (bool) and dictionary object with classifications for each category supported by
             DuoGuard.
         """
-        prob_vector = self._get_probabilities(input_text)
-        overall_label, predicted_labels = self._classification_decision(prob_vector)
+        input_tensors = self._pre_processing(input_text)
+        prob_vector = self._inference(input_tensors)
+        overall_label, predicted_labels = self._post_processing(prob_vector)
         return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
 
     def _load_model(self) -> None:
@@ -65,7 +66,14 @@ class DuoGuard(Guardrail):
         self.model = model
         self.tokenizer = tokenizer
 
-    def _get_probabilities(self, input_text: str) -> List[float]:
+    def _pre_processing(self, input_text: str) -> torch.Tensor:
+        inputs = self.tokenizer(
+            input_text,
+            return_tensors="pt",
+        )
+        return inputs
+    
+    def _inference(self, inputs: torch.Tensor) -> List[float]:
         """
         Processes the input text to obtain probabilities for each of the DuoGuard categories. It does this by looking at the
         logits for each category name, and then converting the logits to probabilities. These probabilities will then be used
@@ -76,10 +84,6 @@ class DuoGuard(Guardrail):
         Returns:
             A list of probabilities for each category.
         """
-        inputs = self.tokenizer(
-            input_text,
-            return_tensors="pt",
-        )
         with torch.no_grad():
             outputs = self.model(**inputs)
             logits = outputs.logits
@@ -87,7 +91,7 @@ class DuoGuard(Guardrail):
         prob_vector = probabilities[0].tolist()
         return prob_vector
 
-    def _classification_decision(self, prob_vector: List[float]) -> Tuple[bool, Dict[str, bool]]:
+    def _post_processing(self, prob_vector: List[float]) -> Tuple[bool, Dict[str, bool]]:
         """
         Performs the decision function, as described in the DuoGuard paper (see the huggingface documentation). Can be
         overridden to define a new decision function using the probability vector.
