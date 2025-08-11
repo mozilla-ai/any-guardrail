@@ -21,11 +21,11 @@ class AnyGuardrail:
         return guardrail_class.SUPPORTED_MODELS
 
     @classmethod
-    def get_all_supported_models(cls) -> dict[GuardrailName, list[str]]:
+    def get_all_supported_models(cls) -> dict[str, list[str]]:
         """Get all model IDs supported by all guardrails."""
         model_ids = {}
         for guardrail_name in cls.get_supported_guardrails():
-            model_ids[guardrail_name] = cls.get_supported_model(guardrail_name)
+            model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
         return model_ids
 
     @classmethod
@@ -45,7 +45,7 @@ class AnyGuardrail:
         return guardrail_class(model_id, **kwargs)
 
     @classmethod
-    def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> Guardrail:
+    def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:
         guardrail_module_name = f"{guardrail_name.value}"
         module_path = f"any_guardrail.guardrails.{guardrail_module_name}"
 
