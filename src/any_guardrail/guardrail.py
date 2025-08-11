@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 from any_guardrail.types import GuardrailOutput
 
@@ -8,7 +8,7 @@ from any_guardrail.types import GuardrailOutput
 class Guardrail(ABC):
     """Base class for all guardrails."""
 
-    SUPPORTED_MODELS: list[str]
+    SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     def __init__(self, model_id: str):
         """Initialize the guardrail with a model ID."""
