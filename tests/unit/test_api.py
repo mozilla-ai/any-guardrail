@@ -51,4 +51,4 @@ def test_guardrail_enum_values_match_module_names() -> None:
 
 def test_create_guardrail_with_invalid_id_raises_error() -> None:
     with pytest.raises(ValueError, match="Only supports"):
-        AnyGuardrail.create_guardrail(guardrail_name=GuardrailName.SHIELD_GEMMA, model_id="invalid_id", policy="Help")
+        AnyGuardrail.create(guardrail_name=GuardrailName.SHIELD_GEMMA, model_id="invalid_id", policy="Help")

@@ -15,7 +15,7 @@ class AnyGuardrail:
         return list(GuardrailName)
 
     @classmethod
-    def create_guardrail(cls, guardrail_name: GuardrailName, model_id: str, **kwargs: Any) -> Guardrail:
+    def create(cls, guardrail_name: GuardrailName, model_id: str, **kwargs: Any) -> Guardrail:
         """Create a guardrail instance.
 
         Args:
