@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 from transformers import pipeline
@@ -37,6 +39,16 @@ Your output must be in the following format:
 </score>
 """
 
+DEFAULT_DATA_FORMAT = """
+<INPUT>
+{input_text}
+</INPUT>
+
+<OUTPUT>
+{output_text}
+</OUTPUT>
+"""
+
 
 class GLIDER(Guardrail):
     """
@@ -71,22 +83,19 @@ class GLIDER(Guardrail):
         Returns:
             An explanation in the format provided by the system prompt
         """
-        data = """
-            <INPUT>
-            {input_text}
-            </INPUT>
-
-            <OUTPUT>
-            {output_text}
-            </OUTPUT>
-            """.format(input_text=input_text, output_text=output_text)
-
-        prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
-
-        message = [{"role": "user", "content": prompt}]
-        result = self.model(message)
-        return GuardrailOutput(explanation=result[0]["label"])
+        message = self._pre_processing(input_text, output_text)
+        result = self._inference(message)
+        return GuardrailOutput(explanation=result)
 
     def _load_model(self) -> None:
         pipe = pipeline("text-classification", self.model_id)
         self.model = pipe
+
+    def _pre_processing(self, input_text: str, output_text: str) -> List[Dict[str, str]]:
+        data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
+        prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
+        message = [{"role": "user", "content": prompt}]
+        return message
+
+    def _inference(self, message: List[Dict[str, str]]) -> str:
+        return self.model(message)[0]["generated_text"]

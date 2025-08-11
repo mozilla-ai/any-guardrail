@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
@@ -35,8 +37,8 @@ class ProtectAI(Guardrail):
         Returns:
             True if there is a prompt injection attack, False otherwise
         """
-        classification = self.model(input_text)
-        return GuardrailOutput(unsafe=classification[0]["label"] == PROTECTAI_INJECTION_LABEL)
+        classification = self._inference(input_text)
+        return GuardrailOutput(unsafe=self._post_processing(classification))
 
     def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
@@ -44,3 +46,9 @@ class ProtectAI(Guardrail):
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         self.model = pipe
         self.tokenizer = tokenizer
+
+    def _inference(self, input_text: str) -> List[Dict[str, str | float]]:
+        return self.model(input_text)
+
+    def _post_processing(self, classification: List[Dict[str, str | float]]) -> bool:
+        return classification[0]["label"] == PROTECTAI_INJECTION_LABEL
