@@ -1,38 +1,45 @@
+from typing import ClassVar
+
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 INJECGUARD_LABEL = "injection"
 
 
 class InjecGuard(Guardrail):
-    """
-    Prompt injection detection encoder based model. For more information, please see the model card:
-    [InjecGuard](https://huggingface.co/leolee99/InjecGuard)
+    """Prompt injection detection encoder based model.
+
+    For more information, please see the model card:
+
+    - [InjecGuard](https://huggingface.co/leolee99/InjecGuard).
 
     Args:
         model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use the model path for InjecGuard from HuggingFace
+
     """
 
-    SUPPORTED_MODELS = ["leolee99/InjecGuard"]
+    SUPPORTED_MODELS: ClassVar = ["leolee99/InjecGuard"]
 
     def __init__(self, model_id: str) -> None:
+        """Initialize the InjecGuard guardrail."""
         super().__init__(model_id)
 
     def validate(self, input_text: str) -> GuardrailOutput:
-        """
-        Classify some text to see if it contains a prompt injection attack.
+        """Classify some text to see if it contains a prompt injection attack.
 
         Args:
             input_text: the text to validate for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
+
         """
-        classification = self.model(input_text)
-        return GuardrailOutput(unsafe=classification[0]["label"] == INJECGUARD_LABEL)
+        classification = self._inference(input_text)
+        return GuardrailOutput(unsafe=self._post_processing(classification))
 
     def _load_model(self) -> None:
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
@@ -40,3 +47,9 @@ class InjecGuard(Guardrail):
         pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
         self.model = pipe
         self.tokenizer = tokenizer
+
+    def _inference(self, input_text: str) -> list[dict[str, str | float]]:
+        return self.model(input_text)
+
+    def _post_processing(self, classification: list[dict[str, str | float]]) -> bool:
+        return classification[0]["label"] == INJECGUARD_LABEL

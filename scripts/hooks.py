@@ -271,4 +271,3 @@ def on_post_build(config, **kwargs):
 
 def on_pre_build(config, **kwargs):
     """Pre-build hook - currently unused but kept for potential future use."""
-    pass
