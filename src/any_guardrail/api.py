@@ -1,17 +1,16 @@
 import importlib
-from typing import List, Any
-
-from any_guardrail.guardrail import Guardrail, GuardrailName
-
 import inspect
 import re
+from typing import Any
+
+from any_guardrail.guardrail import Guardrail, GuardrailName
 
 
 class AnyGuardrail:
     """Factory class for creating guardrail instances."""
 
     @classmethod
-    def get_supported_guardrails(cls) -> List[GuardrailName]:
+    def get_supported_guardrails(cls) -> list[GuardrailName]:
         """List all supported guardrails."""
         return list(GuardrailName)
 
@@ -26,6 +25,7 @@ class AnyGuardrail:
 
         Returns:
             A guardrail instance.
+
         """
         guardrail_module_name = f"{guardrail_name.value}"
         module_path = f"any_guardrail.guardrails.{guardrail_module_name}"
@@ -37,4 +37,5 @@ class AnyGuardrail:
         if inspect.isclass(guardrail_class) and issubclass(guardrail_class, Guardrail):
             return guardrail_class(model_id=model_id, **kwargs)
 
-        raise ImportError(f"Could not resolve guardrail class for '{guardrail_module_name}' in {module.__name__}")
+        msg = f"Could not resolve guardrail class for '{guardrail_module_name}' in {module.__name__}"
+        raise ImportError(msg)

@@ -1,37 +1,40 @@
-from typing import List, Dict
+from typing import ClassVar
+
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 SENTINEL_INJECTION_LABEL = "jailbreak"
 
 
 class Sentinel(Guardrail):
-    """
-    Prompt injection detection encoder based model. For more information, please see the model card:
-    [Sentinel](https://huggingface.co/qualifire/prompt-injection-sentinel)
+    """Prompt injection detection encoder based model.
+
+    For more information, please see the model card: [Sentinel](https://huggingface.co/qualifire/prompt-injection-sentinel).
 
     Args:
         model_id: HuggingFace path to model.
 
     Raises:
         ValueError: Can only use model path for Sentinel from HuggingFace.
+
     """
 
-    SUPPORTED_MODELS = ["qualifire/prompt-injection-sentinel"]
+    SUPPORTED_MODELS: ClassVar = ["qualifire/prompt-injection-sentinel"]
 
     def __init__(self, model_id: str) -> None:
+        """Initialize the Sentinel guardrail."""
         super().__init__(model_id)
 
     def validate(self, input_text: str) -> GuardrailOutput:
-        """
-        Classify some text to see if it contains a prompt injection attack.
+        """Classify some text to see if it contains a prompt injection attack.
 
         Args:
             input_text: the text to validate for prompt injection attacks
         Returns:
             True if there is a prompt injection attack, False otherwise
+
         """
         classification = self._inference(input_text)
         return GuardrailOutput(unsafe=self._post_processing(classification))
@@ -43,8 +46,8 @@ class Sentinel(Guardrail):
         self.model = pipe
         self.tokenizer = tokenizer
 
-    def _inference(self, input_text: str) -> List[Dict[str, str | float]]:
+    def _inference(self, input_text: str) -> list[dict[str, str | float]]:
         return self.model(input_text)
 
-    def _post_processing(self, classification: List[Dict[str, str | float]]) -> bool:
+    def _post_processing(self, classification: list[dict[str, str | float]]) -> bool:
         return classification[0]["label"] == SENTINEL_INJECTION_LABEL
