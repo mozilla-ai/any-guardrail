@@ -30,7 +30,7 @@ class HuggingFace(Guardrail, ABC):
     def __init__(self, model_id: str | None = None) -> None:
         """Initialize the guardrail with a model ID."""
         if model_id is None:
-            model_id = self.SUPPORTED_MODELS[0] if self.SUPPORTED_MODELS else None
+            model_id = self.SUPPORTED_MODELS[0]
         self.model_id = model_id
         self._validate_model_id(model_id)
         self._load_model()
@@ -47,8 +47,7 @@ class HuggingFace(Guardrail, ABC):
         return self._post_processing(model_outputs)
 
     def _load_model(self) -> None:
-        assert self.model_id is not None, "Model ID must be set before loading the model."
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)  # type: ignore[arg-type]
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
 
     def _pre_processing(self, input_text: str) -> Any:

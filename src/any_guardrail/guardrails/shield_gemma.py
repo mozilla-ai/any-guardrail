@@ -46,7 +46,7 @@ class ShieldGemma(HuggingFace):
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
 
-    def _pre_processing(self, input_text: str) -> Tensor:
+    def _pre_processing(self, input_text: str) -> Any:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         return super()._pre_processing(formatted_prompt)
 

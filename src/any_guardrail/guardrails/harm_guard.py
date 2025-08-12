@@ -23,6 +23,6 @@ class HarmGuard(HuggingFace):
 
     def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         logits = model_outputs["logits"][0].numpy()
-        scores = _softmax(logits)
+        scores = _softmax(logits)  # type: ignore[no-untyped-call]
         final_score = float(scores[1])
         return GuardrailOutput(unsafe=final_score > self.threshold, score=final_score)
