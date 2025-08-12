@@ -10,11 +10,6 @@ This file contains all documentation pages concatenated for easy consumption by 
 
 <!-- Source: index.md -->
 
-<p align="center">
-  <picture>
-    <img src="./images/any-guardrail-logo.png" width="20%" alt="Project logo"/>
-  </picture>
-</p>
 
 `any-guardrail` is a Python library providing a single interface to different guardrails.
 
@@ -60,8 +55,10 @@ pip install any-guardrail
 
 ```python
 from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
-guardrail = AnyGuardrail.create(model_id="google/shieldgemma-2b", guardrail_name=GuardrailName.SHIELD_GEMMA)
-result: GuardrailOutput = guardrail.validate("All smiles from me!")
+supported_models = AnyGuardrail.get_all_supported_model_ids() # This provides all supported model ids
+supported_guardrails = GuardrailName # This provides all supported guardrail names
+guardrail = AnyGuardrail.create_guardrail(model_id="deepset/deberta-v3-base-injection", guardrail_name=GuardrailName.DEEPSET)
+result = guardrail.validate("All smiles from me!")
 assert result.unsafe == False
 ```
 
@@ -86,11 +83,11 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 
 ::: any_guardrail.guardrails.deepset
-::: any_guardrail.guardrails.duoguard
+::: any_guardrail.guardrails.duo_guard
 ::: any_guardrail.guardrails.flowjudge
 ::: any_guardrail.guardrails.glider
-::: any_guardrail.guardrails.harmguard
-::: any_guardrail.guardrails.injecguard
+::: any_guardrail.guardrails.harm_guard
+::: any_guardrail.guardrails.injec_guard
 ::: any_guardrail.guardrails.jasper
 ::: any_guardrail.guardrails.pangolin
 ::: any_guardrail.guardrails.protectai
