@@ -17,11 +17,11 @@ pip install any-guardrail
 ```python
 from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 
-guardrail = AnyGuardrail.create(GuardrailName.SHIELD_GEMMA)
+guardrail = AnyGuardrail.create(GuardrailName.DEEPSET)
 
 result: GuardrailOutput = guardrail.validate("All smiles from me!")
 
-assert result.unsafe == False
+assert not result.unsafe
 ```
 
 ### Troubleshooting
