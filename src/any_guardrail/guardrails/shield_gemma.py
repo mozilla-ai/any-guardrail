@@ -3,8 +3,8 @@ from typing import Any, ClassVar
 from torch import Tensor
 from torch.nn.functional import softmax
 
-from any_guardrail.guardrail import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.types import GuardrailOutput
 
 SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
 prompt is in violation of the defined safety policies.

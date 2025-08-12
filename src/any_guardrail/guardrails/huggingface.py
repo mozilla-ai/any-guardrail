@@ -9,7 +9,7 @@ from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 
 
-def _softmax(_outputs: np.ndarray) -> np.ndarray:
+def _softmax(_outputs):  # type: ignore[no-untyped-def]
     maxes = np.max(_outputs, axis=-1, keepdims=True)
     shifted_exp = np.exp(_outputs - maxes)
     return shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
@@ -19,7 +19,7 @@ def _match_injection_label(
     model_outputs: dict[str, Any], injection_label: str, id2label: dict[int, str]
 ) -> GuardrailOutput:
     logits = model_outputs["logits"][0].numpy()
-    scores = _softmax(logits)
+    scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
     return GuardrailOutput(unsafe=label == injection_label, score=scores.max().item())
 
@@ -47,13 +47,14 @@ class HuggingFace(Guardrail, ABC):
         return self._post_processing(model_outputs)
 
     def _load_model(self) -> None:
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+        assert self.model_id is not None, "Model ID must be set before loading the model."
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)  # type: ignore[arg-type]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
 
-    def _pre_processing(self, input_text: str) -> torch.Tensor:
+    def _pre_processing(self, input_text: str) -> Any:
         return self.tokenizer(input_text, return_tensors="pt")
 
-    def _inference(self, model_inputs: torch.Tensor) -> list[dict[str, Any]]:
+    def _inference(self, model_inputs: Any) -> dict[str, Any]:
         with torch.no_grad():
             return self.model(**model_inputs)
 

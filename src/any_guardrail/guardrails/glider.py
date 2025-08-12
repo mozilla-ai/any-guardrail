@@ -2,7 +2,7 @@ from typing import Any, ClassVar
 
 from transformers import pipeline
 
-from any_guardrail.guardrail import Guardrail
+from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
 SYSTEM_PROMPT_GLIDER = """
@@ -51,7 +51,7 @@ DEFAULT_DATA_FORMAT = """
 """
 
 
-class Glider(Guardrail):
+class Glider(HuggingFace):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
