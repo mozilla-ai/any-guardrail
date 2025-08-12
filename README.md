@@ -45,12 +45,14 @@ pip install any-guardrail
 
 ### Basic Usage
 
-`AnyGuardrail` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrails. Here is a full example:
+`AnyGuardrail` provides a seamless interface for interacting with the guardrail models. It allows you to see a list of all the supported guardrails, and to instantiate each supported guardrail. Here is a full example:
 
 ```python
 from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
-guardrail = AnyGuardrail.create(model_id="google/shieldgemma-2b", guardrail_name=GuardrailName.SHIELD_GEMMA)
-result: GuardrailOutput = guardrail.validate("All smiles from me!")
+supported_models = AnyGuardrail.get_all_supported_model_ids() # This provides all supported model ids
+supported_guardrails = GuardrailName # This provides all supported guardrail names
+guardrail = AnyGuardrail.create_guardrail(model_id="deepset/deberta-v3-base-injection", guardrail_name=GuardrailName.DEEPSET)
+result = guardrail.validate("All smiles from me!")
 assert result.unsafe == False
 ```
 

@@ -51,11 +51,11 @@ DEFAULT_DATA_FORMAT = """
 """
 
 
-class GLIDER(Guardrail):
+class Glider(Guardrail):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
-    It outputs its reasoning, highlights for what determined the score, and an integer score. For more information, see the model card:
-    [GLIDER](https://huggingface.co/PatronusAI/glider).
+    For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
+    highlights for what determined the score, and an integer score.
 
     Args:
         model_id: HuggingFace path to model.
@@ -80,10 +80,11 @@ class GLIDER(Guardrail):
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
-            input_text: the initial text
-            output_text: the subsequent text
+            input_text: the initial text.
+            output_text: the subsequent text.
+
         Returns:
-            An explanation in the format provided by the system prompt
+            An explanation in the format provided by the system prompt.
 
         """
         message = self._pre_processing(input_text, output_text)
