@@ -18,7 +18,7 @@ from any_guardrail.guardrails.huggingface import HuggingFace
         (GuardrailName.PANGOLIN, {}, None),
         (GuardrailName.PROTECTAI, {}, None),
         # (GuardrailName.SENTINEL, {}, None),  # Requires HF login
-        (GuardrailName.SHIELD_GEMMA, {}, None),
+        # (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),  # Requires HF login
     ],
 )
 def test_huggingface_guardrails(

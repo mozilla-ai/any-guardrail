@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from torch import Tensor
 from torch.nn.functional import softmax
 
 from any_guardrail.guardrail import GuardrailOutput
@@ -44,6 +45,10 @@ class ShieldGemma(HuggingFace):
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
+
+    def _pre_processing(self, input_text: str) -> Tensor:
+        formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
+        return super()._pre_processing(formatted_prompt)
 
     def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
         logits = model_outputs["logits"]
