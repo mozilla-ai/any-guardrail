@@ -10,10 +10,9 @@ def test_all_guardrails_in_enum() -> None:
     """Test that all guardrail modules are accounted for in the GuardrailName enum."""
     guardrails_dir = Path(__file__).parent.parent.parent / "src" / "any_guardrail" / "guardrails"
 
-    # Take all .py modules except dunder and cache
     guardrail_modules = []
     for item in guardrails_dir.iterdir():
-        if item.is_file() and item.suffix == ".py" and item.stem != "__init__":
+        if item.is_file() and item.suffix == ".py" and item.stem not in ("__init__", "huggingface"):
             guardrail_modules.append(item.stem)
 
     enum_values = [provider.value for provider in GuardrailName]
@@ -38,7 +37,7 @@ def test_guardrail_enum_values_match_module_names() -> None:
 
     actual_modules = set()
     for item in guardrails_dir.iterdir():
-        if item.is_file() and item.suffix == ".py" and item.stem != "__init__":
+        if item.is_file() and item.suffix == ".py" and item.stem not in ("__init__", "huggingface"):
             actual_modules.add(item.stem)
 
     enum_modules = {provider.value for provider in GuardrailName}

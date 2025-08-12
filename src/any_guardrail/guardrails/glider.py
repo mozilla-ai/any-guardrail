@@ -2,7 +2,7 @@ from typing import Any, ClassVar
 
 from transformers import pipeline
 
-from any_guardrail.guardrail import Guardrail
+from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
 SYSTEM_PROMPT_GLIDER = """
@@ -51,7 +51,7 @@ DEFAULT_DATA_FORMAT = """
 """
 
 
-class Glider(Guardrail):
+class Glider(HuggingFace):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
@@ -76,7 +76,7 @@ class Glider(Guardrail):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:
+    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -95,7 +95,7 @@ class Glider(Guardrail):
         pipe = pipeline("text-classification", self.model_id)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:
+    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:  # type: ignore[override]
         data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return [{"role": "user", "content": prompt}]

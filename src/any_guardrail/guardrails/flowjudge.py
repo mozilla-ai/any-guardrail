@@ -1,5 +1,3 @@
-from typing import ClassVar
-
 from flow_judge import EvalInput, EvalOutput, FlowJudge
 from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
 from flow_judge.models import Hf
@@ -14,7 +12,6 @@ class Flowjudge(Guardrail):
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
 
     Args:
-        model_id: Name of model. Only used for instantiation of FlowJudge.
         name: User defined metric name.
         criteria: User defined question that they want answered by FlowJudge model.
         rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
@@ -27,11 +24,8 @@ class Flowjudge(Guardrail):
 
     """
 
-    SUPPORTED_MODELS: ClassVar = ["FlowJudge"]
-
     def __init__(
         self,
-        model_id: str,
         name: str,
         criteria: str,
         rubric: dict[int, str],
@@ -45,7 +39,6 @@ class Flowjudge(Guardrail):
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self._define_metric_prompt()
-        super().__init__(model_id)
 
     def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:
         """Classifies the desired input and output according to the associated metric provided to the judge.

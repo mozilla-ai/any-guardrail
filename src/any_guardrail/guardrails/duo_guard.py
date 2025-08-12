@@ -3,7 +3,7 @@ from typing import Any, ClassVar
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from any_guardrail.guardrail import Guardrail
+from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
 DUOGUARD_CATEGORIES = [
@@ -24,17 +24,12 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(Guardrail):
+class DuoGuard(HuggingFace):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
-    For more information, please see the model cards: [DuoGuard](https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21).
+    For more information, please see the model card:
 
-    Args:
-        model_id: HuggingFace path to model.
-
-    Raises:
-        ValueError: Only supports DuoGuard models from HuggingFace.
-
+    - [DuoGuard](https://huggingface.co/collections/DuoGuard/duoguard-models-67a29ad8bd579a404e504d21).
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -43,76 +38,27 @@ class DuoGuard(Guardrail):
         "DuoGuard/DuoGuard-1.5B-transfer",
     ]
 
-    def __init__(self, model_id: str, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
+    MODELS_TO_TOKENIZER: ClassVar = {
+        "DuoGuard/DuoGuard-0.5B": "Qwen/Qwen2.5-0.5B",
+        "DuoGuard/DuoGuard-1B-Llama-3.2-transfer": "meta-llama/Llama-3.2-1B",
+        "DuoGuard/DuoGuard-1.5B-transfer": "Qwen/Qwen2.5-1.5B",
+    }
+
+    def __init__(self, model_id: str | None = None, threshold: float = DUOGUARD_DEFAULT_THRESHOLD) -> None:
         """Initialize the DuoGuard model."""
         super().__init__(model_id)
         self.threshold = threshold
 
-    def validate(self, input_text: str) -> GuardrailOutput:
-        """Classify text based on DuoGuard categories.
-
-        Args:
-            input_text: text that you want to validate.
-
-        Returns:
-            Whether the output is generally true (bool) and dictionary object with classifications for each category supported by
-            DuoGuard.
-
-        """
-        input_tensors = self._pre_processing(input_text)
-        prob_vector = self._inference(input_tensors)
-        overall_label, predicted_labels = self._post_processing(prob_vector)
-        return GuardrailOutput(unsafe=overall_label, explanation=predicted_labels)
-
     def _load_model(self) -> None:
-        tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
-        tokenizer.pad_token = tokenizer.eos_token
-        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.model = model
-        self.tokenizer = tokenizer
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])  # type: ignore[no-untyped-call]
+        self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def _pre_processing(self, input_text: str) -> Any:
-        return self.tokenizer(
-            input_text,
-            return_tensors="pt",
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+        probabilities = torch.sigmoid(model_outputs["logits"][0]).tolist()
+        predicted_labels = {
+            category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
+        }
+        return GuardrailOutput(
+            unsafe=any(predicted_labels.values()), explanation=predicted_labels, score=max(probabilities)
         )
-
-    def _inference(self, inputs: torch.Tensor) -> list[float]:
-        """Process the input text to obtain probabilities for each of the DuoGuard categories.
-
-        It does this by looking at the logits for each category name, and then converting the logits to probabilities. These probabilities will then be used
-        to determine whether, given a threshold, the input text violates any of the safety categories.
-
-        Args:
-            inputs: text that you want to validate.
-
-        Returns:
-            A list of probabilities for each category.
-
-        """
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            logits = outputs.logits
-            probabilities = torch.sigmoid(logits)
-        return probabilities[0].tolist()
-
-    def _post_processing(self, prob_vector: list[float]) -> tuple[bool, dict[str, bool]]:
-        """Perform the decision function, as described in the DuoGuard paper (see the huggingface documentation).
-
-        Can be overridden to define a new decision function using the probability vector.
-
-        Args:
-            prob_vector: a list of each probability that a category has been violated
-        Returns:
-            overall_label: True if one of the safety categories is violated, False otherwise
-            predicted_labels: A mapping between the categories and which are violated. Follows the same schema as overall_label.
-
-        """
-        categories = DUOGUARD_CATEGORIES
-        predicted_labels = {}
-        for cat_name, prob in zip(categories, prob_vector, strict=False):
-            label = prob > self.threshold
-            predicted_labels[cat_name] = label
-        max_prob = max(prob_vector)
-        overall_label = max_prob > self.threshold
-        return overall_label, predicted_labels
