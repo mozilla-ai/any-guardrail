@@ -12,7 +12,6 @@ class Flowjudge(Guardrail):
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
 
     Args:
-        model_id: Name of model. Only used for instantiation of FlowJudge.
         name: User defined metric name.
         criteria: User defined question that they want answered by FlowJudge model.
         rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
