@@ -50,7 +50,7 @@ class DuoGuard(HuggingFace):
         self.threshold = threshold
 
     def _load_model(self) -> None:
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)  # type: ignore[arg-type]
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])  # type: ignore[no-untyped-call]
         self.tokenizer.pad_token = self.tokenizer.eos_token
 

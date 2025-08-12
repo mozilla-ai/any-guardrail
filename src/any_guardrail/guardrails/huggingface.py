@@ -55,7 +55,7 @@ class HuggingFace(Guardrail, ABC):
 
     def _inference(self, model_inputs: Any) -> dict[str, Any]:
         with torch.no_grad():
-            return self.model(**model_inputs)
+            return self.model(**model_inputs)  # type: ignore[no-any-return]
 
     @abstractmethod
     def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:

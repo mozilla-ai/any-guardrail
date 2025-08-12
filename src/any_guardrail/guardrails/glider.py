@@ -95,7 +95,7 @@ class Glider(HuggingFace):
         pipe = pipeline("text-classification", self.model_id)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:
+    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:  # type: ignore[override]
         data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return [{"role": "user", "content": prompt}]
