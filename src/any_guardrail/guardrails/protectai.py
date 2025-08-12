@@ -12,7 +12,7 @@ class Protectai(Guardrail):
     """Prompt injection detection encoder based models.
 
     For more information, please see the model cards:
-    [ProtectA](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40).
+    [ProtectAI](https://huggingface.co/collections/protectai/llm-security-65c1f17a11c4251eeab53f40).
 
     Args:
         model_id: HuggingFace path to model.
