@@ -15,9 +15,9 @@ class Protectai(HuggingFace):
     """
 
     SUPPORTED_MODELS: ClassVar = [
+        "ProtectAI/deberta-v3-small-prompt-injection-v2",
         "ProtectAI/distilroberta-base-rejection-v1",
         "ProtectAI/deberta-v3-base-prompt-injection",
-        "ProtectAI/deberta-v3-small-prompt-injection-v2",
         "ProtectAI/deberta-v3-base-prompt-injection-v2",
     ]
 
