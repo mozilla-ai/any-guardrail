@@ -12,10 +12,9 @@ class Pangolin(HuggingFace):
     For more information, please see the model card:
 
     - [Pangolin Base](https://huggingface.co/dcarpintero/pangolin-guard-base)
-    - [Pangolin Large](https://huggingface.co/dcarpintero/pangolin-guard-large).
     """
 
-    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base", "dcarpintero/pangolin-guard-large"]
+    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base"]
 
     def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
         return _match_injection_label(model_outputs, PANGOLIN_INJECTION_LABEL, self.model.config.id2label)
