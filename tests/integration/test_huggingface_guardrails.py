@@ -16,7 +16,7 @@ from any_guardrail.guardrails.huggingface import HuggingFace
         (GuardrailName.INJECGUARD, {}, None),
         (GuardrailName.JASPER, {}, None),
         (GuardrailName.PANGOLIN, {}, None),
-        (GuardrailName.PROTECTAI, {"model_id": "ProtectAI/distilroberta-base-rejection-v1"}, None),
+        # (GuardrailName.PROTECTAI, {}, None), # Requires HF login
         # (GuardrailName.SENTINEL, {}, None),  # Requires HF login
         # (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),  # Requires HF login
     ],
