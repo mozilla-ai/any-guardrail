@@ -22,13 +22,13 @@ from any_guardrail.guardrails.huggingface import HuggingFace
     ],
 )
 def test_huggingface_guardrails(
-    guardrail_name: str, guardrail_kwargs: dict[str, Any], expected_explanation: Any
+    guardrail_name: GuardrailName, guardrail_kwargs: dict[str, Any], expected_explanation: Any
 ) -> None:
     """Iterate on all guardrails inheriting from HuggingFace."""
     guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **guardrail_kwargs)
-    assert guardrail.model_id == guardrail.SUPPORTED_MODELS[0]
 
     assert isinstance(guardrail, HuggingFace)
+    assert guardrail.model_id == guardrail.SUPPORTED_MODELS[0]
 
     result = guardrail.validate("What is the weather like today?")
 
