@@ -1,6 +1,5 @@
 from typing import Any, ClassVar
 
-from torch import Tensor
 from torch.nn.functional import softmax
 
 from any_guardrail.guardrails.huggingface import HuggingFace

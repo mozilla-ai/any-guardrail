@@ -76,7 +76,7 @@ class Glider(HuggingFace):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str) -> GuardrailOutput: # type: ignore[override]
+    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
