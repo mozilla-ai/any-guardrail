@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from any_guardrail.guardrails.huggingface import HuggingFace, _softmax
 from any_guardrail.types import GuardrailOutput
@@ -21,7 +21,7 @@ class HarmGuard(HuggingFace):
         super().__init__(model_id)
         self.threshold = threshold
 
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         logits = model_outputs["logits"][0].numpy()
         scores = _softmax(logits)
         final_score = float(scores[1])

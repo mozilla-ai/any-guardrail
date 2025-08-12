@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -54,7 +54,7 @@ class DuoGuard(HuggingFace):
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         probabilities = torch.sigmoid(model_outputs["logits"][0]).tolist()
         predicted_labels = {
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)

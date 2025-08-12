@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from torch import Tensor
 from torch.nn.functional import softmax
@@ -50,7 +50,7 @@ class ShieldGemma(HuggingFace):
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         return super()._pre_processing(formatted_prompt)
 
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         logits = model_outputs["logits"]
         vocab = self.tokenizer.get_vocab()
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]

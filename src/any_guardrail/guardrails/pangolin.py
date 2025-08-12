@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from any_guardrail.guardrails.huggingface import HuggingFace, _match_injection_label
 from any_guardrail.types import GuardrailOutput
@@ -16,5 +16,5 @@ class Pangolin(HuggingFace):
 
     SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base"]
 
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         return _match_injection_label(model_outputs, PANGOLIN_INJECTION_LABEL, self.model.config.id2label)

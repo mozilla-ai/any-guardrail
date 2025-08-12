@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -22,5 +22,5 @@ class InjecGuard(HuggingFace):
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id, trust_remote_code=True)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         return _match_injection_label(model_outputs, INJECGUARD_LABEL, self.model.config.id2label)

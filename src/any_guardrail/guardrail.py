@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any
+from typing import Any, ClassVar
 
 from any_guardrail.types import GuardrailOutput
 
 
 class Guardrail(ABC):
     """Base class for all guardrails."""
+
+    SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     @abstractmethod
     def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
+from typing import Any
 
 import numpy as np
 import torch
@@ -9,14 +9,14 @@ from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
 
 
-def _softmax(_outputs):
+def _softmax(_outputs: np.ndarray) -> np.ndarray:
     maxes = np.max(_outputs, axis=-1, keepdims=True)
     shifted_exp = np.exp(_outputs - maxes)
     return shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
 
 
 def _match_injection_label(
-    model_outputs: list[dict[str, str | float]], injection_label: str, id2label: dict[int, str]
+    model_outputs: dict[str, Any], injection_label: str, id2label: dict[int, str]
 ) -> GuardrailOutput:
     logits = model_outputs["logits"][0].numpy()
     scores = _softmax(logits)
@@ -26,8 +26,6 @@ def _match_injection_label(
 
 class HuggingFace(Guardrail, ABC):
     """Wrapper for models from Hugging Face."""
-
-    SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     def __init__(self, model_id: str | None = None) -> None:
         """Initialize the guardrail with a model ID."""
@@ -55,12 +53,12 @@ class HuggingFace(Guardrail, ABC):
     def _pre_processing(self, input_text: str) -> torch.Tensor:
         return self.tokenizer(input_text, return_tensors="pt")
 
-    def _inference(self, model_inputs: torch.Tensor) -> list[dict[str, str | float]]:
+    def _inference(self, model_inputs: torch.Tensor) -> list[dict[str, Any]]:
         with torch.no_grad():
             return self.model(**model_inputs)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: list[dict[str, str | float]]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:
