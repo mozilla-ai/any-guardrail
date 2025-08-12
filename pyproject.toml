@@ -18,12 +18,16 @@ dependencies = [
   "flow-judge[hf]>=0.1.2",
   "huggingface-hub>=0.33.4",
   "safetensors>=0.5.3",
+  "tiktoken>=0.11.0",
+  "protobuf>=6.31.1",
 ]
 
 [project.optional-dependencies]
 all = []
 testing = [
     "jupyterlab>=4.4.5",
+    "pandas",
+    "huggingface_hub",
 ]
 
 [project.urls]

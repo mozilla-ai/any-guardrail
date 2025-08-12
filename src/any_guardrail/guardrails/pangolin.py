@@ -1,6 +1,6 @@
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
-from transformers import pipeline
+from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 
 PANGOLIN_INJECTION_LABEL = "unsafe"
 
@@ -36,5 +36,8 @@ class Pangolin(Guardrail):
         return GuardrailOutput(unsafe=classification[0]["label"] == PANGOLIN_INJECTION_LABEL)
 
     def _load_model(self) -> None:
-        pipe = pipeline("text-classification", self.model_id)
+        model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+        pipe = pipeline("text-classification", model = model, tokenizer = tokenizer)
         self.model = pipe
+        self.tokenizer = tokenizer
