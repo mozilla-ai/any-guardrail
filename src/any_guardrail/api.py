@@ -29,12 +29,11 @@ class AnyGuardrail:
         return model_ids
 
     @classmethod
-    def create(cls, guardrail_name: GuardrailName, model_id: str, **kwargs: Any) -> Guardrail:
+    def create(cls, guardrail_name: GuardrailName, **kwargs: Any) -> Guardrail:
         """Create a guardrail instance.
 
         Args:
             guardrail_name: The name of the guardrail to use.
-            model_id: The identifier of the model to use, which will be mapped to the guardrail that uses it.
             **kwargs: Additional keyword arguments to pass to the guardrail constructor.
 
         Returns:
@@ -42,7 +41,7 @@ class AnyGuardrail:
 
         """
         guardrail_class = cls._get_guardrail_class(guardrail_name)
-        return guardrail_class(model_id, **kwargs)
+        return guardrail_class(**kwargs)
 
     @classmethod
     def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:
