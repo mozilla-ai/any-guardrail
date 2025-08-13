@@ -35,4 +35,6 @@ jobs:
           uv sync --group tests --extra all
 
       - name: Run Integration tests (parallel with xdist)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest -v tests/integration -n auto

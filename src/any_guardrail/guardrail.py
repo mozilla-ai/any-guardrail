@@ -20,6 +20,7 @@ class Guardrail(ABC):
 class GuardrailName(str, Enum):
     """String enum for supported guardrails."""
 
+    ANYLLM = "any_llm"
     DEEPSET = "deepset"
     DUOGUARD = "duo_guard"
     FLOWJUDGE = "flowjudge"
