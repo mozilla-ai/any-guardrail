@@ -7,7 +7,7 @@ Refer to the [Quickstart](./quickstart.md) for instructions on installation and 
 
 ### Guardrails
 
-Refer to [Guardrails](./api/guardrails.md) for the parameters for each guardrail.
+Refer to [Guardrails](./api/guardrails) for the parameters for each guardrail.
 
 Refer to [AnyGuardrail](./api/any_guardrail.md) for how to use the `AnyGuardrail` object.
 
