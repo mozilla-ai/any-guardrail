@@ -1,1 +1,1 @@
-::: any_guardrail.guardrails.protectai
+::: any_guardrail.guardrails.protectai.protectai
