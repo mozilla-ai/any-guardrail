@@ -1,6 +1,6 @@
 from unittest import mock
 
-from any_guardrail.guardrails.any_llm import DEFAULT_MODEL_ID, AnyLlm
+from any_guardrail.guardrails.any_llm.any_llm import DEFAULT_MODEL_ID, AnyLlm
 from any_guardrail.types.guardrail import GuardrailOutput
 
 
@@ -8,7 +8,7 @@ def test_custom_system_prompt() -> None:
     guardrail = AnyLlm()
 
     with mock.patch(
-        "any_guardrail.guardrails.any_llm.completion",
+        "any_guardrail.guardrails.any_llm.any_llm.completion",
         return_value=mock.Mock(
             choices=[mock.Mock(message=mock.Mock(content='{"unsafe": false, "explanation": "Valid input."}'))]
         ),

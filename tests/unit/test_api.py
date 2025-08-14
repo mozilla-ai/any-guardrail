@@ -12,8 +12,10 @@ def test_all_guardrails_in_enum() -> None:
 
     guardrail_modules = []
     for item in guardrails_dir.iterdir():
-        if item.is_file() and item.suffix == ".py" and item.stem not in ("__init__", "huggingface"):
-            guardrail_modules.append(item.stem)
+        if item.is_dir() and item.name not in ("__pycache__", "huggingface"):
+            for sub_item in item.iterdir():
+                if sub_item.is_file() and sub_item.suffix == ".py" and sub_item.stem not in ("__init___"):
+                    guardrail_modules.append(sub_item.stem)
 
     enum_values = [provider.value for provider in GuardrailName]
 
@@ -37,8 +39,10 @@ def test_guardrail_enum_values_match_module_names() -> None:
 
     actual_modules = set()
     for item in guardrails_dir.iterdir():
-        if item.is_file() and item.suffix == ".py" and item.stem not in ("__init__", "huggingface"):
-            actual_modules.add(item.stem)
+        if item.is_dir() and item.name not in ("__pycache__", "huggingface"):
+            for sub_item in item.iterdir():
+                if sub_item.is_file() and sub_item.suffix == ".py" and sub_item.stem not in ("__init__"):
+                    actual_modules.add(sub_item.stem)
 
     enum_modules = {provider.value for provider in GuardrailName}
 
