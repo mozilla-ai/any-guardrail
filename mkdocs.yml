@@ -7,7 +7,19 @@ nav:
   - Intro: index.md
   - Quick Start: quickstart.md
   - API Reference:
-      - Guardrails: api/guardrails.md
+      - Guardrails:
+          - AnyLLM: api/guardrails/any_llm.md
+          - Deepset: api/guardrails/deepset.md
+          - Duo Guard: api/guardrails/duo_guard.md
+          - FlowJudge: api/guardrails/flowjudge.md
+          - Glider: api/guardrails/glider.md
+          - Harm Guard: api/guardrails/harm_guard.md
+          - InjecGuard: api/guardrails/injec_guard.md
+          - Jasper: api/guardrails/jasper.md
+          - Pangolin: api/guardrails/pangolin.md
+          - ProtectAI: api/guardrails/protectai.md
+          - Sentinel: api/guardrails/sentinel.md
+          - Shield Gemma: api/guardrails/shield_gemma.md
       - AnyGuardrail: api/any_guardrail.md
 theme:
   name: material
