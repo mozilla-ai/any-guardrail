@@ -19,7 +19,7 @@ Refer to the [Quickstart](#./quickstart.md) for instructions on installation and
 
 ### Guardrails
 
-Refer to [Guardrails](#./api/guardrails.md) for the parameters for each guardrail.
+Refer to [Guardrails](./api/guardrails) for the parameters for each guardrail.
 
 Refer to [AnyGuardrail](#./api/any_guardrail.md) for how to use the `AnyGuardrail` object.
 
@@ -78,22 +78,109 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 ---
 
-## api/guardrails.md
+## api/guardrails/any_llm.md
 
-<!-- Source: api/guardrails.md -->
-
+<!-- Source: api/guardrails/any_llm.md -->
 
 ::: any_guardrail.guardrails.any_llm
+
+
+---
+
+## api/guardrails/deepset.md
+
+<!-- Source: api/guardrails/deepset.md -->
+
 ::: any_guardrail.guardrails.deepset
+
+
+---
+
+## api/guardrails/duo_guard.md
+
+<!-- Source: api/guardrails/duo_guard.md -->
+
 ::: any_guardrail.guardrails.duo_guard
+
+
+---
+
+## api/guardrails/flowjudge.md
+
+<!-- Source: api/guardrails/flowjudge.md -->
+
 ::: any_guardrail.guardrails.flowjudge
+
+
+---
+
+## api/guardrails/glider.md
+
+<!-- Source: api/guardrails/glider.md -->
+
 ::: any_guardrail.guardrails.glider
+
+
+---
+
+## api/guardrails/harm_guard.md
+
+<!-- Source: api/guardrails/harm_guard.md -->
+
 ::: any_guardrail.guardrails.harm_guard
+
+
+---
+
+## api/guardrails/injec_guard.md
+
+<!-- Source: api/guardrails/injec_guard.md -->
+
 ::: any_guardrail.guardrails.injec_guard
+
+
+---
+
+## api/guardrails/jasper.md
+
+<!-- Source: api/guardrails/jasper.md -->
+
 ::: any_guardrail.guardrails.jasper
+
+
+---
+
+## api/guardrails/pangolin.md
+
+<!-- Source: api/guardrails/pangolin.md -->
+
 ::: any_guardrail.guardrails.pangolin
+
+
+---
+
+## api/guardrails/protectai.md
+
+<!-- Source: api/guardrails/protectai.md -->
+
 ::: any_guardrail.guardrails.protectai
+
+
+---
+
+## api/guardrails/sentinel.md
+
+<!-- Source: api/guardrails/sentinel.md -->
+
 ::: any_guardrail.guardrails.sentinel
+
+
+---
+
+## api/guardrails/shield_gemma.md
+
+<!-- Source: api/guardrails/shield_gemma.md -->
+
 ::: any_guardrail.guardrails.shield_gemma
 
 
@@ -106,6 +193,17 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 ## AnyGuardrail
 
 ::: any_guardrail.api.AnyGuardrail
+
+
+---
+
+## api/guardrails/index.md
+
+<!-- Source: api/guardrails/index.md -->
+
+## Guardrails
+
+This section documents the available guardrails and their parameters. Select a guardrail to view its API details.
 
 
 ---
