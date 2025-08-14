@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class GuardrailOutput:
+class GuardrailOutput(BaseModel):
     """Represents the output of a guardrail evaluation."""
 
     unsafe: bool | None = None
