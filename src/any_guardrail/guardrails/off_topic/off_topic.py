@@ -45,7 +45,7 @@ class OffTopic(HuggingFace):
                     return_tensors="pt",
                     truncation=True,
                     padding="max_length",
-                    max_length=1024,
+                    max_length=514,
                     return_token_type_ids=False
                 )
             input_ids = encoding["input_ids"] #.to(device)
