@@ -28,6 +28,7 @@ class GuardrailName(str, Enum):
     HARMGUARD = "harm_guard"
     INJECGUARD = "injec_guard"
     JASPER = "jasper"
+    OFFTOPIC = "off_topic"
     PANGOLIN = "pangolin"
     PROTECTAI = "protectai"
     SENTINEL = "sentinel"
