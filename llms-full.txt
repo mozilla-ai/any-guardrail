@@ -19,7 +19,7 @@ Refer to the [Quickstart](#./quickstart.md) for instructions on installation and
 
 ### Guardrails
 
-Refer to [Guardrails](./api/guardrails) for the parameters for each guardrail.
+Refer to [Guardrails](#./api/guardrails/index.md) for the parameters for each guardrail.
 
 Refer to [AnyGuardrail](#./api/any_guardrail.md) for how to use the `AnyGuardrail` object.
 
@@ -82,7 +82,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/any_llm.md -->
 
-::: any_guardrail.guardrails.any_llm.any_llm
+::: any_guardrail.guardrails.any_llm
 
 
 ---
@@ -91,7 +91,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/deepset.md -->
 
-::: any_guardrail.guardrails.deepset.deepset
+::: any_guardrail.guardrails.deepset
 
 
 ---
@@ -100,7 +100,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/duo_guard.md -->
 
-::: any_guardrail.guardrails.duo_guard.duo_guard
+::: any_guardrail.guardrails.duo_guard
 
 
 ---
@@ -109,7 +109,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/flowjudge.md -->
 
-::: any_guardrail.guardrails.flowjudge.flowjudge
+::: any_guardrail.guardrails.flowjudge
 
 
 ---
@@ -118,7 +118,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/glider.md -->
 
-::: any_guardrail.guardrails.glider.glider
+::: any_guardrail.guardrails.glider
 
 
 ---
@@ -127,7 +127,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/harm_guard.md -->
 
-::: any_guardrail.guardrails.harm_guard.harm_guard
+::: any_guardrail.guardrails.harm_guard
 
 
 ---
@@ -136,7 +136,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/injec_guard.md -->
 
-::: any_guardrail.guardrails.injec_guard.injec_guard
+::: any_guardrail.guardrails.injec_guard
 
 
 ---
@@ -145,7 +145,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/jasper.md -->
 
-::: any_guardrail.guardrails.jasper.jasper
+::: any_guardrail.guardrails.jasper
 
 
 ---
@@ -154,7 +154,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/pangolin.md -->
 
-::: any_guardrail.guardrails.pangolin.pangolin
+::: any_guardrail.guardrails.pangolin
 
 
 ---
@@ -163,7 +163,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/protectai.md -->
 
-::: any_guardrail.guardrails.protectai.protectai
+::: any_guardrail.guardrails.protectai
 
 
 ---
@@ -172,7 +172,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/sentinel.md -->
 
-::: any_guardrail.guardrails.sentinel.sentinel
+::: any_guardrail.guardrails.sentinel
 
 
 ---
@@ -181,7 +181,7 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 <!-- Source: api/guardrails/shield_gemma.md -->
 
-::: any_guardrail.guardrails.shield_gemma.shield_gemma
+::: any_guardrail.guardrails.shield_gemma
 
 
 ---
