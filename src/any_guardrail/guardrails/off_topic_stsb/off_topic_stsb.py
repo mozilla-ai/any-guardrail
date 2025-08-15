@@ -1,12 +1,12 @@
-from typing import Any, ClassVar
 import warnings
+from typing import Any, ClassVar
 
 import torch
 from transformers import AutoModel, AutoTokenizer
 
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.types import GuardrailOutput
 from any_guardrail.guardrails.off_topic_stsb.models.cross_encoder_mlp import CrossEncoderWithMLP
+from any_guardrail.types import GuardrailOutput
 
 BASEMODEL = "cross-encoder/stsb-roberta-base"
 
@@ -19,20 +19,24 @@ class OffTopicStsb(HuggingFace):
     - [govtech/stsb-roberta-base-off-topic model](https://huggingface.co/govtech/stsb-roberta-base-off-topic).
     """
 
-    SUPPORTED_MODELS: ClassVar = ["mozilla-ai/stsb-roberta-base-off-topic",]
+    SUPPORTED_MODELS: ClassVar = [
+        "mozilla-ai/stsb-roberta-base-off-topic",
+    ]
 
     def validate(self, input_text: str, comparison_text: str = "") -> GuardrailOutput:
         """Compare two texts to see if they are relevant to each other.
-        
+
         Args:
             input_text: the original text you want to compare against.
             comparison_text: the text you want to compare to.
 
-        returns:
+        Returns:
             Unsafe means off topic, safe means on topic. Will also provide probabilities of each.
+
         """
         if len(comparison_text) == 0:
-            raise ValueError("Must provide a text to compare to.")
+            msg = "Must provide a text to compare to."
+            raise ValueError(msg)
         model_inputs = self._pre_processing(input_text, comparison_text)
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
@@ -43,7 +47,7 @@ class OffTopicStsb(HuggingFace):
         self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
 
     def _pre_processing(self, input_text: str, comparison_text: str = "") -> tuple[torch.Tensor, torch.Tensor]:
-        warnings.warn("Truncating text to a maximum length of 514 tokens.")
+        warnings.warn("Truncating text to a maximum length of 514 tokens.", stacklevel=2)
         encoding = self.tokenizer(
             input_text,
             comparison_text,
