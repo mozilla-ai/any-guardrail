@@ -1,6 +1,6 @@
 from typing import Any, ClassVar
 
-from transformers import pipeline
+from transformers import pipeline  # type: ignore [attr-defined]
 
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput

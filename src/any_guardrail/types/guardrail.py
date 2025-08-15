@@ -7,7 +7,7 @@ class GuardrailOutput(BaseModel):
     unsafe: bool | None = None
     """Indicates if the output is considered unsafe."""
 
-    explanation: str | dict[str, bool] | None = None
+    explanation: str | dict[str, bool] | dict[str, float] | None = None
     """Provides an explanation for the guardrail evaluation result."""
 
     score: float | int | None = None
