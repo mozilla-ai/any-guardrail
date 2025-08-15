@@ -1,1 +1,1 @@
-::: any_guardrail.guardrails.pangolin.pangolin
+::: any_guardrail.guardrails.pangolin

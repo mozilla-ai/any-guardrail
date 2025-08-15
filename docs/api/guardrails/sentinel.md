@@ -1,1 +1,1 @@
-::: any_guardrail.guardrails.sentinel.sentinel
+::: any_guardrail.guardrails.sentinel
