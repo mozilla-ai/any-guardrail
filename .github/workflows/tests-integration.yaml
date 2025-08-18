@@ -21,15 +21,6 @@ jobs:
           python-version: 3.13
           activate-environment: true
 
-      - name: Cache HuggingFace models
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/huggingface
-          key: ${{ runner.os }}-hf-cache-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-hf-cache-
-
       - name: Install dependencies
         run: |
           uv sync --group tests --extra all

@@ -2,7 +2,6 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from any_llm import completion
-from pydantic.dataclasses import dataclass
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
@@ -65,7 +64,7 @@ class AnyLlm(Guardrail):
                 {"role": "system", "content": system_prompt.format(policy=policy)},
                 {"role": "user", "content": input_text},
             ],
-            response_format=dataclass(GuardrailOutput),  # type: ignore[arg-type]
+            response_format=GuardrailOutput,
             **kwargs,
         )
         return GuardrailOutput(**json.loads(result.choices[0].message.content))  # type: ignore[arg-type]

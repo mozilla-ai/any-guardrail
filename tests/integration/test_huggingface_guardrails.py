@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.guardrails.duo_guard import DUOGUARD_CATEGORIES
+from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
 
 
