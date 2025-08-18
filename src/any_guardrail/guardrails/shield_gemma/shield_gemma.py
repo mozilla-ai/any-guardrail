@@ -1,6 +1,7 @@
 from typing import Any, ClassVar
 
 from torch.nn.functional import softmax
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
@@ -44,6 +45,10 @@ class ShieldGemma(HuggingFace):
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
+
+    def _load_model(self) -> None:
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_id)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
 
     def _pre_processing(self, input_text: str) -> Any:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
