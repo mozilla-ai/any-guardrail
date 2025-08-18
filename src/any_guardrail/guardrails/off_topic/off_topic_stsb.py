@@ -45,7 +45,7 @@ class OffTopicStsb(HuggingFace):
         input_ids, attention_mask = model_inputs
         with torch.no_grad():
             return self.model(input_ids=input_ids, attention_mask=attention_mask)
-        
+
     def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
         probabilities = torch.softmax(model_outputs, dim=1)
         predicted_label = torch.argmax(probabilities, dim=1).item()

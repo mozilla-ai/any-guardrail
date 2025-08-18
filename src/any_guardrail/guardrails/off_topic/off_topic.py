@@ -1,28 +1,35 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
-import torch
-
-from any_guardrail.guardrail import Guardrail
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.types import GuardrailOutput
+from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
-from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina  
+from any_guardrail.types import GuardrailOutput
 
 
 class OffTopic(HuggingFace):
-    """Abstract base class for the Off Topic models."""
+    """Abstract base class for the Off Topic models.
 
-    SUPPORTED_MODELS: ClassVar = ["mozilla-ai/jina-embeddings-v2-small-en-off-topic", 
-                                  "mozilla-ai/stsb-roberta-base-off-topic"]
-    
+    For more information about the implementations about either off topic model, please see the below model cards:
+
+    - [govtech/stsb-roberta-base-off-topic model](https://huggingface.co/govtech/stsb-roberta-base-off-topic).
+    - [govtech/jina-embeddings-v2-small-en-off-topic](https://huggingface.co/govtech/jina-embeddings-v2-small-en-off-topic).
+    """
+
+    SUPPORTED_MODELS: ClassVar = [
+        "mozilla-ai/jina-embeddings-v2-small-en-off-topic",
+        "mozilla-ai/stsb-roberta-base-off-topic",
+    ]
+
     def __init__(self, model_id: str) -> None:
+        """Off Topic model based on one of two implementations decided by model ID."""
         self.model_id = model_id
         if self.model_id == self.SUPPORTED_MODELS[0]:
             self.implementation = OffTopicJina()
         elif self.model_id == self.SUPPORTED_MODELS[1]:
             self.implementation = OffTopicStsb()  # type: ignore [assignment]
         else:
-            raise ValueError(f"Unsupported model_id: {self.model_id}")
+            msg = f"Unsupported model_id: {self.model_id}"
+            raise ValueError(msg)
         super().__init__()
 
     def validate(self, input_text: str, comparison_text: str = "") -> GuardrailOutput:
@@ -42,6 +49,6 @@ class OffTopic(HuggingFace):
         model_inputs = self.implementation._pre_processing(input_text, comparison_text)
         model_outputs = self.implementation._inference(model_inputs)
         return self.implementation._post_processing(model_outputs)
-    
+
     def _load_model(self) -> None:
         self.implementation._load_model()
