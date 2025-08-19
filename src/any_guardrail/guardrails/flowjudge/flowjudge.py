@@ -1,6 +1,11 @@
-from flow_judge import EvalInput, EvalOutput, FlowJudge
-from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
-from flow_judge.models import Hf
+try:
+    from flow_judge import EvalInput, EvalOutput, FlowJudge
+    from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
+    from flow_judge.models import Hf
+
+    MISSING_PACKAGES_ERROR = None
+except ImportError as e:
+    MISSING_PACKAGES_ERROR = e
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
@@ -33,6 +38,10 @@ class Flowjudge(Guardrail):
         required_output: str,
     ) -> None:
         """Initialize the FlowJudgeClass."""
+        if MISSING_PACKAGES_ERROR is not None:
+            msg = "Missing packages for FlowJudge guardrail. You can try `pip install 'any-guardrail[flowjudge]'`"
+            raise ImportError(msg) from MISSING_PACKAGES_ERROR
+
         self.metric_name = name
         self.criteria = criteria
         self.rubric = rubric
