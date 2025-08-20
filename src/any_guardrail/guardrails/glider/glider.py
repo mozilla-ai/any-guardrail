@@ -1,3 +1,4 @@
+import re
 from typing import Any, ClassVar
 
 from transformers import pipeline
@@ -76,7 +77,7 @@ class Glider(HuggingFace):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:  # type: ignore[override]
+    def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -89,16 +90,25 @@ class Glider(HuggingFace):
         """
         message = self._pre_processing(input_text, output_text)
         result = self._inference(message)
-        return GuardrailOutput(explanation=result)
+        return self._post_processing(result)
 
     def _load_model(self) -> None:
-        pipe = pipeline("text-classification", self.model_id)
+        pipe = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:  # type: ignore[override]
+    def _pre_processing(self, input_text: str, output_text: str = "") -> list[dict[str, str]]:
         data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return [{"role": "user", "content": prompt}]
 
     def _inference(self, message: list[dict[str, str]]) -> Any:
         return self.model(message)[0]["generated_text"]
+
+    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+        score = re.findall(r"<score>\n(\d+)\n</score>", model_outputs)
+        if len(score) != 0 and score[0].isdigit():
+            final_score = int(score[0])
+        else:
+            final_score = None
+
+        return GuardrailOutput(explanation=model_outputs, score=final_score)
