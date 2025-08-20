@@ -17,7 +17,7 @@ class CrossEncoderWithMLP(nn.Module, PyTorchModelHubMixin):
     """
 
     def __init__(self, base_model: Any):
-        """Classificaiton head with base model cross-encoder/stsb-roberta-base."""
+        """Classification head with base model cross-encoder/stsb-roberta-base."""
         super().__init__()
 
         # Existing cross-encoder model

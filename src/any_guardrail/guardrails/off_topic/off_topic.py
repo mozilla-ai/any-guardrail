@@ -20,19 +20,21 @@ class OffTopic(HuggingFace):
         "mozilla-ai/stsb-roberta-base-off-topic",
     ]
 
+    implementation: OffTopicJina | OffTopicStsb
+
     def __init__(self, model_id: str) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
         self.model_id = model_id
         if self.model_id == self.SUPPORTED_MODELS[0]:
             self.implementation = OffTopicJina()
         elif self.model_id == self.SUPPORTED_MODELS[1]:
-            self.implementation = OffTopicStsb()  # type: ignore [assignment]
+            self.implementation = OffTopicStsb()
         else:
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
         super().__init__()
 
-    def validate(self, input_text: str, comparison_text: str = "") -> GuardrailOutput:
+    def validate(self, input_text: str, comparison_text: str | None = None) -> GuardrailOutput:
         """Compare two texts to see if they are relevant to each other.
 
         Args:
@@ -44,7 +46,7 @@ class OffTopic(HuggingFace):
 
         """
         msg = "Must provide a text to compare to."
-        if len(comparison_text) == 0:
+        if comparison_text:
             raise ValueError(msg)
         model_inputs = self.implementation._pre_processing(input_text, comparison_text)
         model_outputs = self.implementation._inference(model_inputs)
