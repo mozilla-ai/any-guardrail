@@ -39,6 +39,7 @@ class Flowjudge(Guardrail):
         self.required_inputs = required_inputs
         self.required_output = required_output
         self.metric_prompt = self._define_metric_prompt()
+        self.model = self._load_model()
 
     def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:
         """Classifies the desired input and output according to the associated metric provided to the judge.
@@ -55,16 +56,15 @@ class Flowjudge(Guardrail):
         result = self._inference(eval_input)
         return GuardrailOutput(explanation=result.feedback, score=result.score)
 
-    def _load_model(self) -> None:
+    def _load_model(self) -> FlowJudge:
         """Construct the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
 
         Returns:
             judge: The evaluation model.
 
         """
-        model = Hf(flash_attention=False)
-        judge = FlowJudge(metric=self.metric_prompt, model=model)
-        self.model = judge
+        model = Hf(flash_attn=False)
+        return FlowJudge(metric=self.metric_prompt, model=model)
 
     def _define_metric_prompt(self) -> Metric:
         """Construct the Metric object needed to instantiate the FlowJudge model.
