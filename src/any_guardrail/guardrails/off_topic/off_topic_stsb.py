@@ -26,7 +26,7 @@ class OffTopicStsb(HuggingFace):
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
 
-    def _pre_processing(self, input_text: str, comparison_text: str = "") -> tuple[torch.Tensor, torch.Tensor]:
+    def _pre_processing(self, input_text: str, comparison_text: str | None = None) -> tuple[torch.Tensor, torch.Tensor]:
         warnings.warn("Truncating text to a maximum length of 514 tokens.", stacklevel=2)
         encoding = self.tokenizer(
             input_text,
@@ -41,7 +41,13 @@ class OffTopicStsb(HuggingFace):
         attention_mask = encoding["attention_mask"]  # .to(device)
         return input_ids, attention_mask
 
-    def _inference(self, model_inputs: tuple[torch.Tensor, torch.Tensor]) -> Any:
+    def _inference(
+        self,
+        model_inputs: tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor],
+    ) -> Any:
+        if len(model_inputs) != 2:
+            msg = "Expected model_inputs to be a tuple of (input_ids, attention_mask)."
+            raise ValueError(msg)
         input_ids, attention_mask = model_inputs
         with torch.no_grad():
             return self.model(input_ids=input_ids, attention_mask=attention_mask)

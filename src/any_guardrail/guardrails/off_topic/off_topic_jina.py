@@ -27,7 +27,7 @@ class OffTopicJina(HuggingFace):
         self.model = CrossEncoderWithSharedBase.from_pretrained(self.model_id, base_model=base_model)
 
     def _pre_processing(
-        self, input_text: str, comparison_text: str = ""
+        self, input_text: str, comparison_text: str | None = None
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         warnings.warn("Truncating input text to a max length of 1024 tokens.", stacklevel=2)
         inputs1 = self.tokenizer(
@@ -44,13 +44,11 @@ class OffTopicJina(HuggingFace):
 
     def _inference(
         self,
-        model_inputs: tuple[
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-            torch.Tensor,
-        ],
+        model_inputs: tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor],
     ) -> Any:
+        if len(model_inputs) != 4:
+            msg = "Expected model_inputs to be a tuple of (input_ids1, attention_mask1, input_ids2, attention_mask2)."
+            raise ValueError(msg)
         input_ids1, attention_mask1, input_ids2, attention_mask2 = model_inputs
         with torch.no_grad():
             return self.model(
