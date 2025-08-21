@@ -1,9 +1,11 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.guardrail import Guardrail
+from any_guardrail.guardrails.any_llm import AnyLlm
 
 
 def test_all_guardrails_in_enum() -> None:
@@ -74,3 +76,13 @@ def test_get_guardrail_class_all_valid_names() -> None:
         assert issubclass(guardrail_class, Guardrail), (
             f"Guardrail class {guardrail_class} for {guardrail_name} is not a subclass of Guardrail"
         )
+
+
+def test_model_load():
+    for guardrail_name in GuardrailName:
+        guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
+        if not isinstance(guardrail_class, type(AnyLlm)):
+            with patch(guardrail_class.__module__ + "._load_model") as mock_load_model:
+                mock_load_model.return_value = "mocked_model"
+                guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
+                assert guardrail.model == "mocked_model"
