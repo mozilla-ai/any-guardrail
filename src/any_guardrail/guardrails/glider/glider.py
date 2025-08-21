@@ -1,7 +1,5 @@
 from typing import Any, ClassVar
 
-from transformers import pipeline
-
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
@@ -76,7 +74,7 @@ class Glider(HuggingFace):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str) -> GuardrailOutput:  # type: ignore[override]
+    def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -92,10 +90,12 @@ class Glider(HuggingFace):
         return GuardrailOutput(explanation=result)
 
     def _load_model(self) -> None:
+        from transformers import pipeline
+
         pipe = pipeline("text-classification", self.model_id)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str) -> list[dict[str, str]]:  # type: ignore[override]
+    def _pre_processing(self, input_text: str, output_text: str = "") -> list[dict[str, str]]:
         data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return [{"role": "user", "content": prompt}]

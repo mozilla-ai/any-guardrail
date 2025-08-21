@@ -1,8 +1,5 @@
 from typing import Any, ClassVar
 
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
@@ -50,12 +47,16 @@ class DuoGuard(HuggingFace):
         self.threshold = threshold
 
     def _load_model(self) -> None:
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])  # type: ignore[no-untyped-call]
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
-        probabilities = torch.sigmoid(model_outputs["logits"][0]).tolist()
+        from torch.nn.functional import sigmoid
+
+        probabilities = sigmoid(model_outputs["logits"][0]).tolist()
         predicted_labels = {
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
         }
