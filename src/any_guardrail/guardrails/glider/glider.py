@@ -91,6 +91,8 @@ class Glider(HuggingFace):
         return self._post_processing(result)
 
     def _load_model(self) -> None:
+        from transformers import pipeline
+
         pipe = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
         self.model = pipe
 

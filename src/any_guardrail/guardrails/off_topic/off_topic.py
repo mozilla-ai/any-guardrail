@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
@@ -50,7 +50,10 @@ class OffTopic(HuggingFace):
             raise ValueError(msg)
         model_inputs = self.implementation._pre_processing(input_text, comparison_text)
         model_outputs = self.implementation._inference(model_inputs)
-        return self.implementation._post_processing(model_outputs)
+        return self._post_processing(model_outputs)
 
     def _load_model(self) -> None:
         self.implementation._load_model()
+
+    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+        return self.implementation._post_processing(model_outputs)

@@ -4,6 +4,7 @@ import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.guardrail import Guardrail
+from any_guardrail.guardrails.huggingface import HuggingFace
 
 
 def test_all_guardrails_in_enum() -> None:
@@ -74,3 +75,12 @@ def test_get_guardrail_class_all_valid_names() -> None:
         assert issubclass(guardrail_class, Guardrail), (
             f"Guardrail class {guardrail_class} for {guardrail_name} is not a subclass of Guardrail"
         )
+
+
+def test_post_processing_implementation() -> None:
+    for guardrail_name in GuardrailName:
+        guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
+        if issubclass(guardrail_class, HuggingFace):
+            assert "_post_processing" in guardrail_class.__dict__, (
+                f"Guardrail class {guardrail_class} for {guardrail_name} does not have a _post_processing method"
+            )
