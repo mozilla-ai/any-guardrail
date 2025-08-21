@@ -1,9 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-import numpy as np
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+try:
+    import numpy as np
+    import torch
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    MISSING_PACKAGES_ERROR = None
+
+except ImportError as e:
+    MISSING_PACKAGES_ERROR = e
 
 from any_guardrail.guardrail import Guardrail
 from any_guardrail.types import GuardrailOutput
@@ -29,6 +35,10 @@ class HuggingFace(Guardrail, ABC):
 
     def __init__(self, model_id: str | None = None) -> None:
         """Initialize the guardrail with a model ID."""
+        if MISSING_PACKAGES_ERROR is not None:
+            msg = "Missing packages for HuggingFace guardrail. You can try `pip install 'any-guardrail[huggingface]'`"
+            raise ImportError(msg) from MISSING_PACKAGES_ERROR
+
         if model_id is None:
             model_id = self.SUPPORTED_MODELS[0]
         self.model_id = model_id

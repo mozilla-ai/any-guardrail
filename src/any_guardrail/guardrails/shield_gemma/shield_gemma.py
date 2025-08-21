@@ -1,8 +1,5 @@
 from typing import Any, ClassVar
 
-from torch.nn.functional import softmax
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
@@ -47,6 +44,8 @@ class ShieldGemma(HuggingFace):
         self.threshold = threshold
 
     def _load_model(self) -> None:
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
 
@@ -55,6 +54,8 @@ class ShieldGemma(HuggingFace):
         return super()._pre_processing(formatted_prompt)
 
     def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+        from torch.nn.functional import softmax
+
         logits = model_outputs["logits"]
         vocab = self.tokenizer.get_vocab()
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]

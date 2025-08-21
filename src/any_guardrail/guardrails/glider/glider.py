@@ -1,7 +1,5 @@
 from typing import Any, ClassVar
 
-from transformers import pipeline
-
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.types import GuardrailOutput
 
@@ -92,6 +90,8 @@ class Glider(HuggingFace):
         return GuardrailOutput(explanation=result)
 
     def _load_model(self) -> None:
+        from transformers import pipeline
+
         pipe = pipeline("text-classification", self.model_id)
         self.model = pipe
 
