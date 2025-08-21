@@ -1,1 +1,1 @@
-::: any_guardrail.guardrails.flowjudge
+::: any_guardrail.guardrails.flowjudge.flowjudge
