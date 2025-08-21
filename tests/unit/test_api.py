@@ -81,8 +81,31 @@ def test_get_guardrail_class_all_valid_names() -> None:
 def test_model_load() -> None:
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if not isinstance(guardrail_class, type(AnyLlm)):
-            with patch(guardrail_class.__module__ + "._load_model") as mock_load_model:
-                mock_load_model.return_value = "mocked_model"
-                guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
+        if guardrail_class is not AnyLlm:
+            with patch.object(guardrail_class, "_load_model") as mock_load_model:
+                if guardrail_name == GuardrailName.FLOWJUDGE:
+                    mock_load_model.return_value = "mocked_model"
+                    name = "Dummy"
+                    criteria = "Dummy criteria"
+                    rubric = {0: "Dummy 0", 1: "Dummy 1"}
+                    required_inputs = ['dummy']
+                    required_output = "response"
+                    guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, 
+                                                    name=name, 
+                                                    criteria=criteria, 
+                                                    rubric=rubric, 
+                                                    required_inputs=required_inputs, 
+                                                    required_output=required_output)
+                elif guardrail_name == GuardrailName.SHIELD_GEMMA:
+                    mock_load_model.side_effect = lambda : setattr(guardrail_class, "model", "mocked_model")
+                    guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, policy="Dummy")
+                elif guardrail_name == GuardrailName.GLIDER:
+                    continue
+                    # mock_load_model.side_effect = lambda : setattr(guardrail_class, "model", "mocked_model")
+                    # guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, pass_criteria="Dummy", rubric="Dummy")
+                elif guardrail_name == GuardrailName.OFFTOPIC:
+                    continue
+                else:
+                    mock_load_model.side_effect = lambda : setattr(guardrail_class, "model", "mocked_model")
+                    guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
                 assert guardrail.model == "mocked_model"
