@@ -78,7 +78,7 @@ def test_get_guardrail_class_all_valid_names() -> None:
         )
 
 
-def test_model_load():
+def test_model_load() -> None:
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
         if not isinstance(guardrail_class, type(AnyLlm)):
