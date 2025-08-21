@@ -63,12 +63,12 @@ class HuggingFace(Guardrail, ABC):
     def _pre_processing(self, input_text: str) -> Any:
         return self.tokenizer(input_text, return_tensors="pt")
 
-    def _inference(self, model_inputs: Any) -> dict[str, Any]:
+    def _inference(self, model_inputs: Any) -> Any:
         with torch.no_grad():
-            return self.model(**model_inputs)  # type: ignore[no-any-return]
+            return self.model(**model_inputs)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:
