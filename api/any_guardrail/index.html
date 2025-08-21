@@ -568,6 +568,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../guardrails/off_topic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    OffTopic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../guardrails/pangolin/" class="md-nav__link">
         
   
@@ -1027,7 +1050,7 @@
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="nd">@classmethod</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_guardrail_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">guardrail_name</span><span class="p">:</span> <span class="n">GuardrailName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Guardrail</span><span class="p">]:</span>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>        <span class="n">guardrail_module_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">guardrail_name</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;any_guardrail.guardrails.</span><span class="si">{</span><span class="n">guardrail_module_name</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>        <span class="n">module_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;any_guardrail.guardrails.</span><span class="si">{</span><span class="n">guardrail_module_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">guardrail_module_name</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a>        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_path</span><span class="p">)</span>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="n">parts</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^A-Za-z0-9]+&quot;</span><span class="p">,</span> <span class="n">guardrail_module_name</span><span class="p">)</span>

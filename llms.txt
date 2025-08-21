@@ -12,6 +12,7 @@
 - [Api - Guardrails - Harm Guard](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/harm_guard.md)
 - [Api - Guardrails - Injec Guard](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/injec_guard.md)
 - [Api - Guardrails - Jasper](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/jasper.md)
+- [Api - Guardrails - Off Topic](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/off_topic.md)
 - [Api - Guardrails - Pangolin](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/pangolin.md)
 - [Api - Guardrails - Protectai](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/protectai.md)
 - [Api - Guardrails - Sentinel](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/sentinel.md)
