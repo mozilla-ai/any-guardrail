@@ -39,7 +39,7 @@ Your output must be in the following format:
 </score>
 """
 
-DEFAULT_DATA_FORMAT = """
+INPUT_OUTPUT_DATA_FORMAT = """
 <INPUT>
 {input_text}
 </INPUT>
@@ -47,6 +47,12 @@ DEFAULT_DATA_FORMAT = """
 <OUTPUT>
 {output_text}
 </OUTPUT>
+"""
+
+INPUT_DATA_FORMAT = """
+<INPUT>
+{input_text}
+</INPUT>
 """
 
 
@@ -75,7 +81,7 @@ class Glider(HuggingFace):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str = "") -> GuardrailOutput:
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -96,8 +102,11 @@ class Glider(HuggingFace):
         pipe = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str = "") -> list[dict[str, str]]:
-        data = DEFAULT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
+    def _pre_processing(self, input_text: str, output_text: str | None = None) -> list[dict[str, str]]:
+        if output_text is None:
+            data = INPUT_DATA_FORMAT.format(input_text=input_text)
+        else:
+            data = INPUT_OUTPUT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return [{"role": "user", "content": prompt}]
 
