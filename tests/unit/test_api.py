@@ -113,7 +113,7 @@ def test_model_load() -> None:
                         )
                     else:
                         guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
-                assert guardrail.model == "mocked_model"
+                assert guardrail.model == "mocked_model"  # type: ignore[attr-defined]
 
 
 def test_post_processing_implementation() -> None:
