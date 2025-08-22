@@ -22,9 +22,9 @@ class OffTopic(HuggingFace):
 
     implementation: OffTopicJina | OffTopicStsb
 
-    def __init__(self, model_id: str) -> None:
+    def __init__(self, model_id: str | None = None) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
-        self.model_id = model_id
+        super().__init__(model_id)
         if self.model_id == self.SUPPORTED_MODELS[0]:
             self.implementation = OffTopicJina()
         elif self.model_id == self.SUPPORTED_MODELS[1]:

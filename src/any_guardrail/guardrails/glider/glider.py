@@ -74,7 +74,7 @@ class Glider(HuggingFace):
 
     SUPPORTED_MODELS: ClassVar = ["PatronusAI/glider"]
 
-    def __init__(self, model_id: str, pass_criteria: str, rubric: str) -> None:
+    def __init__(self, pass_criteria: str, rubric: str, model_id: str | None = None) -> None:
         """Initialize the GLIDER guardrail."""
         super().__init__(model_id)
         self.pass_criteria = pass_criteria
