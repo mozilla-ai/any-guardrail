@@ -4,11 +4,19 @@
 
 ### Installation
 
-Install with `pip`:
+You can install the bare bones library as follows (only [`any_guardrails.guardrails.any_llm.AnyLlm`] will be available):
 
 ```bash
 pip install any-guardrail
 ```
+
+Or you can install it with the required dependencies for different guardrails:
+
+```bash
+pip install any-guardrail[huggingface]
+```
+
+Refer to [pyproject.toml](https://github.com/mozilla-ai/any-guardrail/blob/main/pyproject.toml) for a list of the options available.
 
 ### Basic Usage
 
