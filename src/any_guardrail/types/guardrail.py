@@ -1,9 +1,15 @@
 from dataclasses import dataclass
-from typing import Optional, Dict
 
 
 @dataclass
 class GuardrailOutput:
-    unsafe: Optional[bool] = None
-    explanation: Optional[str | Dict[str, bool]] = None
-    score: Optional[float | int] = None
+    """Represents the output of a guardrail evaluation."""
+
+    unsafe: bool | None = None
+    """Indicates if the output is considered unsafe."""
+
+    explanation: str | dict[str, bool] | None = None
+    """Provides an explanation for the guardrail evaluation result."""
+
+    score: float | int | None = None
+    """Represents the score assigned to the output by the guardrail."""
