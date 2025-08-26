@@ -10,7 +10,7 @@ def test_custom_system_prompt() -> None:
     with mock.patch(
         "any_guardrail.guardrails.any_llm.any_llm.completion",
         return_value=mock.Mock(
-            choices=[mock.Mock(message=mock.Mock(content='{"valid": True, "explanation": "Valid input."}'))]
+            choices=[mock.Mock(message=mock.Mock(content='{"valid": true, "explanation": "Valid input."}'))]
         ),
     ) as mock_completion:
         result = guardrail.validate(
