@@ -22,4 +22,4 @@ def test_all_docs(doc_file: pathlib.Path) -> None:
     with (
         patch("any_guardrail.api.AnyGuardrail._get_guardrail_class", mocked_get_guardrail_class),
     ):
-        check_md_file(fpath=doc_file, memory=True)
+        check_md_file(fpath=doc_file, memory=True)  # type: ignore[no-untyped-call]
