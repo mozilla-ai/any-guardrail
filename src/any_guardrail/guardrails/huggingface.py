@@ -26,7 +26,7 @@ def _match_injection_label(
     logits = model_outputs["logits"][0].numpy()
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
-    return GuardrailOutput(unsafe=label == injection_label, score=scores.max().item())
+    return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
 
 
 class HuggingFace(Guardrail, ABC):

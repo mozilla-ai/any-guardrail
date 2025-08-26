@@ -54,7 +54,7 @@ guardrail = AnyGuardrail.create(GuardrailName.DEEPSET)
 
 result: GuardrailOutput = guardrail.validate("All smiles from me!")
 
-assert not result.unsafe
+assert result.valid
 ```
 
 ## Troubleshooting

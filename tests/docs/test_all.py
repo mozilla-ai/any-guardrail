@@ -13,7 +13,7 @@ from mktestdocs import check_md_file
 def test_all_docs(doc_file: pathlib.Path) -> None:
     mocked_guardrail_class = MagicMock()
     mocked_guardrail_output = MagicMock()
-    mocked_guardrail_output.unsafe = False
+    mocked_guardrail_output.valid = True
     mocked_guardrail_class.validate.return_value = mocked_guardrail_output
 
     mocked_get_guardrail_class = MagicMock()

@@ -61,5 +61,5 @@ class DuoGuard(HuggingFace):
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
         }
         return GuardrailOutput(
-            unsafe=any(predicted_labels.values()), explanation=predicted_labels, score=max(probabilities)
+            valid=not any(predicted_labels.values()), explanation=predicted_labels, score=max(probabilities)
         )

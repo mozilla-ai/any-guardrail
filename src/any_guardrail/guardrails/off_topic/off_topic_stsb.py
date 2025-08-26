@@ -59,6 +59,6 @@ class OffTopicStsb(HuggingFace):
         probs_dict = {"on-topic": explanatory_probs[0], "off-topic": explanatory_probs[1]}
 
         return GuardrailOutput(
-            unsafe=predicted_label == 1,  # Assuming label '1' indicates off-topic
+            valid=predicted_label != 1,  # Assuming label '1' indicates off-topic
             explanation=probs_dict,
         )

@@ -61,4 +61,4 @@ class ShieldGemma(HuggingFace):
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
         probabilities = softmax(selected_logits, dim=0)
         score = probabilities[0].item()
-        return GuardrailOutput(unsafe=score > self.threshold, explanation=None, score=score)
+        return GuardrailOutput(valid=score < self.threshold, explanation=None, score=score)

@@ -26,8 +26,8 @@ class GuardrailName(str, Enum):
 class GuardrailOutput(BaseModel):
     """Represents the output of a guardrail evaluation."""
 
-    unsafe: bool | None = None
-    """Indicates if the output is considered unsafe."""
+    valid: bool | None = None
+    """Indicates if the output should be considered valid."""
 
     explanation: str | dict[str, bool] | dict[str, float] | None = None
     """Provides an explanation for the guardrail evaluation result."""
