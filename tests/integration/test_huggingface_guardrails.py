@@ -32,6 +32,6 @@ def test_huggingface_guardrails(
 
     result = guardrail.validate("What is the weather like today?")
 
-    assert not result.unsafe
+    assert result.valid
     assert result.explanation == expected_explanation
     assert result.score is not None

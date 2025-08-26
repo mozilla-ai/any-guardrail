@@ -10,5 +10,5 @@ def test_any_llm_guardrail() -> None:
 
     assert isinstance(result, GuardrailOutput)
 
-    assert not result.unsafe
+    assert result.valid
     assert result.explanation is not None

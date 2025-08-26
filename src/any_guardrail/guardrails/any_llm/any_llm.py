@@ -17,8 +17,8 @@ Here is the policy: {policy}
 
 You must return the following:
 
-- unsafe: bool
-    If the input text provided by the user doesn't adhere to the policy, you must reject it (mark it as unsafe=True).
+- valid: bool
+    If the input text provided by the user doesn't adhere to the policy, you must reject it (mark it as valid=False).
 
 - explanation: str
     A clear explanation of why the input text was rejected or not.

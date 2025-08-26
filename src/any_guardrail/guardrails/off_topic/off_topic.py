@@ -42,7 +42,7 @@ class OffTopic(HuggingFace):
             comparison_text: the text you want to compare to.
 
         Returns:
-            Unsafe means off topic, safe means on topic. Will also provide probabilities of each.
+            valid=False means off topic, valid=True  means on topic. Will also provide probabilities of each.
 
         """
         msg = "Must provide a text to compare to."
