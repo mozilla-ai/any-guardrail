@@ -1,7 +1,7 @@
 from unittest import mock
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.any_llm.any_llm import DEFAULT_MODEL_ID, AnyLlm
-from any_guardrail.types.guardrail import GuardrailOutput
 
 
 def test_custom_system_prompt() -> None:
