@@ -1,7 +1,7 @@
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.types import GuardrailOutput
 
 DUOGUARD_CATEGORIES = [
     "Violent crimes",

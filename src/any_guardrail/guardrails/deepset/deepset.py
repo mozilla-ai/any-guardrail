@@ -1,7 +1,7 @@
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace, _match_injection_label
-from any_guardrail.types import GuardrailOutput
 
 DEEPSET_INJECTION_LABEL = "INJECTION"
 

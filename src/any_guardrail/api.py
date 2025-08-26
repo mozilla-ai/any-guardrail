@@ -3,7 +3,7 @@ import inspect
 import re
 from typing import Any
 
-from any_guardrail.guardrail import Guardrail, GuardrailName
+from any_guardrail.base import Guardrail, GuardrailName
 
 
 class AnyGuardrail:

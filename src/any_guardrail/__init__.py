@@ -1,5 +1,4 @@
 from .api import AnyGuardrail
-from .guardrail import GuardrailName
-from .types import GuardrailOutput
+from .base import GuardrailName, GuardrailOutput
 
 __all__ = ["AnyGuardrail", "GuardrailName", "GuardrailOutput"]
