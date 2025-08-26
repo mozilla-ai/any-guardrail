@@ -89,6 +89,7 @@ extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
+"scripts/**" = ["T201"]
 
 [tool.mypy]
 strict = true
