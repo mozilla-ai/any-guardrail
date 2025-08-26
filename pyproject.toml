@@ -9,21 +9,25 @@ license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-  "pydantic",
-  "openai",
-  "rich",
-  "httpx",
-  "transformers>=4.53.2",
-  "torch>=2.7.1",
-  "flow-judge[hf]>=0.1.2",
-  "huggingface-hub>=0.33.4",
-  "safetensors>=0.5.3",
-  "tiktoken>=0.11.0",
-  "protobuf>=6.31.1",
+    "any-llm-sdk>=0.11.0,<1",
+    "pydantic"
 ]
 
 [project.optional-dependencies]
-all = []
+all = [
+  "any-guardrail[flowjudge,huggingface]"
+]
+
+flowjudge = [
+  "flow-judge[hf]>=0.1.2"
+]
+
+huggingface = [
+  "huggingface-hub>=0.33.4",
+  "transformers>=4.53.2",
+  "torch>=2.7.1"
+]
+
 testing = [
     "jupyterlab>=4.4.5",
     "pandas",
@@ -105,7 +109,7 @@ module = "tests.*"
 disallow_untyped_decorators = false # mypy gets confused by pytest decorators
 
 [[tool.mypy.overrides]]
-module = ["pytest", "mktestdocs", "pytest_lazy_fixtures", "syrupy.assertion"]
+module = ["pytest", "mktestdocs", "pytest_lazy_fixtures"]
 ignore_missing_imports = true # pytest related modules are not found
 
 [tool.pytest.ini_options]
@@ -127,8 +131,9 @@ docs = [
 
 
 lint = [
-  "pre-commit==4.2.0",
+  "pre-commit==4.3.0",
   "pre-commit-uv==4.1.4",
+  "mypy",
 ]
 
 tests = [

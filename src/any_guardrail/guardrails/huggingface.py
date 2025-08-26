@@ -1,12 +1,17 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-import numpy as np
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+try:
+    import numpy as np
+    import torch
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput
+    MISSING_PACKAGES_ERROR = None
+
+except ImportError as e:
+    MISSING_PACKAGES_ERROR = e
+
+from any_guardrail.base import Guardrail, GuardrailOutput
 
 
 def _softmax(_outputs):  # type: ignore[no-untyped-def]
@@ -21,7 +26,7 @@ def _match_injection_label(
     logits = model_outputs["logits"][0].numpy()
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
-    return GuardrailOutput(unsafe=label == injection_label, score=scores.max().item())
+    return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
 
 
 class HuggingFace(Guardrail, ABC):
@@ -29,6 +34,10 @@ class HuggingFace(Guardrail, ABC):
 
     def __init__(self, model_id: str | None = None) -> None:
         """Initialize the guardrail with a model ID."""
+        if MISSING_PACKAGES_ERROR is not None:
+            msg = "Missing packages for HuggingFace guardrail. You can try `pip install 'any-guardrail[huggingface]'`"
+            raise ImportError(msg) from MISSING_PACKAGES_ERROR
+
         if model_id is None:
             model_id = self.SUPPORTED_MODELS[0]
         self.model_id = model_id
@@ -53,12 +62,12 @@ class HuggingFace(Guardrail, ABC):
     def _pre_processing(self, input_text: str) -> Any:
         return self.tokenizer(input_text, return_tensors="pt", truncation=True)
 
-    def _inference(self, model_inputs: Any) -> dict[str, Any]:
+    def _inference(self, model_inputs: Any) -> Any:
         with torch.no_grad():
-            return self.model(**model_inputs)  # type: ignore[no-any-return]
+            return self.model(**model_inputs)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:

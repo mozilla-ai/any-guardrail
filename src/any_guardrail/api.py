@@ -3,7 +3,7 @@ import inspect
 import re
 from typing import Any
 
-from any_guardrail.guardrail import Guardrail, GuardrailName
+from any_guardrail.base import Guardrail, GuardrailName
 
 
 class AnyGuardrail:
@@ -46,7 +46,7 @@ class AnyGuardrail:
     @classmethod
     def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:
         guardrail_module_name = f"{guardrail_name.value}"
-        module_path = f"any_guardrail.guardrails.{guardrail_module_name}"
+        module_path = f"any_guardrail.guardrails.{guardrail_module_name}.{guardrail_module_name}"
 
         module = importlib.import_module(module_path)
         parts = re.split(r"[^A-Za-z0-9]+", guardrail_module_name)

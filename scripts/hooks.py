@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Generate llms.txt and llms-full.txt files for the documentation.
 
 It also serves markdown files as text files for LLM consumption.

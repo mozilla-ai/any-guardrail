@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.guardrails.duo_guard import DUOGUARD_CATEGORIES
+from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
 
 
@@ -32,6 +32,6 @@ def test_huggingface_guardrails(
 
     result = guardrail.validate("What is the weather like today?")
 
-    assert not result.unsafe
+    assert result.valid
     assert result.explanation == expected_explanation
     assert result.score is not None
