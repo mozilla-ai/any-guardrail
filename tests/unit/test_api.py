@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.guardrail import Guardrail
+from any_guardrail.base import Guardrail
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.huggingface import HuggingFace
 

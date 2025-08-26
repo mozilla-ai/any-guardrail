@@ -1,7 +1,7 @@
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.types import GuardrailOutput
 
 SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
 prompt is in violation of the defined safety policies.

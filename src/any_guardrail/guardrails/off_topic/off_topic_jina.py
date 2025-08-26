@@ -4,9 +4,9 @@ from typing import Any, ClassVar
 import torch
 from transformers import AutoModel, AutoTokenizer
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.off_topic.models.cross_encoder_shared import CrossEncoderWithSharedBase
-from any_guardrail.types import GuardrailOutput
 
 BASEMODEL = "jinaai/jina-embeddings-v2-small-en"
 

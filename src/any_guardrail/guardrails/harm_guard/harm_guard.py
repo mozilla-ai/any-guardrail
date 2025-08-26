@@ -1,7 +1,7 @@
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace, _softmax
-from any_guardrail.types import GuardrailOutput
 
 HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 

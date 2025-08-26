@@ -1,9 +1,9 @@
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
-from any_guardrail.types import GuardrailOutput
 
 
 class OffTopic(HuggingFace):

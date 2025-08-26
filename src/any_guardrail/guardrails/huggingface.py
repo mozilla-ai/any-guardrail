@@ -11,8 +11,7 @@ try:
 except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
-from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailOutput
 
 
 def _softmax(_outputs):  # type: ignore[no-untyped-def]

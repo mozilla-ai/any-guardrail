@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 from any_llm import completion
 
-from any_guardrail.guardrail import Guardrail
-from any_guardrail.types import GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailOutput
 
 if TYPE_CHECKING:
     from any_llm.types.completion import ChatCompletion
