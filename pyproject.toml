@@ -101,7 +101,7 @@ module = "tests.*"
 disallow_untyped_decorators = false # mypy gets confused by pytest decorators
 
 [[tool.mypy.overrides]]
-module = ["pytest", "mktestdocs", "pytest_lazy_fixtures", "syrupy.assertion"]
+module = ["pytest", "mktestdocs", "pytest_lazy_fixtures"]
 ignore_missing_imports = true # pytest related modules are not found
 
 [tool.pytest.ini_options]
@@ -125,6 +125,7 @@ docs = [
 lint = [
   "pre-commit==4.3.0",
   "pre-commit-uv==4.1.4",
+  "mypy",
 ]
 
 tests = [
