@@ -6,6 +6,8 @@ repo_name: any-guardrail
 nav:
   - Intro: index.md
   - Quick Start: quickstart.md
+  - Cookbook:
+      - Any LLM as a Guardrail: cookbook/any_llm_as_a_guardrail.ipynb
   - API Reference:
       - Guardrails:
           - AnyLLM: api/guardrails/any_llm.md
@@ -77,6 +79,9 @@ plugins:
         options:
           show_root_heading: true
           heading_level: 3
+- mkdocs-jupyter:
+      no_input: false
+      show_input: true
 
 hooks:
   - scripts/hooks.py
