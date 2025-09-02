@@ -1,3 +1,8 @@
+<p align="center">
+  <picture>
+    <img src="./images/any-guardrail.png" width="20%" alt="Project logo"/>
+  </picture>
+</p>
 
 `any-guardrail` is a Python library providing a single interface to different guardrails.
 
