@@ -43,8 +43,8 @@ theme:
         icon: material/lightbulb-outline
         name: Switch to light mode
     - accent: blue
-  logo: images/any-guardrail-logo-mark.png
-  favicon: images/any-guardrail_favicon.png
+  logo: images/any-guardrail-favicon.png
+  favicon: images/any-guardrail-favicon.png
   features:
     - content.code.copy
     - content.tabs.link
