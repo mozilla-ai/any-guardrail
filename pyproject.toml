@@ -89,6 +89,7 @@ extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
+"docs/cookbook/**" = ["T201"]
 
 [tool.mypy]
 strict = true
@@ -119,12 +120,13 @@ docs = [
   "mkdocs-material",
   "mkdocstrings-python",
   "mkdocs-include-markdown-plugin>=7.1.5",
+  "mkdocs-jupyter>=0.25.1",
 ]
 
 
 lint = [
   "pre-commit==4.3.0",
-  "pre-commit-uv==4.1.4",
+  "pre-commit-uv==4.1.5",
   "mypy",
 ]
 
