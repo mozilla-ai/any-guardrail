@@ -37,18 +37,20 @@ class LlamaGuard(HuggingFace):
             raise ValueError(msg)
         super().__init__()
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:
-        """Judge whether the input text or the input text, output text pair are unsafe based on the Llama taxonomy
+    def validate(self, input_text: str, output_text: str | None = None, **kwargs: Any) -> GuardrailOutput:
+        """Judge whether the input text or the input text, output text pair are unsafe based on the Llama taxonomy.
 
         Args:
             input_text: the prior text before hitting a system or model.
             output_text: the succeeding text after hitting a system or model.
+            **kwargs: additional keyword arguments, specifically supporting 'excluded_category_keys' and 'categories'.
+                Please see Llama Guard documentation for more details.
 
         Returns:
             Provides an explanation that can be parsed to see whether the text is safe or not.
 
         """
-        model_inputs = self.implementation._pre_processing(input_text, output_text)
+        model_inputs = self.implementation._pre_processing(input_text, output_text, **kwargs)
         model_outputs = self.implementation._inference(model_inputs)
         return self._post_processing(model_outputs)
 

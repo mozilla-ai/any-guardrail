@@ -16,29 +16,49 @@ class LlamaGuard3(HuggingFace):
     -[HuggingFace Llama Guard 3 Docs](https://huggingface.co/meta-llama/Llama-Guard-3-1B)
     """
 
-    SUPPORTED_MODELS: ClassVar = ["meta-llama/Llama-Guard-3-1B",
-                                  "meta-llama/Llama-Guard-3-8B",]
+    SUPPORTED_MODELS: ClassVar = [
+        "meta-llama/Llama-Guard-3-1B",
+        "meta-llama/Llama-Guard-3-8B",
+    ]
 
     def _load_model(self) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id, dtype=torch.bfloat16)
 
-    def _pre_processing(self, 
-                        input_text: str, 
-                        output_text: str | None = None,
-                        **kwargs) -> Any:
+    def _pre_processing(self, input_text: str, output_text: str | None = None, **kwargs: Any) -> Any:
         if output_text:
-            conversation = [{"role": "user","content": [{"type": "text", "text": input_text},],},
-                            {"role": "assistant","content": [{"type": "text", "text": output_text},],}]
+            conversation = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": input_text},
+                    ],
+                },
+                {
+                    "role": "assistant",
+                    "content": [
+                        {"type": "text", "text": output_text},
+                    ],
+                },
+            ]
         else:
-            conversation = [{"role": "user","content": [{"type": "text", "text": input_text},],},]
-        return self.tokenizer.apply_chat_template(conversation, 
-                                                  return_tensors="pt",
-                                                  **kwargs)
+            conversation = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": input_text},
+                    ],
+                },
+            ]
+        return self.tokenizer.apply_chat_template(conversation, return_tensors="pt", **kwargs)
 
     def _inference(self, model_inputs: Any) -> Any:
         prompt_len = model_inputs.shape[1]
-        output = self.model.generate(model_inputs, max_new_tokens=20, pad_token_id=0,)
+        output = self.model.generate(
+            model_inputs,
+            max_new_tokens=20,
+            pad_token_id=0,
+        )
         return output[:, prompt_len:]
 
     def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
