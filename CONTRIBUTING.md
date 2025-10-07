@@ -18,7 +18,7 @@ We welcome all kinds of contributions, from improving customization, to extendin
 
 ### **Report Issues** 🐛
 - Found a bug? Open a Bug Report by clicking on 'New Issue'
-- Provide as much detail as possible, including the steps to reproduce the issue and Expected vs. actual behavior
+- Provide as much detail as possible, including the steps to reproduce the issue, complete traces or logs, and Expected vs. actual behavior
 
 ### **Suggest Features** 🚀
 - Have an idea for improving the project? Open a Feature Request by clicking on 'New Issue'
@@ -41,10 +41,6 @@ We welcome all kinds of contributions, from improving customization, to extendin
 **Testing**
 - Test changes locally to ensure functionality.
 - Install the package using development dependencies before testing: `uv sync --group dev --extra all`
-- Integration tests need the following environment variables to be set:
-  ```
-  MISTRAL_API_KEY="YOUR API KEY"
-  ```
 
 **Documentation**
 - Update docs for changes to functionality and maintain consistency with existing docs.
@@ -59,6 +55,7 @@ If a guardrail is not available:
     We have an abstract `Guardrail` class that has the minimum api required to create a new guardrail. Create a new file in src/any_guardrail/guardrails for your guardrail, and create a class that inherits all the abstract
 methods from Guardrail. See an existing guardrail for implementation hints.
 
+If your new guardrail comes from HuggingFace, we have a `HuggingFace` base class that imposes `preprocessing`, `inference`, and `postprocessing` functions for your guardrail to adopt. That way, everything stays standard along all HuggingFace models.
 - Add your provider to GuardrailName.
 
     Create a new enum value for your guardrail. The string should follow lower_case while the enum key should be UPPER_CASE.
