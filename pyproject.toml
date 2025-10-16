@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
   "any-llm-sdk>=0.11.0,<1",
-  "pydantic"
+  "pydantic",
 ]
 
 [project.optional-dependencies]
@@ -25,7 +25,8 @@ flowjudge = [
 huggingface = [
   "huggingface-hub>=0.33.4",
   "transformers>=4.53.2",
-  "torch>=2.7.1"
+  "torch>=2.7.1",
+  "hf-xet>=1.1.5"
 ]
 
 [project.urls]

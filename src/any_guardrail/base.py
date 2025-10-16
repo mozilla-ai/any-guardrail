@@ -21,6 +21,7 @@ class GuardrailName(str, Enum):
     PROTECTAI = "protectai"
     SENTINEL = "sentinel"
     SHIELD_GEMMA = "shield_gemma"
+    LLAMA_GUARD = "llama_guard"
 
 
 class GuardrailOutput(BaseModel):
