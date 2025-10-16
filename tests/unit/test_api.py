@@ -22,7 +22,7 @@ def test_all_guardrails_in_enum() -> None:
                     sub_item.is_file()
                     and sub_item.suffix == ".py"
                     and sub_item.stem
-                    not in ("__init__", "off_topic_stsb", "off_topic_jina", "llama_guard3", "llama_guard4")
+                    not in ("__init__", "off_topic_stsb", "off_topic_jina")
                 ):
                     guardrail_modules.append(sub_item.stem)
 
@@ -54,7 +54,7 @@ def test_guardrail_enum_values_match_module_names() -> None:
                     sub_item.is_file()
                     and sub_item.suffix == ".py"
                     and sub_item.stem
-                    not in ("__init__", "off_topic_stsb", "off_topic_jina", "llama_guard3", "llama_guard4")
+                    not in ("__init__", "off_topic_stsb", "off_topic_jina")
                 ):
                     actual_modules.add(sub_item.stem)
 

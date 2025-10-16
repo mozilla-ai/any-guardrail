@@ -5,8 +5,6 @@ from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Lla
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.guardrails.llama_guard.llama_guard3 import LlamaGuard3
-from any_guardrail.guardrails.llama_guard.llama_guard4 import LlamaGuard4
 
 
 class LlamaGuard(HuggingFace):
