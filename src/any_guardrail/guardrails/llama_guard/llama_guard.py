@@ -25,8 +25,6 @@ class LlamaGuard(HuggingFace):
         "meta-llama/Llama-Guard-4-12B",
     ]
 
-    implementation: LlamaGuard3 | LlamaGuard4
-
     def __init__(self, model_id: str | None = None) -> None:
         """Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3."""
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
