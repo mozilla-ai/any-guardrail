@@ -33,11 +33,11 @@ def test_huggingface_guardrails(
 
     result = guardrail.validate("What is the weather like today?")
 
+    assert result.valid
+
     if guardrail_name == GuardrailName.LLAMA_GUARD:
-        assert result.valid is None
         assert result.explanation is not None
         assert result.score is None
     else:
-        assert result.valid
         assert result.explanation == expected_explanation
         assert result.score is not None
