@@ -17,5 +17,6 @@
 - [Api - Guardrails - Protectai](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/protectai.md)
 - [Api - Guardrails - Sentinel](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/sentinel.md)
 - [Api - Guardrails - Shield Gemma](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/shield_gemma.md)
+- [Api - Guardrails - Llama Guard](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/llama_guard.md)
 - [Api - Any Guardrail](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/any_guardrail.md)
 - [Api - Guardrails - Index](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/index.md)

@@ -208,6 +208,15 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 ---
 
+## api/guardrails/llama_guard.md
+
+<!-- Source: api/guardrails/llama_guard.md -->
+
+::: any_guardrail.guardrails.llama_guard.llama_guard
+
+
+---
+
 ## api/any_guardrail.md
 
 <!-- Source: api/any_guardrail.md -->
