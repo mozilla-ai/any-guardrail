@@ -16,6 +16,7 @@ from any_guardrail.guardrails.huggingface import HuggingFace
         (GuardrailName.INJECGUARD, {}, None),
         (GuardrailName.JASPER, {}, None),
         (GuardrailName.PANGOLIN, {}, None),
+        (GuardrailName.LLAMA_GUARD, {"model_id": "hf-internal-testing/tiny-random-LlamaForCausalLM"}, None),
         # (GuardrailName.PROTECTAI, {}, None), # Requires HF login
         # (GuardrailName.SENTINEL, {}, None),  # Requires HF login
         # (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),  # Requires HF login
@@ -28,10 +29,15 @@ def test_huggingface_guardrails(
     guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **guardrail_kwargs)
 
     assert isinstance(guardrail, HuggingFace)
-    assert guardrail.model_id == guardrail.SUPPORTED_MODELS[0]
+    assert guardrail.model_id == (guardrail_kwargs.get("model_id") or guardrail.SUPPORTED_MODELS[0])
 
     result = guardrail.validate("What is the weather like today?")
 
     assert result.valid
-    assert result.explanation == expected_explanation
-    assert result.score is not None
+
+    if guardrail_name == GuardrailName.LLAMA_GUARD:
+        assert result.explanation is not None
+        assert result.score is None
+    else:
+        assert result.explanation == expected_explanation
+        assert result.score is not None
