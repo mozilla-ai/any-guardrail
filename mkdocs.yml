@@ -23,6 +23,7 @@ nav:
           - ProtectAI: api/guardrails/protectai.md
           - Sentinel: api/guardrails/sentinel.md
           - Shield Gemma: api/guardrails/shield_gemma.md
+          - Llama Guard: api/guardrails/llama_guard.md
       - AnyGuardrail: api/any_guardrail.md
 theme:
   name: material
