@@ -23,17 +23,16 @@ A single interface to use different guardrail models.
 
 </div>
 
-## [Documentation](https://mozilla-ai.github.io/any-guardrail/)
 
-## Motivation
+`any-guardrail` provides a unified interface for AI safety guardrails, for example, letting you detect toxic content, PII leakage, jailbreak attempts, and other risks in LLM inputs and outputs. Switch between different guardrail providers, both encoder-based (discriminative) and decoder-based (generative) models like Llama Guard and ShieldGemma, without changing your code.
 
-LLM Guardrail and Judge models can be seen as a combination of an LLM + some classification function. This leads to some churn when one wants to experiment with guardrails to see which fits their use case or to compare guardrails. `any-guardrail` is built to provide a seamless interface to many guardrail models, both encoder (discriminative) and decoder (generative), to easily swap them out for downstream use cases and research.
+Some guardrails are extremely customizable, which `any-guardrail` fully exposes. See the complete list of supported providers and customization examples in our [docs](https://mozilla-ai.github.io/any-guardrail/). 
 
-## Our Approach
+## Why any-guardrail?
 
-`any-guardrail` is meant to provide the minimum amount of access necessary to implement the guardrails in your pipeline. We do this by providing taking care of the loading and instantiation of a model or pipeline in the backend, and providing a `validate` function to classify.
-
-Some guardrails are extremely customizable and we allow for that customization as well. We recommend reading our [docs](https://mozilla-ai.github.io/any-guardrail/) to see how to build more customized use cases.
+- **Unified API**: Switch between evergrowing list of guardrail providers without code changes
+- **Production-ready**: Built for real-world LLM applications
+- **Flexible**: Use encoder-based (fast) or decoder-based (customizable) models
 
 ## Quickstart
 
@@ -56,12 +55,21 @@ pip install any-guardrail
 ```python
 from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 
+#Initialize guardrail
 guardrail = AnyGuardrail.create(GuardrailName.DEEPSET)
 
-result: GuardrailOutput = guardrail.validate("All smiles from me!")
+#Valusate input before sending to your LLM
+result: GuardrailOutput = guardrail.validate("How do I hack into a system?")
 
-assert result.valid
+if not result.valid:
+    print(f"Blocked: {result.explanation}")
+else:
+    # Safe to proceed with LLM call
+    response = your_llm(user_input)
 ```
+
+## Documentation
+Full guides at [docs link](https://mozilla-ai.github.io/any-guardrail/)
 
 ## Troubleshooting
 
