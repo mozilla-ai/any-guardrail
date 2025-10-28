@@ -58,7 +58,7 @@ from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 # Initialize guardrail
 guardrail = AnyGuardrail.create(GuardrailName.DEEPSET)
 
-#Valusate input before sending to your LLM
+# Validate input before sending to your LLM
 result: GuardrailOutput = guardrail.validate("How do I hack into a system?")
 
 if not result.valid:
