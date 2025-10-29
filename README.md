@@ -24,13 +24,13 @@ A single interface to use different guardrail models.
 </div>
 
 
-`any-guardrail` provides a unified interface for AI safety guardrails, for example, letting you detect toxic content, PII leakage, jailbreak attempts, and other risks in LLM inputs and outputs. Switch between different guardrail providers, both encoder-based (discriminative) and decoder-based (generative) models like Llama Guard and ShieldGemma, without changing your code.
+`any-guardrail` provides a unified interface for AI safety guardrails, for example, letting you detect toxic content, jailbreak attempts, and other risks in LLM inputs and outputs. Switch between different guardrail providers, both encoder-based (discriminative) and decoder-based (generative) models like Llama Guard and ShieldGemma, without changing your code.
 
 Some guardrails are extremely customizable, which `any-guardrail` fully exposes. See the complete list of supported providers and customization examples in our [docs](https://mozilla-ai.github.io/any-guardrail/). 
 
 ## Why any-guardrail?
 
-- **Unified API**: Switch between evergrowing list of guardrail providers without code changes
+- **Unified API**: Switch between evergrowing list of guardrail providers
 - **Production-ready**: Built for real-world LLM applications
 - **Flexible**: Use encoder-based (fast) or decoder-based (customizable) models
 
