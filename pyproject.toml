@@ -90,7 +90,7 @@ extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
-"docs/cookbook/**" = ["T201"]
+"docs/cookbook/**" = ["T201", "TRY300"]
 
 [tool.mypy]
 strict = true
