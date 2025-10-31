@@ -42,8 +42,3 @@ repos:
     hooks:
       - id: codespell
         exclude: CODE_OF_CONDUCT.md|tests/assets
-
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.6.1
-    hooks:
-      - id: nbstripout

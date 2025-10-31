@@ -8,7 +8,6 @@ nav:
   - Quick Start: quickstart.md
   - Cookbook:
       - Any LLM as a Guardrail: cookbook/any_llm_as_a_guardrail.ipynb
-      - Customer Service Policy Guardrail: cookbook/customer_service_policy_guardrail.ipynb
   - API Reference:
       - Guardrails:
           - AnyLLM: api/guardrails/any_llm.md
