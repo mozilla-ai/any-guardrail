@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../../quickstart/">
+        <link rel="prev" href="../any_llm_as_a_guardrail/">
       
       
-        <link rel="next" href="../customer_service_policy_guardrail/">
+        <link rel="next" href="../../api/guardrails/any_llm/">
       
       
       <link rel="icon" href="../../images/any-guardrail-favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Using Any LLM as a Guardrail - any-guardrail</title>
+        <title>Customer Service Policy Guardrail - any-guardrail</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-any-llm-as-a-guardrail" class="md-skip">
+        <a href="#customer-service-policy-guardrail" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using Any LLM as a Guardrail
+              Customer Service Policy Guardrail
             
           </span>
         </div>
@@ -343,6 +343,29 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../any_llm_as_a_guardrail/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Using Any LLM as a Guardrail
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -360,7 +383,7 @@
   
   
   <span class="md-ellipsis">
-    Using Any LLM as a Guardrail
+    Customer Service Policy Guardrail
     
   </span>
   
@@ -373,7 +396,7 @@
   
   
   <span class="md-ellipsis">
-    Using Any LLM as a Guardrail
+    Customer Service Policy Guardrail
     
   </span>
   
@@ -396,6 +419,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       Install dependencies
@@ -414,9 +446,51 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#try-it-with-different-models-policies-inputs" class="md-nav__link">
+  <a href="#understanding-policies" class="md-nav__link">
     <span class="md-ellipsis">
-      Try it with different models / policies / inputs
+      Understanding Policies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a Policy?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Policy Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-workflow-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complete Workflow Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing &amp; Validation
     </span>
   </a>
   
@@ -426,29 +500,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../customer_service_policy_guardrail/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Customer Service Policy Guardrail
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -928,6 +979,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       Install dependencies
@@ -946,9 +1006,51 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#try-it-with-different-models-policies-inputs" class="md-nav__link">
+  <a href="#understanding-policies" class="md-nav__link">
     <span class="md-ellipsis">
-      Try it with different models / policies / inputs
+      Understanding Policies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is a Policy?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Policy Best Practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-workflow-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complete Workflow Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing &amp; Validation
     </span>
   </a>
   
@@ -970,7 +1072,7 @@
 
 
   
-    <a href="https://github.com/mozilla-ai/any-guardrail/edit/main/docs/cookbook/any_llm_as_a_guardrail.ipynb" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/mozilla-ai/any-guardrail/edit/main/docs/cookbook/customer_service_policy_guardrail.ipynb" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1420,8 +1522,51 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="using-any-llm-as-a-guardrail">Using Any LLM as a Guardrail<a class="anchor-link" href="#using-any-llm-as-a-guardrail">¶</a></h1><p>This tutorial will show you how to use any LLM as a baseline guardrail that can
-validate input text against a custom <code>policy</code>, using the built-in guardrail based on <a href="https://github.com/mozilla-ai/any-llm"><code>any-llm</code></a>.</p>
+<h1 id="customer-service-policy-guardrail">Customer Service Policy Guardrail<a class="anchor-link" href="#customer-service-policy-guardrail">¶</a></h1><p><a href="https://colab.research.google.com/github/mozilla-ai/any-guardrail/blob/main/docs/cookbook/customer_service_policy_guardrail.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg"/></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=683d6d61">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>This tutorial will show you how to create a Customer Chat Bot guardrail for an e-commerce site that can validate input text against a custom <code>policy</code>, using the built-in guardrail based on <a href="https://github.com/mozilla-ai/any-llm"><code>any-llm</code></a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=be959c47">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<blockquote>
+<p>⚠️ <strong>Note:</strong> The sample outputs shown in this notebook are generated by AI models.
+Because generative model responses can vary slightly between runs,
+your results may not match the examples shown exactly.</p>
+</blockquote>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4c3d3d80">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="prerequisites">Prerequisites<a class="anchor-link" href="#prerequisites">¶</a></h2><p>Before starting, ensure you have:</p>
+<ul>
+<li>Python 3.8 or higher</li>
+<li>An OpenAI API key (<a href="https://platform.openai.com/api-keys">get one here</a>)</li>
+<li>Basic familiarity with async/await in Python</li>
+</ul>
+<p><strong>Estimated time:</strong> 15-20 minutes<br/>
+<strong>Estimated cost:</strong> $0.05-0.10 in API calls</p>
 </div>
 </div>
 </div>
@@ -1456,12 +1601,14 @@ validate input text against a custom <code>policy</code>, using the built-in gua
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="s1">'any-guardrail'</span>
+<span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="s1">'any-agent[openai]'</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">nest_asyncio</span>
 
 <span class="n">nest_asyncio</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">%pip install 'any-guardrail'
+%pip install 'any-agent[openai]'
 
 import nest_asyncio
 
@@ -1478,9 +1625,8 @@ nest_asyncio.apply()</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We will be using a model from <code>openai</code> by default, but you can check
-the different providers supported in <code>any-llm</code>:</p>
-<p><a href="https://mozilla-ai.github.io/any-llm/providers/">https://mozilla-ai.github.io/any-llm/providers/</a></p>
+<p>We will be using a model from <code>openai</code> by default, but you can experiment with
+the different <a href="https://mozilla-ai.github.io/any-llm/providers/">providers supported</a> by <code>any-llm</code></p>
 </div>
 </div>
 </div>
@@ -1536,7 +1682,7 @@ else:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="create-the-guardrail">Create the guardrail<a class="anchor-link" href="#create-the-guardrail">¶</a></h2>
+<h2 id="create-the-guardrail">Create the guardrail<a class="anchor-link" href="#create-the-guardrail">¶</a></h2><p>Let's initialize a guardrail and test it with a simple customer service policy.</p>
 </div>
 </div>
 </div>
@@ -1595,18 +1741,33 @@ else:
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7c010e36">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a72b055d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="try-it-with-different-models-policies-inputs">Try it with different models / policies / inputs<a class="anchor-link" href="#try-it-with-different-models-policies-inputs">¶</a></h2>
+<h2 id="understanding-policies">Understanding Policies<a class="anchor-link" href="#understanding-policies">¶</a></h2><h3 id="what-is-a-policy">What is a Policy?<a class="anchor-link" href="#what-is-a-policy">¶</a></h3><p>A <strong>policy</strong> is a set of rules written in natural language that defines what content should be accepted or rejected. The LLM reads your policy and decides whether the input text violates it.</p>
+<p><strong>The more specific your policy, the better the guardrail performs.</strong></p>
+<h3 id="policy-best-practices">Policy Best Practices<a class="anchor-link" href="#policy-best-practices">¶</a></h3><p>✅ <strong>DO:</strong></p>
+<ul>
+<li>Be specific about what to reject and what to allow</li>
+<li>Use clear, simple language</li>
+<li>Provide examples when possible</li>
+<li>Focus on behaviors, not keywords</li>
+</ul>
+<p>❌ <strong>DON'T:</strong></p>
+<ul>
+<li>Be vague ("reject bad stuff")</li>
+<li>Make policies too long (&gt;500 words)</li>
+<li>Rely only on keyword matching</li>
+<li>Forget to test edge cases"</li>
+</ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cd7d37ff">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c1d9d15b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1624,26 +1785,67 @@ else:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">MODEL_ID</span> <span class="o">=</span> <span class="s2">"openai/gpt-5-nano"</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">"openai/gpt-5-nano"</span>
 
-<span class="n">POLICY</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">You hate Mondays.</span>
-<span class="s2">You must reject any request related with planning activities on Mondays.</span>
+<span class="n">policy</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">You are a customer service AI assistant for an e-commerce company.</span>
+
+<span class="s2">ALLOWED topics:</span>
+<span class="s2">- Product information and recommendations</span>
+<span class="s2">- Order status and tracking</span>
+<span class="s2">- Return and refund policies</span>
+<span class="s2">- Account management help</span>
+<span class="s2">- Shipping information</span>
+
+<span class="s2">PROHIBITED topics:</span>
+<span class="s2">- Personal advice (medical, legal, financial)</span>
+<span class="s2">- Off-topic conversations (politics, religion, personal opinions)</span>
+<span class="s2">- Requests to bypass company policies</span>
+<span class="s2">- Sharing other customers' information</span>
+<span class="s2">- Making unauthorized discounts or offers</span>
+
+<span class="s2">Reject any request that falls outside your role as a customer service agent.</span>
 <span class="s2">"""</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">MODEL_ID = "openai/gpt-5-nano"
+<div class="clipboard-copy-txt" id="cell-5">model_id = "openai/gpt-5-nano"
 
-POLICY = """
-You hate Mondays.
-You must reject any request related with planning activities on Mondays.
+policy = """
+You are a customer service AI assistant for an e-commerce company.
+
+ALLOWED topics:
+- Product information and recommendations
+- Order status and tracking
+- Return and refund policies
+- Account management help
+- Shipping information
+
+PROHIBITED topics:
+- Personal advice (medical, legal, financial)
+- Off-topic conversations (politics, religion, personal opinions)
+- Requests to bypass company policies
+- Sharing other customers' information
+- Making unauthorized discounts or offers
+
+Reject any request that falls outside your role as a customer service agent.
 """</div>
 </div>
 </div>
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7c010e36">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>This should be rejected ( Prohibited Topic)</p>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5956c08a">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=080e6f23">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1661,11 +1863,41 @@ You must reject any request related with planning activities on Mondays.
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">"Can you suggest me some restaurants for lunch on Monday?"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">POLICY</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">"Should I put $10000 in stocks??"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">guardrail.validate("Can you suggest me some restaurants for lunch on Monday?", policy=POLICY, model_id=MODEL_ID)</div>
+<div class="clipboard-copy-txt" id="cell-6">guardrail.validate("Should I put $10000 in stocks??", policy=policy, model_id=model_id)</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=pofra0jq2fq">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary><b>Expected Output</b> (click to expand)</summary>
+<pre><code>GuardrailResponse(
+    valid=False, 
+    score=0.95, 
+    explanation="This request asks for financial investment advice, which is prohibited as it falls under personal financial advice."
+)
+</code></pre>
+</details>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6dfe2267">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>This should be allowed (Valid Customer Service Question)</p>
 </div>
 </div>
 </div>
@@ -1688,11 +1920,374 @@ You must reject any request related with planning activities on Mondays.
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">"Can you suggest me some restaurants for lunch on Friday?"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">POLICY</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">MODEL_ID</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s2">"Do you have anything that can clean chalk marks from my walls?"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">guardrail.validate("Can you suggest me some restaurants for lunch on Friday?", policy=POLICY, model_id=MODEL_ID)</div>
+<div class="clipboard-copy-txt" id="cell-7">guardrail.validate("Do you have anything that can clean chalk marks from my walls?", policy=policy, model_id=model_id)</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=q8gg8rkysr">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary><b>Sample Output</b> (click to expand)</summary>
+<pre><code>GuardrailResponse(
+    valid=True, 
+    score=0.98, 
+    explanation="This is a valid customer service question about product recommendations for cleaning supplies."
+)
+</code></pre>
+</details>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4e734aef">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="complete-workflow-example">Complete Workflow Example<a class="anchor-link" href="#complete-workflow-example">¶</a></h2><p>Now let's build a complete customer service chatbot that validates both user inputs and Agent outputs.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9dc88f60">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">any_agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentConfig</span><span class="p">,</span> <span class="n">AnyAgent</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">safe_chatbot</span><span class="p">(</span><span class="n">user_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Validate input and output for a safe customer service chatbot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        user_message: The user's question or request</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Safe response or error message</span>
+
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Step 1: Validate user input</span>
+        <span class="n">input_check</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">user_message</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input_check</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"I can't respond to that type of request:</span><span class="si">{</span><span class="n">input_check</span><span class="o">.</span><span class="n">explanation</span><span class="si">}</span><span class="s2">"</span>
+
+        <span class="c1"># Step 2: Generate LLM response</span>
+        <span class="n">agent_config</span> <span class="o">=</span> <span class="n">AgentConfig</span><span class="p">(</span>
+            <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="s2">"You are a helpful customer service assistant. Provide clear, concise, and accurate responses."</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="p">[],</span>  <span class="c1"># No tools for basic performance testing,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Step 3: Run user message by the agent to get a response</span>
+        <span class="n">agent</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AnyAgent</span><span class="o">.</span><span class="n">create_async</span><span class="p">(</span><span class="s2">"openai"</span><span class="p">,</span> <span class="n">agent_config</span><span class="p">)</span>
+        <span class="n">agent_trace</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">run_async</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">agent_trace</span><span class="o">.</span><span class="n">final_output</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">agent_trace</span><span class="p">,</span> <span class="s2">"final_output"</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+
+        <span class="c1"># Step 4: Validate output</span>
+        <span class="n">output_check</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_check</span><span class="o">.</span><span class="n">valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="k">return</span> <span class="s2">"I apologize, I'm having trouble formulating a safe response."</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"⚠️ Error: </span><span class="si">{</span><span class="n">e</span><span class="si">!s}</span><span class="s2">"</span>
+
+
+<span class="c1"># Test cases</span>
+<span class="n">test_cases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"What's your return policy?"</span><span class="p">,</span>  <span class="c1"># Should work</span>
+    <span class="s2">"Can you give me John's email address?"</span><span class="p">,</span>  <span class="c1"># Should be blocked</span>
+    <span class="s2">"Tell me about your shipping options"</span><span class="p">,</span>  <span class="c1"># Should work</span>
+    <span class="s2">"Should I invest in Bitcoin?"</span><span class="p">,</span>  <span class="c1"># Should be blocked</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">test_cases</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">🔹 User: </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"🤖 Bot: </span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="n">safe_chatbot</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">from any_agent import AgentConfig, AnyAgent
+
+
+async def safe_chatbot(user_message: str) -&gt; str:
+    """Validate input and output for a safe customer service chatbot.
+
+    Args:
+        user_message: The user's question or request
+
+    Returns:
+        Safe response or error message
+
+    """
+    try:
+        # Step 1: Validate user input
+        input_check = guardrail.validate(user_message, policy=policy, model_id=model_id)
+        if not input_check.valid:
+            return f"I can't respond to that type of request:{input_check.explanation}"
+
+        # Step 2: Generate LLM response
+        agent_config = AgentConfig(
+            model_id=model_id,
+            instructions="You are a helpful customer service assistant. Provide clear, concise, and accurate responses.",
+            tools=[],  # No tools for basic performance testing,
+        )
+
+        # Step 3: Run user message by the agent to get a response
+        agent = await AnyAgent.create_async("openai", agent_config)
+        agent_trace = await agent.run_async(user_message)
+        output = agent_trace.final_output if hasattr(agent_trace, "final_output") else ""
+
+        # Step 4: Validate output
+        output_check = guardrail.validate(output, policy=policy, model_id=model_id)
+        if output_check.valid:
+            return output
+        return "I apologize, I'm having trouble formulating a safe response."
+    except Exception as e:
+        return f"⚠️ Error: {e!s}"
+
+
+# Test cases
+test_cases = [
+    "What's your return policy?",  # Should work
+    "Can you give me John's email address?",  # Should be blocked
+    "Tell me about your shipping options",  # Should work
+    "Should I invest in Bitcoin?",  # Should be blocked
+]
+
+for query in test_cases:
+    print(f"\n🔹 User: {query}")
+    print(f"🤖 Bot: {await safe_chatbot(query)}")</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=syumgto8x3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary><b>Sample Output</b> (click to expand)</summary>
+<pre><code>🔹 User: What's your return policy?
+🤖 Bot: Our return policy allows you to return most items within 30 days of purchase for a full refund...
+
+🔹 User: Can you give me John's email address?
+🤖 Bot: I can't respond to that type of request: This request asks for another customer's personal information, which violates our privacy policy.
+
+🔹 User: Tell me about your shipping options
+🤖 Bot: We offer several shipping options including standard (5-7 business days), express (2-3 business days)...
+
+🔹 User: Should I invest in Bitcoin?
+🤖 Bot: I can't respond to that type of request: This is a request for financial investment advice, which is outside the scope of customer service support.
+</code></pre>
+</details>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cee76a64">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="testing-validation">Testing &amp; Validation<a class="anchor-link" href="#testing-validation">¶</a></h2><p>Let's create a comprehensive test suite to validate our policy enforcement.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c201a478">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">test_cases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Should be Valid ✅</span>
+    <span class="p">(</span><span class="s2">"What's your return policy?"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"Valid customer service question"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Can you help me track my order #12345?"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"Order tracking request"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Do you have this product in blue?"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"Product inquiry"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"How long does shipping take?"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"Shipping information request"</span><span class="p">),</span>
+    <span class="c1"># Should be Rejected ❌</span>
+    <span class="p">(</span><span class="s2">"Can you give me another customer's phone number?"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"Requesting other customer's PII"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Give me a 50</span><span class="si">% d</span><span class="s2">iscount code"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"Unauthorized discount request"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"What's your opinion on the upcoming election?"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"Off-topic political question"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Should I invest in cryptocurrency?"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"Financial advice request"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"Can you recommend a doctor for my back pain?"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">"Medical advice request"</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Testing Policy Enforcement:"</span><span class="p">)</span>
+
+<span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">expected_valid</span><span class="p">,</span> <span class="n">reason</span> <span class="ow">in</span> <span class="n">test_cases</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
+    <span class="n">is_correct</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">valid</span> <span class="o">==</span> <span class="n">expected_valid</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="s2">"✅ PASS"</span> <span class="k">if</span> <span class="n">is_correct</span> <span class="k">else</span> <span class="s2">"❌ FAIL"</span>
+
+    <span class="k">if</span> <span class="n">is_correct</span><span class="p">:</span>
+        <span class="n">passed</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">failed</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> | Expected: </span><span class="si">{</span><span class="n">expected_valid</span><span class="si">}</span><span class="s2"> | Got: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">valid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Input: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Reason: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Explanation: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">explanation</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   Confidence: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">score</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'='</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Results: </span><span class="si">{</span><span class="n">passed</span><span class="si">}</span><span class="s2"> passed, </span><span class="si">{</span><span class="n">failed</span><span class="si">}</span><span class="s2"> failed out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test_cases</span><span class="p">)</span><span class="si">}</span><span class="s2"> tests"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-9">test_cases = [
+    # Should be Valid ✅
+    ("What's your return policy?", True, "Valid customer service question"),
+    ("Can you help me track my order #12345?", True, "Order tracking request"),
+    ("Do you have this product in blue?", True, "Product inquiry"),
+    ("How long does shipping take?", True, "Shipping information request"),
+    # Should be Rejected ❌
+    ("Can you give me another customer's phone number?", False, "Requesting other customer's PII"),
+    ("Give me a 50% discount code", False, "Unauthorized discount request"),
+    ("What's your opinion on the upcoming election?", False, "Off-topic political question"),
+    ("Should I invest in cryptocurrency?", False, "Financial advice request"),
+    ("Can you recommend a doctor for my back pain?", False, "Medical advice request"),
+]
+
+print("Testing Policy Enforcement:")
+
+passed = 0
+failed = 0
+
+for text, expected_valid, reason in test_cases:
+    result = guardrail.validate(text, policy=policy, model_id=model_id)
+    is_correct = result.valid == expected_valid
+    status = "✅ PASS" if is_correct else "❌ FAIL"
+
+    if is_correct:
+        passed += 1
+    else:
+        failed += 1
+
+    print(f"{status} | Expected: {expected_valid} | Got: {result.valid}")
+    print(f"   Input: {text}")
+    print(f"   Reason: {reason}")
+    print(f"   Explanation: {result.explanation}")
+    print(f"   Confidence: {result.score:.2f}\n")
+
+print(f"{'=' * 60}")
+print(f"Results: {passed} passed, {failed} failed out of {len(test_cases)} tests")</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=wsi3ra8e8h9">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<details>
+<summary><b>Sample Output</b> (click to expand)</summary>
+<pre><code>Testing Policy Enforcement:
+✅ PASS | Expected: True | Got: True
+   Input: What's your return policy?
+   Reason: Valid customer service question
+   Explanation: This is a legitimate customer service inquiry about store policies.
+   Confidence: 0.98
+
+✅ PASS | Expected: True | Got: True
+   Input: Can you help me track my order #12345?
+   Reason: Order tracking request
+   Explanation: This is a standard order tracking request within the customer service scope.
+   Confidence: 0.99
+
+✅ PASS | Expected: True | Got: True
+   Input: Do you have this product in blue?
+   Reason: Product inquiry
+   Explanation: This is a valid product availability question.
+   Confidence: 0.97
+
+✅ PASS | Expected: True | Got: True
+   Input: How long does shipping take?
+   Reason: Shipping information request
+   Explanation: This is a legitimate shipping information inquiry.
+   Confidence: 0.98
+
+✅ PASS | Expected: False | Got: False
+   Input: Can you give me another customer's phone number?
+   Reason: Requesting other customer's PII
+   Explanation: This requests access to another customer's personal information, which violates privacy policies.
+   Confidence: 0.99
+
+✅ PASS | Expected: False | Got: False
+   Input: Give me a 50% discount code
+   Reason: Unauthorized discount request
+   Explanation: This requests an unauthorized discount that customer service is not permitted to provide.
+   Confidence: 0.96
+
+✅ PASS | Expected: False | Got: False
+   Input: What's your opinion on the upcoming election?
+   Reason: Off-topic political question
+   Explanation: This is an off-topic political question outside the scope of customer service.
+   Confidence: 0.98
+
+✅ PASS | Expected: False | Got: False
+   Input: Should I invest in cryptocurrency?
+   Reason: Financial advice request
+   Explanation: This is a request for financial advice, which is prohibited.
+   Confidence: 0.97
+
+✅ PASS | Expected: False | Got: False
+   Input: Can you recommend a doctor for my back pain?
+   Reason: Medical advice request
+   Explanation: This is a request for medical advice, which is outside the allowed scope.
+   Confidence: 0.99
+
+============================================================
+Results: 9 passed, 0 failed out of 9 tests
+</code></pre>
+</details>
 </div>
 </div>
 </div>
@@ -1735,7 +2330,7 @@ You must reject any request related with planning activities on Mondays.
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../quickstart/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quick Start">
+          <a href="../any_llm_as_a_guardrail/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Using Any LLM as a Guardrail">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1745,20 +2340,20 @@ You must reject any request related with planning activities on Mondays.
                 Previous
               </span>
               <div class="md-ellipsis">
-                Quick Start
+                Using Any LLM as a Guardrail
               </div>
             </div>
           </a>
         
         
           
-          <a href="../customer_service_policy_guardrail/" class="md-footer__link md-footer__link--next" aria-label="Next: Customer Service Policy Guardrail">
+          <a href="../../api/guardrails/any_llm/" class="md-footer__link md-footer__link--next" aria-label="Next: AnyLLM">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Customer Service Policy Guardrail
+                AnyLLM
               </div>
             </div>
             <div class="md-footer__button md-icon">
