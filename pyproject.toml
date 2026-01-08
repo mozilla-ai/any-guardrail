@@ -15,7 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface]"
+  "any-guardrail[flowjudge,huggingface, azure-content-safety]"
 ]
 
 flowjudge = [
