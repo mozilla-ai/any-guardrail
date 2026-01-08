@@ -29,6 +29,11 @@ huggingface = [
   "hf-xet>=1.1.5"
 ]
 
+azure-content-safety = [
+    "azure-ai-contentsafety>=1.0.0",
+    "pathvalidate>=3.3.1",
+]
+
 [project.urls]
 Documentation = "https://mozilla-ai.github.io/any-guardrail/"
 Issues = "https://github.com/mozilla-ai/any-guardrail/issues"
