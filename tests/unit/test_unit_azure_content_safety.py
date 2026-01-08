@@ -2,6 +2,7 @@ from unittest import mock
 
 from any_guardrail.base import GuardrailOutput
 
+
 def test_azure_content_safety_guardrail_post_processing() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail."""
     from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
@@ -27,7 +28,7 @@ def test_azure_content_safety_guardrail_post_processing() -> None:
     result = guardrail._post_processing(mock_model_outputs)
 
     assert isinstance(result, GuardrailOutput)
-    assert not result.valid  
+    assert not result.valid
     assert result.score == 6
     assert result.explanation == {
         "hate": 0,
@@ -36,6 +37,7 @@ def test_azure_content_safety_guardrail_post_processing() -> None:
         "violence": 6,
         "blocklist": None,
     }
+
 
 def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with blocklist match."""
@@ -62,7 +64,7 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
     result = guardrail._post_processing(mock_model_outputs)
 
     assert isinstance(result, GuardrailOutput)
-    assert not result.valid  
+    assert not result.valid
     assert result.score == 6
     assert result.explanation == {
         "hate": 0,
@@ -71,6 +73,7 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
         "violence": 6,
         "blocklist": ["some inappropriate content"],
     }
+
 
 def test_azure_content_safety_guardrail_post_processing_below_threshold() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with score below threshold."""
@@ -97,7 +100,7 @@ def test_azure_content_safety_guardrail_post_processing_below_threshold() -> Non
     result = guardrail._post_processing(mock_model_outputs)
 
     assert isinstance(result, GuardrailOutput)
-    assert result.valid  
+    assert result.valid
     assert result.score == 4
     assert result.explanation == {
         "hate": 0,
@@ -106,6 +109,7 @@ def test_azure_content_safety_guardrail_post_processing_below_threshold() -> Non
         "violence": 4,
         "blocklist": None,
     }
+
 
 def test_azure_content_safety_guardrail_post_processing_average_score() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with average score calculation."""
@@ -132,7 +136,7 @@ def test_azure_content_safety_guardrail_post_processing_average_score() -> None:
     result = guardrail._post_processing(mock_model_outputs)
 
     assert isinstance(result, GuardrailOutput)
-    assert not result.valid  
+    assert not result.valid
     assert result.score == 3.0
     assert result.explanation == {
         "hate": 0,
