@@ -109,7 +109,7 @@ class AzureContentSafety(Guardrail):
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    @error_message("Was unable to create or update blocklist.")  # type: ignore [misc]
+    @error_message("Was unable to create or update blocklist.")  # type: ignore [untyped-decorator]
     def create_or_update_blocklist(self, blocklist_name: str, blocklist_description: str) -> None:
         """Create or update a blocklist in Azure Content Safety.
 
@@ -123,7 +123,7 @@ class AzureContentSafety(Guardrail):
             options=TextBlocklist(blocklist_name=blocklist_name, description=blocklist_description),
         )
 
-    @error_message("Was unable to add blocklist items.")  # type: ignore [misc]
+    @error_message("Was unable to add blocklist items.")  # type: ignore [untyped-decorator]
     def add_blocklist_items(self, blocklist_name: str, blocklist_terms: list[str]) -> None:
         """Add items to a blocklist.
 
@@ -141,7 +141,7 @@ class AzureContentSafety(Guardrail):
             options=AddOrUpdateTextBlocklistItemsOptions(blocklist_items=blocklist_items),
         )
 
-    @error_message("Was unable to list blocklists.")  # type: ignore [misc]
+    @error_message("Was unable to list blocklists.")  # type: ignore [untyped-decorator]
     def list_blocklists(self) -> list[dict[str, str | None]]:
         """List all blocklists in Azure Content Safety.
 
@@ -152,7 +152,7 @@ class AzureContentSafety(Guardrail):
         blocklists = self.blocklist_client.list_text_blocklists()
         return [{"name": blocklist.blocklist_name, "description": blocklist.description} for blocklist in blocklists]
 
-    @error_message("Was unable to list blocklist items.")  # type: ignore [misc]
+    @error_message("Was unable to list blocklist items.")  # type: ignore [untyped-decorator]
     def list_blocklist_items(self, blocklist_name: str) -> list[dict[str, str | None]]:
         """List items in a blocklist.
 
@@ -169,7 +169,7 @@ class AzureContentSafety(Guardrail):
             for item in blocklist_items
         ]
 
-    @error_message("Was unable to get blocklist.")  # type: ignore [misc]
+    @error_message("Was unable to get blocklist.")  # type: ignore [untyped-decorator]
     def get_blocklist(self, blocklist_name: str) -> dict[str, str | None]:
         """Get a blocklist by name.
 
@@ -183,7 +183,7 @@ class AzureContentSafety(Guardrail):
         blocklist = self.blocklist_client.get_text_blocklist(blocklist_name=blocklist_name)
         return {"name": blocklist.blocklist_name, "description": blocklist.description}
 
-    @error_message("Was unable to get blocklist item.")  # type: ignore [misc]
+    @error_message("Was unable to get blocklist item.")  # type: ignore [untyped-decorator]
     def get_blocklist_item(self, blocklist_name: str, item_id: str) -> dict[str, str | None]:
         """Get a blocklist item by ID.
 
@@ -198,7 +198,7 @@ class AzureContentSafety(Guardrail):
         item = self.blocklist_client.get_text_blocklist_item(blocklist_name=blocklist_name, blocklist_item_id=item_id)
         return {"id": item.blocklist_item_id, "text": item.text, "description": item.description}
 
-    @error_message("Was unable to delete blocklist.")  # type: ignore [misc]
+    @error_message("Was unable to delete blocklist.")  # type: ignore [untyped-decorator]
     def delete_blocklist(self, blocklist_name: str) -> None:
         """Delete a blocklist by name.
 
@@ -208,7 +208,7 @@ class AzureContentSafety(Guardrail):
         """
         self.blocklist_client.delete_text_blocklist(blocklist_name=blocklist_name)
 
-    @error_message("Was unable to delete blocklist item.")  # type: ignore [misc]
+    @error_message("Was unable to delete blocklist item.")  # type: ignore [untyped-decorator]
     def delete_blocklist_items(self, blocklist_name: str, item_ids: list[str]) -> None:
         """Delete a blocklist item by ID.
 
@@ -235,7 +235,7 @@ class AzureContentSafety(Guardrail):
                 return AnalyzeTextOptions(text=text, blocklist_names=self.blocklist_name, halt_on_blocklist_hit=False)
             return AnalyzeTextOptions(text=text)
 
-    @error_message("Was unable to analyze text or image.")  # type: ignore [misc]
+    @error_message("Was unable to analyze text or image.")  # type: ignore [untyped-decorator]
     def _inference(self, model_inputs: AnalyzeTextOptions | AnalyzeImageOptions) -> Any:
         if isinstance(model_inputs, AnalyzeTextOptions):
             response = self.client.analyze_text(model_inputs)
