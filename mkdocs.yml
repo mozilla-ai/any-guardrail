@@ -12,6 +12,7 @@ nav:
   - API Reference:
       - Guardrails:
           - AnyLLM: api/guardrails/any_llm.md
+          - Azure Content Safety: api/guardrails/azure_content_safety.md
           - Deepset: api/guardrails/deepset.md
           - Duo Guard: api/guardrails/duo_guard.md
           - FlowJudge: api/guardrails/flowjudge.md
