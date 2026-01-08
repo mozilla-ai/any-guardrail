@@ -90,7 +90,7 @@ def test_model_load() -> None:
             (guardrail_class is not AnyLlm)
             and (guardrail_class is not LlamaGuard)
             and (guardrail_class is not AzureContentSafety)
-        ):  # type: ignore[name-defined]
+        ):
             with patch.object(guardrail_class, "_load_model") as mock_load_model:
                 if guardrail_name == GuardrailName.FLOWJUDGE:
                     mock_load_model.return_value = "mocked_model"
