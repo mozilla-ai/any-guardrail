@@ -100,6 +100,15 @@ More information can be found here: [HuggingFace Hub](https://huggingface.co/doc
 
 ---
 
+## api/guardrails/azure_content_safety.md
+
+<!-- Source: api/guardrails/azure_content_safety.md -->
+
+::: any_guardrail.guardrails.azure_content_safety.azure_content_safety
+
+
+---
+
 ## api/guardrails/deepset.md
 
 <!-- Source: api/guardrails/deepset.md -->

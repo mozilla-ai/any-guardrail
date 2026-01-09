@@ -5,6 +5,7 @@
 - [Introduction](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/index.md)
 - [Quickstart](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/quickstart.md)
 - [Api - Guardrails - Any Llm](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/any_llm.md)
+- [Api - Guardrails - Azure Content Safety](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/azure_content_safety.md)
 - [Api - Guardrails - Deepset](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/deepset.md)
 - [Api - Guardrails - Duo Guard](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/duo_guard.md)
 - [Api - Guardrails - Flowjudge](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/flowjudge.md)
