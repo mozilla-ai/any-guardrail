@@ -22,6 +22,7 @@ class GuardrailName(str, Enum):
     SENTINEL = "sentinel"
     SHIELD_GEMMA = "shield_gemma"
     LLAMA_GUARD = "llama_guard"
+    AZURE_CONTENT_SAFETY = "azure_content_safety"
 
 
 class GuardrailOutput(BaseModel):
@@ -30,7 +31,7 @@ class GuardrailOutput(BaseModel):
     valid: bool | None = None
     """Indicates if the output should be considered valid."""
 
-    explanation: str | dict[str, bool] | dict[str, float] | None = None
+    explanation: str | dict[str, Any] | None = None
     """Provides an explanation for the guardrail evaluation result."""
 
     score: float | int | None = None

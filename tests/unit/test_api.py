@@ -6,6 +6,7 @@ import pytest
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import Guardrail
 from any_guardrail.guardrails.any_llm import AnyLlm
+from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 
@@ -85,7 +86,11 @@ def test_model_load() -> None:
     """Test that all guardrail models load the backend model on instantiation."""
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if (guardrail_class is not AnyLlm) and (guardrail_class is not LlamaGuard):
+        if (
+            (guardrail_class is not AnyLlm)
+            and (guardrail_class is not LlamaGuard)
+            and (guardrail_class is not AzureContentSafety)
+        ):
             with patch.object(guardrail_class, "_load_model") as mock_load_model:
                 if guardrail_name == GuardrailName.FLOWJUDGE:
                     mock_load_model.return_value = "mocked_model"

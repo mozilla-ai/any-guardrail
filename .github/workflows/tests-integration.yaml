@@ -28,4 +28,6 @@ jobs:
       - name: Run Integration tests (parallel with xdist)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CONTENT_SAFETY_KEY: ${{ secrets.CONTENT_SAFETY_KEY }}
+          CONTENT_SAFETY_ENDPOINT: ${{ secrets.CONTENT_SAFETY_ENDPOINT }}
         run: pytest -v tests/integration -n auto
