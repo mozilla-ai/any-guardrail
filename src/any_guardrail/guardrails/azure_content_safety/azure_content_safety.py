@@ -49,7 +49,7 @@ class AzureContentSafety(Guardrail):
         api_key: str | None = None,
         threshold: int = 2,
         score_type: str = "max",
-        blocklist_name: list[str] | None = None,
+        blocklist_names: list[str] | None = None,
     ) -> None:
         """Initialize Azure Content Safety client.
 
@@ -58,7 +58,7 @@ class AzureContentSafety(Guardrail):
             api_key (str): The API key for authenticating with the service.
             threshold (int): The threshold for determining if content is unsafe.
             score_type (str): The type of score to use ("max" or "avg").
-            blocklist_name (List[str] | None): List of blocklist names to use for content evaluation.
+            blocklist_names (List[str] | None): List of blocklist names to use for content evaluation.
 
         """
         if api_key:
@@ -85,15 +85,15 @@ class AzureContentSafety(Guardrail):
             raise ValueError(msg)
         self.score_type = score_type
 
-        if blocklist_name:
-            if not isinstance(blocklist_name, list):
-                msg = "blocklist_name must be a list of strings"
+        if blocklist_names:
+            if not isinstance(blocklist_names, list):
+                msg = "blocklist_names must be a list of strings"
                 raise ValueError(msg)
-            for name in blocklist_name:
+            for name in blocklist_names:
                 if not isinstance(name, str):
-                    msg = "blocklist_name must be a list of strings"
+                    msg = "blocklist_names must be a list of strings"
                     raise ValueError(msg)
-        self.blocklist_name = blocklist_name
+        self.blocklist_names = blocklist_names
 
     def validate(self, content: str) -> GuardrailOutput:
         """Validate content using Azure Content Safety.
@@ -110,25 +110,25 @@ class AzureContentSafety(Guardrail):
         return self._post_processing(model_outputs)
 
     @error_message("Was unable to create or update blocklist.")  # type: ignore [untyped-decorator]
-    def create_or_update_blocklist(self, blocklist_name: str, blocklist_description: str) -> None:
+    def create_or_update_blocklist(self, blocklist_names: str, blocklist_description: str) -> None:
         """Create or update a blocklist in Azure Content Safety.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
             blocklist_description (str): The description of the blocklist.
 
         """
         self.blocklist_client.create_or_update_text_blocklist(
-            blocklist_name=blocklist_name,
-            options=TextBlocklist(blocklist_name=blocklist_name, description=blocklist_description),
+            blocklist_names=blocklist_names,
+            options=TextBlocklist(blocklist_names=blocklist_names, description=blocklist_description),
         )
 
     @error_message("Was unable to add blocklist items.")  # type: ignore [untyped-decorator]
-    def add_blocklist_items(self, blocklist_name: str, blocklist_terms: list[str]) -> None:
+    def add_blocklist_items(self, blocklist_names: str, blocklist_terms: list[str]) -> None:
         """Add items to a blocklist.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
             blocklist_terms (List[str]): The terms to add to the blocklist.
 
         """
@@ -137,7 +137,7 @@ class AzureContentSafety(Guardrail):
             blocklist_items.append(TextBlocklistItem(text=term))
 
         self.blocklist_client.add_or_update_blocklist_items(
-            blocklist_name=blocklist_name,
+            blocklist_names=blocklist_names,
             options=AddOrUpdateTextBlocklistItemsOptions(blocklist_items=blocklist_items),
         )
 
@@ -150,75 +150,75 @@ class AzureContentSafety(Guardrail):
 
         """
         blocklists = self.blocklist_client.list_text_blocklists()
-        return [{"name": blocklist.blocklist_name, "description": blocklist.description} for blocklist in blocklists]
+        return [{"name": blocklist.blocklist_names, "description": blocklist.description} for blocklist in blocklists]
 
     @error_message("Was unable to list blocklist items.")  # type: ignore [untyped-decorator]
-    def list_blocklist_items(self, blocklist_name: str) -> list[dict[str, str | None]]:
+    def list_blocklist_items(self, blocklist_names: str) -> list[dict[str, str | None]]:
         """List items in a blocklist.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
 
         Returns:
             List[Dict[str, str]]: The list of blocklist items.
 
         """
-        blocklist_items = self.blocklist_client.list_text_blocklist_items(blocklist_name=blocklist_name)
+        blocklist_items = self.blocklist_client.list_text_blocklist_items(blocklist_names=blocklist_names)
         return [
             {"id": item.blocklist_item_id, "text": item.text, "description": item.description}
             for item in blocklist_items
         ]
 
     @error_message("Was unable to get blocklist.")  # type: ignore [untyped-decorator]
-    def get_blocklist(self, blocklist_name: str) -> dict[str, str | None]:
+    def get_blocklist(self, blocklist_names: str) -> dict[str, str | None]:
         """Get a blocklist by name.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
 
         Returns:
             dict[str, str]: The blocklist details.
 
         """
-        blocklist = self.blocklist_client.get_text_blocklist(blocklist_name=blocklist_name)
-        return {"name": blocklist.blocklist_name, "description": blocklist.description}
+        blocklist = self.blocklist_client.get_text_blocklist(blocklist_names=blocklist_names)
+        return {"name": blocklist.blocklist_names, "description": blocklist.description}
 
     @error_message("Was unable to get blocklist item.")  # type: ignore [untyped-decorator]
-    def get_blocklist_item(self, blocklist_name: str, item_id: str) -> dict[str, str | None]:
+    def get_blocklist_item(self, blocklist_names: str, item_id: str) -> dict[str, str | None]:
         """Get a blocklist item by ID.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
             item_id (str): The ID of the blocklist item.
 
         Returns:
             dict[str, str]: The blocklist item details.
 
         """
-        item = self.blocklist_client.get_text_blocklist_item(blocklist_name=blocklist_name, blocklist_item_id=item_id)
+        item = self.blocklist_client.get_text_blocklist_item(blocklist_names=blocklist_names, blocklist_item_id=item_id)
         return {"id": item.blocklist_item_id, "text": item.text, "description": item.description}
 
     @error_message("Was unable to delete blocklist.")  # type: ignore [untyped-decorator]
-    def delete_blocklist(self, blocklist_name: str) -> None:
+    def delete_blocklist(self, blocklist_names: str) -> None:
         """Delete a blocklist by name.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
 
         """
-        self.blocklist_client.delete_text_blocklist(blocklist_name=blocklist_name)
+        self.blocklist_client.delete_text_blocklist(blocklist_names=blocklist_names)
 
     @error_message("Was unable to delete blocklist item.")  # type: ignore [untyped-decorator]
-    def delete_blocklist_items(self, blocklist_name: str, item_ids: list[str]) -> None:
+    def delete_blocklist_items(self, blocklist_names: str, item_ids: list[str]) -> None:
         """Delete a blocklist item by ID.
 
         Args:
-            blocklist_name (str): The name of the blocklist.
+            blocklist_names (str): The name of the blocklist.
             item_ids (List[str]): The IDs of the blocklist items.
 
         """
         self.blocklist_client.remove_blocklist_items(  # type: ignore [call-overload]
-            blocklist_name=blocklist_name,
+            blocklist_names=blocklist_names,
             blocklist_item_id=RemoveTextBlocklistItemsOptions(blocklist_item_ids=item_ids),
         )
 
@@ -231,8 +231,8 @@ class AzureContentSafety(Guardrail):
                 msg = "Must provide a file path to an image file."
                 raise ValueError(msg) from e
         else:
-            if self.blocklist_name:
-                return AnalyzeTextOptions(text=text, blocklist_names=self.blocklist_name, halt_on_blocklist_hit=False)
+            if self.blocklist_names:
+                return AnalyzeTextOptions(text=text, blocklist_namess=self.blocklist_names, halt_on_blocklist_hit=False)
             return AnalyzeTextOptions(text=text)
 
     @error_message("Was unable to analyze text or image.")  # type: ignore [untyped-decorator]
@@ -266,7 +266,7 @@ class AzureContentSafety(Guardrail):
                 explanation_score for explanation_score in explanation.values() if explanation_score is not None
             ) / sum(1 for explanation_score in explanation.values() if explanation_score is not None)
 
-        explanation["blocklist"] = model_outputs.blocklists_match if self.blocklist_name else None
+        explanation["blocklist"] = model_outputs.blocklists_match if self.blocklist_names else None
 
         valid = score < self.threshold
         if valid and explanation.get("blocklist"):

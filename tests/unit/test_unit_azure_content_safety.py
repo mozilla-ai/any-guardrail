@@ -12,7 +12,7 @@ def test_azure_content_safety_guardrail_post_processing() -> None:
         api_key="fake-api-key",
         threshold=2,
         score_type="max",
-        blocklist_name=None,
+        blocklist_names=None,
     )
 
     # Mock model outputs
@@ -48,7 +48,7 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
         api_key="fake-api-key",
         threshold=2,
         score_type="max",
-        blocklist_name=["default"],
+        blocklist_names=["default"],
     )
 
     # Mock model outputs
@@ -84,7 +84,7 @@ def test_azure_content_safety_guardrail_post_processing_below_threshold() -> Non
         api_key="fake-api-key",
         threshold=5,
         score_type="max",
-        blocklist_name=None,
+        blocklist_names=None,
     )
 
     # Mock model outputs
@@ -120,7 +120,7 @@ def test_azure_content_safety_guardrail_post_processing_average_score() -> None:
         api_key="fake-api-key",
         threshold=3,
         score_type="avg",
-        blocklist_name=None,
+        blocklist_names=None,
     )
 
     # Mock model outputs
