@@ -32,12 +32,12 @@ def test_azure_content_safety_guardrail_integration_blocklist() -> None:
     )
 
     guardrail.create_or_update_blocklist(  # type: ignore [attr-defined]
-        blocklist_names="Test",
+        blocklist_name="Test",
         blocklist_description="Blocklist for testing purposes",
     )
 
     guardrail.add_blocklist_items(  # type: ignore [attr-defined]
-        blocklist_names="Test",
+        blocklist_name="Test",
         blocklist_terms=["ham", "sandwich"],
     )
 
@@ -48,4 +48,4 @@ def test_azure_content_safety_guardrail_integration_blocklist() -> None:
     assert result.explanation is not None
     assert result.explanation.get("blocklist") is not None  # type: ignore [union-attr]
 
-    guardrail.delete_blocklist(blocklist_names="Test")  # type: ignore [attr-defined]
+    guardrail.delete_blocklist(blocklist_name="Test")  # type: ignore [attr-defined]
