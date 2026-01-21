@@ -1,9 +1,8 @@
 import json
 from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel
-
 from any_llm import completion
+from pydantic import BaseModel
 
 from any_guardrail.base import Guardrail, GuardrailOutput
 
@@ -33,10 +32,14 @@ You must return the following:
 DEFAULT_MODEL_ID = "openai:gpt-5-nano"
 """Will be used as default argument for `model_id`"""
 
+
 class GuardrailOutputAnyLLM(BaseModel):
+    """Output model for AnyLlm guardrail."""
+
     valid: bool
     explanation: str
     score: int
+
 
 class AnyLlm(Guardrail):
     """A guardrail using `any-llm`."""
