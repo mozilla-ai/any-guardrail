@@ -2,6 +2,7 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
 prompt is in violation of the defined safety policies.
@@ -21,7 +22,7 @@ correctly.
 DEFAULT_THRESHOLD: float = 0.5
 
 
-class ShieldGemma(HuggingFace):
+class ShieldGemma(HuggingFace[dict[str, Any], dict[str, Any]]):
     """Wrapper class for Google ShieldGemma models.
 
     For more information, please visit the model cards: [Shield Gemma](https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789).
@@ -49,14 +50,17 @@ class ShieldGemma(HuggingFace):
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
 
-    def _pre_processing(self, input_text: str) -> Any:
+    def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[dict[str, Any]]:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
-        return super()._pre_processing(formatted_prompt)
+        tokenized = self.tokenizer(formatted_prompt, return_tensors="pt")
+        return GuardrailPreprocessOutput(data=tokenized)
 
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
+    ) -> GuardrailOutput[bool, None, float]:
         from torch.nn.functional import softmax
 
-        logits = model_outputs["logits"]
+        logits = model_outputs.data["logits"]
         vocab = self.tokenizer.get_vocab()
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
         probabilities = softmax(selected_logits, dim=0)

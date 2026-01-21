@@ -2,11 +2,12 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace, _match_injection_label
+from any_guardrail.types import GuardrailInferenceOutput
 
 PROTECTAI_INJECTION_LABEL = "INJECTION"
 
 
-class Protectai(HuggingFace):
+class Protectai(HuggingFace[dict[str, Any], dict[str, Any]]):
     """Prompt injection detection encoder based models.
 
     For more information, please see the model card:
@@ -21,5 +22,7 @@ class Protectai(HuggingFace):
         "ProtectAI/deberta-v3-base-prompt-injection-v2",
     ]
 
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
+    ) -> GuardrailOutput[bool, None, float]:
         return _match_injection_label(model_outputs, PROTECTAI_INJECTION_LABEL, self.model.config.id2label)

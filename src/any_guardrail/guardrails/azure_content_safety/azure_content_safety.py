@@ -1,7 +1,7 @@
 import functools
 import os
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypeVar
 
 from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
 from azure.ai.contentsafety.models import (
@@ -17,13 +17,21 @@ from azure.ai.contentsafety.models import (
 from azure.core.credentials import AzureKeyCredential
 from azure.core.exceptions import HttpResponseError
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+
+# Type aliases for Azure Content Safety
+AzureAnalyzeInput = AnalyzeTextOptions | AnalyzeImageOptions
+AzureAnalyzeOutput = Any  # Azure API response type
+
+# TypeVar for preserving function signatures in decorator
+F = TypeVar("F", bound=Callable[..., Any])
 
 
-def error_message(message: str) -> Any:
+def error_message(message: str) -> Callable[[F], F]:
     """Handle exceptions for Azure Content Safety operations."""
 
-    def error_handler_decorator(func: Callable) -> Any:  # type: ignore [type-arg]
+    def error_handler_decorator(func: F) -> F:
         """Handle exceptions for the wrapped function."""
 
         @functools.wraps(func)
@@ -33,12 +41,12 @@ def error_message(message: str) -> Any:
             except HttpResponseError as e:
                 raise RuntimeError(message + f" Details: {e!s}") from e
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     return error_handler_decorator
 
 
-class AzureContentSafety(Guardrail):
+class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput]):
     """Guardrail implementation using Azure Content Safety service."""
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]
@@ -95,7 +103,7 @@ class AzureContentSafety(Guardrail):
                     raise ValueError(msg)
         self.blocklist_names = blocklist_names
 
-    def validate(self, content: str) -> GuardrailOutput:
+    def validate(self, content: str) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:
         """Validate content using Azure Content Safety.
 
         Args:
@@ -109,7 +117,7 @@ class AzureContentSafety(Guardrail):
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    @error_message("Was unable to create or update blocklist.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to create or update blocklist.")
     def create_or_update_blocklist(self, blocklist_name: str, blocklist_description: str) -> None:
         """Create or update a blocklist in Azure Content Safety.
 
@@ -123,7 +131,7 @@ class AzureContentSafety(Guardrail):
             options=TextBlocklist(blocklist_name=blocklist_name, description=blocklist_description),
         )
 
-    @error_message("Was unable to add blocklist items.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to add blocklist items.")
     def add_blocklist_items(self, blocklist_name: str, blocklist_terms: list[str]) -> None:
         """Add items to a blocklist.
 
@@ -141,7 +149,7 @@ class AzureContentSafety(Guardrail):
             options=AddOrUpdateTextBlocklistItemsOptions(blocklist_items=blocklist_items),
         )
 
-    @error_message("Was unable to list blocklists.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to list blocklists.")
     def list_blocklists(self) -> list[dict[str, str | None]]:
         """List all blocklists in Azure Content Safety.
 
@@ -152,7 +160,7 @@ class AzureContentSafety(Guardrail):
         blocklists = self.blocklist_client.list_text_blocklists()
         return [{"name": blocklist.blocklist_name, "description": blocklist.description} for blocklist in blocklists]
 
-    @error_message("Was unable to list blocklist items.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to list blocklist items.")
     def list_blocklist_items(self, blocklist_name: str) -> list[dict[str, str | None]]:
         """List items in a blocklist.
 
@@ -169,7 +177,7 @@ class AzureContentSafety(Guardrail):
             for item in blocklist_items
         ]
 
-    @error_message("Was unable to get blocklist.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to get blocklist.")
     def get_blocklist(self, blocklist_name: str) -> dict[str, str | None]:
         """Get a blocklist by name.
 
@@ -183,7 +191,7 @@ class AzureContentSafety(Guardrail):
         blocklist = self.blocklist_client.get_text_blocklist(blocklist_name=blocklist_name)
         return {"name": blocklist.blocklist_name, "description": blocklist.description}
 
-    @error_message("Was unable to get blocklist item.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to get blocklist item.")
     def get_blocklist_item(self, blocklist_name: str, item_id: str) -> dict[str, str | None]:
         """Get a blocklist item by ID.
 
@@ -198,7 +206,7 @@ class AzureContentSafety(Guardrail):
         item = self.blocklist_client.get_text_blocklist_item(blocklist_name=blocklist_name, blocklist_item_id=item_id)
         return {"id": item.blocklist_item_id, "text": item.text, "description": item.description}
 
-    @error_message("Was unable to delete blocklist.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to delete blocklist.")
     def delete_blocklist(self, blocklist_name: str) -> None:
         """Delete a blocklist by name.
 
@@ -208,7 +216,7 @@ class AzureContentSafety(Guardrail):
         """
         self.blocklist_client.delete_text_blocklist(blocklist_name=blocklist_name)
 
-    @error_message("Was unable to delete blocklist item.")  # type: ignore [untyped-decorator]
+    @error_message("Was unable to delete blocklist item.")
     def delete_blocklist_items(self, blocklist_name: str, item_ids: list[str]) -> None:
         """Delete a blocklist item by ID.
 
@@ -222,36 +230,46 @@ class AzureContentSafety(Guardrail):
             blocklist_item_id=RemoveTextBlocklistItemsOptions(blocklist_item_ids=item_ids),
         )
 
-    def _pre_processing(self, text: str) -> AnalyzeTextOptions | AnalyzeImageOptions:
+    def _pre_processing(self, text: str) -> GuardrailPreprocessOutput[AzureAnalyzeInput]:
         if self._is_existing_path(text):
             try:
                 with open(text, "rb") as file:
-                    return AnalyzeImageOptions(image=ImageData(content=file.read()))
+                    options: AzureAnalyzeInput = AnalyzeImageOptions(image=ImageData(content=file.read()))
             except ValueError as e:
                 msg = "Must provide a file path to an image file."
                 raise ValueError(msg) from e
         else:
             if self.blocklist_names:
-                return AnalyzeTextOptions(text=text, blocklist_names=self.blocklist_names, halt_on_blocklist_hit=False)
-            return AnalyzeTextOptions(text=text)
+                options = AnalyzeTextOptions(
+                    text=text, blocklist_names=self.blocklist_names, halt_on_blocklist_hit=False
+                )
+            else:
+                options = AnalyzeTextOptions(text=text)
+        return GuardrailPreprocessOutput(data=options)
 
-    @error_message("Was unable to analyze text or image.")  # type: ignore [untyped-decorator]
-    def _inference(self, model_inputs: AnalyzeTextOptions | AnalyzeImageOptions) -> Any:
-        if isinstance(model_inputs, AnalyzeTextOptions):
-            response = self.client.analyze_text(model_inputs)
+    @error_message("Was unable to analyze text or image.")
+    def _inference(
+        self, model_inputs: GuardrailPreprocessOutput[AzureAnalyzeInput]
+    ) -> GuardrailInferenceOutput[AzureAnalyzeOutput]:
+        if isinstance(model_inputs.data, AnalyzeTextOptions):
+            response = self.client.analyze_text(model_inputs.data)
         else:
-            response = self.client.analyze_image(model_inputs)  # type: ignore [assignment]
-        return response
+            response = self.client.analyze_image(model_inputs.data)  # type: ignore [assignment]
+        return GuardrailInferenceOutput(data=response)
 
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[AzureAnalyzeOutput]
+    ) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:
         results_dict = {
-            "hate": next(item for item in model_outputs.categories_analysis if item.category == TextCategory.HATE),
+            "hate": next(item for item in model_outputs.data.categories_analysis if item.category == TextCategory.HATE),
             "self_harm": next(
-                item for item in model_outputs.categories_analysis if item.category == TextCategory.SELF_HARM
+                item for item in model_outputs.data.categories_analysis if item.category == TextCategory.SELF_HARM
             ),
-            "sexual": next(item for item in model_outputs.categories_analysis if item.category == TextCategory.SEXUAL),
+            "sexual": next(
+                item for item in model_outputs.data.categories_analysis if item.category == TextCategory.SEXUAL
+            ),
             "violence": next(
-                item for item in model_outputs.categories_analysis if item.category == TextCategory.VIOLENCE
+                item for item in model_outputs.data.categories_analysis if item.category == TextCategory.VIOLENCE
             ),
         }
 
@@ -266,7 +284,7 @@ class AzureContentSafety(Guardrail):
                 explanation_score for explanation_score in explanation.values() if explanation_score is not None
             ) / sum(1 for explanation_score in explanation.values() if explanation_score is not None)
 
-        explanation["blocklist"] = model_outputs.blocklists_match if self.blocklist_names else None
+        explanation["blocklist"] = model_outputs.data.blocklists_match if self.blocklist_names else None
 
         valid = score < self.threshold
         if valid and explanation.get("blocklist"):

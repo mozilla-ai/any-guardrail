@@ -46,6 +46,6 @@ def test_azure_content_safety_guardrail_integration_blocklist() -> None:
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
     assert result.explanation is not None
-    assert result.explanation.get("blocklist") is not None  # type: ignore [union-attr]
+    assert result.explanation.get("blocklist") is not None
 
     guardrail.delete_blocklist(blocklist_name="Test")  # type: ignore [attr-defined]

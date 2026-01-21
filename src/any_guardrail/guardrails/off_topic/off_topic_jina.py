@@ -7,11 +7,16 @@ from transformers import AutoModel, AutoTokenizer
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.off_topic.models.cross_encoder_shared import CrossEncoderWithSharedBase
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 BASEMODEL = "jinaai/jina-embeddings-v2-small-en"
 
+# Type aliases for OffTopicJina
+JinaPreprocessData = tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+JinaInferenceData = Any  # Model output tensor
 
-class OffTopicJina(HuggingFace):
+
+class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -28,7 +33,7 @@ class OffTopicJina(HuggingFace):
 
     def _pre_processing(
         self, input_text: str, comparison_text: str | None = None
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> GuardrailPreprocessOutput[JinaPreprocessData]:
         warnings.warn("Truncating input text to a max length of 1024 tokens.", stacklevel=2)
         inputs1 = self.tokenizer(
             input_text, return_tensors="pt", truncation=True, padding="max_length", max_length=1024
@@ -40,26 +45,30 @@ class OffTopicJina(HuggingFace):
         attention_mask1 = inputs1["attention_mask"]  # .to(device)
         input_ids2 = inputs2["input_ids"]  # .to(device)
         attention_mask2 = inputs2["attention_mask"]  # .to(device)
-        return input_ids1, attention_mask1, input_ids2, attention_mask2
+        return GuardrailPreprocessOutput(data=(input_ids1, attention_mask1, input_ids2, attention_mask2))
 
     def _inference(
         self,
-        model_inputs: tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor],
-    ) -> Any:
-        if len(model_inputs) != 4:
+        model_inputs: GuardrailPreprocessOutput[JinaPreprocessData],
+    ) -> GuardrailInferenceOutput[JinaInferenceData]:
+        data = model_inputs.data
+        if len(data) != 4:
             msg = "Expected model_inputs to be a tuple of (input_ids1, attention_mask1, input_ids2, attention_mask2)."
             raise ValueError(msg)
-        input_ids1, attention_mask1, input_ids2, attention_mask2 = model_inputs
+        input_ids1, attention_mask1, input_ids2, attention_mask2 = data
         with torch.no_grad():
-            return self.model(
+            output = self.model(
                 input_ids1=input_ids1,
                 attention_mask1=attention_mask1,
                 input_ids2=input_ids2,
                 attention_mask2=attention_mask2,
             )
+        return GuardrailInferenceOutput(data=output)
 
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
-        probabilities = torch.softmax(model_outputs, dim=1)
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[JinaInferenceData]
+    ) -> GuardrailOutput[bool, dict[str, float], float]:
+        probabilities = torch.softmax(model_outputs.data, dim=1)
         predicted_label = torch.argmax(probabilities, dim=1).item()
         explanatory_probs = probabilities.cpu().numpy().tolist()[0]
         probs_dict = {"on-topic": explanatory_probs[0], "off-topic": explanatory_probs[1]}

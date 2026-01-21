@@ -1,8 +1,9 @@
 import re
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.types import ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 SYSTEM_PROMPT_GLIDER = """
 Analyze the following pass criteria carefully and score the text based on the rubric defined below.
@@ -56,7 +57,7 @@ INPUT_DATA_FORMAT = """
 """
 
 
-class Glider(HuggingFace):
+class Glider(HuggingFace[ChatMessages, str]):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
@@ -81,7 +82,7 @@ class Glider(HuggingFace):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int]:
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -102,22 +103,25 @@ class Glider(HuggingFace):
         pipe = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
         self.model = pipe
 
-    def _pre_processing(self, input_text: str, output_text: str | None = None) -> list[dict[str, str]]:
+    def _pre_processing(
+        self, input_text: str, output_text: str | None = None
+    ) -> GuardrailPreprocessOutput[ChatMessages]:
         if output_text is None:
             data = INPUT_DATA_FORMAT.format(input_text=input_text)
         else:
             data = INPUT_OUTPUT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
         prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
-        return [{"role": "user", "content": prompt}]
+        return GuardrailPreprocessOutput(data=[{"role": "user", "content": prompt}])
 
-    def _inference(self, message: list[dict[str, str]]) -> Any:
-        return self.model(message)[0]["generated_text"]
+    def _inference(self, message: GuardrailPreprocessOutput[ChatMessages]) -> GuardrailInferenceOutput[str]:
+        generated_text = self.model(message.data)[0]["generated_text"]
+        return GuardrailInferenceOutput(data=generated_text)
 
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
-        score = re.findall(r"<score>\n(\d+)\n</score>", model_outputs)
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput[None, str, int]:
+        score = re.findall(r"<score>\n(\d+)\n</score>", model_outputs.data)
         if len(score) != 0 and score[0].isdigit():
             final_score = int(score[0])
         else:
             final_score = None
 
-        return GuardrailOutput(explanation=model_outputs, score=final_score)
+        return GuardrailOutput(explanation=model_outputs.data, score=final_score)

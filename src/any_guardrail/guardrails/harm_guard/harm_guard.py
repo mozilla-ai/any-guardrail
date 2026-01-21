@@ -2,11 +2,12 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace, _softmax
+from any_guardrail.types import GuardrailInferenceOutput
 
 HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 
 
-class HarmGuard(HuggingFace):
+class HarmGuard(HuggingFace[dict[str, Any], dict[str, Any]]):
     """Prompt injection detection encoder based model.
 
     For more information, please see the model card:
@@ -21,8 +22,10 @@ class HarmGuard(HuggingFace):
         super().__init__(model_id)
         self.threshold = threshold
 
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
-        logits = model_outputs["logits"][0].numpy()
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
+    ) -> GuardrailOutput[bool, None, float]:
+        logits = model_outputs.data["logits"][0].numpy()
         scores = _softmax(logits)  # type: ignore[no-untyped-call]
         final_score = float(scores[1])
         return GuardrailOutput(valid=final_score < self.threshold, score=final_score)
