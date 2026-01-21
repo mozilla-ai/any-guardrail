@@ -28,7 +28,7 @@ def _softmax(_outputs):  # type: ignore[no-untyped-def]
 
 def _match_injection_label(
     model_outputs: GuardrailInferenceOutput[dict[str, Any]], injection_label: str, id2label: dict[int, str]
-) -> GuardrailOutput:
+) -> GuardrailOutput[bool, None, float]:
     """Match injection label from model outputs.
 
     Args:
@@ -85,7 +85,7 @@ class HuggingFace(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
             msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
             raise ValueError(msg)
 
-    def validate(self, input_text: str) -> GuardrailOutput:
+    def validate(self, input_text: str) -> GuardrailOutput[Any, Any, Any]:
         """Validate whether the input text is safe or not."""
         model_inputs = self._pre_processing(input_text)
         model_outputs = self._inference(model_inputs)
@@ -123,7 +123,7 @@ class HuggingFace(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
         return GuardrailInferenceOutput(data=output)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[InferenceT]) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[InferenceT]) -> GuardrailOutput[Any, Any, Any]:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:

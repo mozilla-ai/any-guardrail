@@ -44,7 +44,7 @@ class Guardrail(ABC):
     SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     @abstractmethod
-    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:
+    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput[Any, Any, Any]:
         """Abstract method for validating some input. Each subclass implements its own signature."""
         msg = "Each subclass will create their own method."
         raise NotImplementedError(msg)

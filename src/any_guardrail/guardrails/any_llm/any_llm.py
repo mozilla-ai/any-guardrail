@@ -42,7 +42,7 @@ class AnyLlm(Guardrail):
         model_id: str = DEFAULT_MODEL_ID,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
         **kwargs: Any,
-    ) -> GuardrailOutput:
+    ) -> GuardrailOutput[bool, str, float]:
         """Validate the `input_text` against the given `policy`.
 
         Args:

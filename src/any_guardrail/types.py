@@ -15,13 +15,13 @@ PreprocessT = TypeVar("PreprocessT")
 InferenceT = TypeVar("InferenceT")
 """Type variable for inference output data."""
 
-ValidT = TypeVar("ValidT", default=Any)
+ValidT = TypeVar("ValidT")
 """Type variable for guardrail output valid field."""
 
-ExplanationT = TypeVar("ExplanationT", default=Any)
+ExplanationT = TypeVar("ExplanationT")
 """Type variable for guardrail output explanation field."""
 
-ScoreT = TypeVar("ScoreT", default=Any)
+ScoreT = TypeVar("ScoreT")
 """Type variable for guardrail output score field."""
 
 
