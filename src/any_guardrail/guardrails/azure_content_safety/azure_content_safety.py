@@ -39,7 +39,12 @@ def error_message(message: str) -> Any:
 
 
 class AzureContentSafety(Guardrail):
-    """Guardrail implementation using Azure Content Safety service."""
+    """Guardrail implementation using Azure Content Safety service.
+    
+    Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
+    Content Safety, visit the [official documentation](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/contentsafety/azure-ai-contentsafety`).
+    
+    """
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]
 
@@ -122,6 +127,7 @@ class AzureContentSafety(Guardrail):
             blocklist_name=blocklist_name,
             options=TextBlocklist(blocklist_name=blocklist_name, description=blocklist_description),
         )
+        self.blocklist_names.append(blocklist_name) if self.blocklist_names else setattr(self, "blocklist_names", [blocklist_name])
 
     @error_message("Was unable to add blocklist items.")  # type: ignore [untyped-decorator]
     def add_blocklist_items(self, blocklist_name: str, blocklist_terms: list[str]) -> None:
@@ -207,6 +213,7 @@ class AzureContentSafety(Guardrail):
 
         """
         self.blocklist_client.delete_text_blocklist(blocklist_name=blocklist_name)
+        self.blocklist_names.remove(blocklist_name) if self.blocklist_names and blocklist_name in self.blocklist_names else None
 
     @error_message("Was unable to delete blocklist item.")  # type: ignore [untyped-decorator]
     def delete_blocklist_items(self, blocklist_name: str, item_ids: list[str]) -> None:
