@@ -3,19 +3,26 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar
 
-from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
-from azure.ai.contentsafety.models import (
-    AddOrUpdateTextBlocklistItemsOptions,
-    AnalyzeImageOptions,
-    AnalyzeTextOptions,
-    ImageData,
-    RemoveTextBlocklistItemsOptions,
-    TextBlocklist,
-    TextBlocklistItem,
-    TextCategory,
-)
-from azure.core.credentials import AzureKeyCredential
-from azure.core.exceptions import HttpResponseError
+try:
+    from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
+    from azure.ai.contentsafety.models import (
+        AddOrUpdateTextBlocklistItemsOptions,
+        AnalyzeImageOptions,
+        AnalyzeTextOptions,
+        ImageData,
+        RemoveTextBlocklistItemsOptions,
+        TextBlocklist,
+        TextBlocklistItem,
+        TextCategory,
+    )
+    from azure.core.credentials import AzureKeyCredential
+    from azure.core.exceptions import HttpResponseError
+except ImportError as e:
+    msg = (
+        "azure-ai-contentsafety package is not installed. "
+        "Please install it with `pip install 'any-guardrail[azure-content-safety]'` to use AzureContentSafety guardrail."
+    )
+    raise ImportError(msg) from e
 
 from any_guardrail.base import Guardrail, GuardrailOutput
 
