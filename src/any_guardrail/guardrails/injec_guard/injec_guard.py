@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 INJECGUARD_LABEL = "injection"
 
 
-class InjecGuard(HuggingFace[dict[str, Any], dict[str, Any]]):
+class InjecGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based model.
 
     For more information, please see the model card:

@@ -16,7 +16,7 @@ JinaPreprocessData = tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tenso
 JinaInferenceData = Any  # Model output tensor
 
 
-class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData]):
+class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData, bool, dict[str, float], float]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:

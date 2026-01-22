@@ -22,7 +22,7 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(HuggingFace[dict[str, Any], dict[str, Any]]):
+class DuoGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, dict[str, bool], float]):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
     For more information, please see the model card:

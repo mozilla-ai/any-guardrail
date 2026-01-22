@@ -16,7 +16,7 @@ StsbPreprocessData = tuple[torch.Tensor, torch.Tensor]
 StsbInferenceData = Any  # Model output tensor
 
 
-class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData]):
+class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:

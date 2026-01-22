@@ -4,7 +4,7 @@ from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 def test_any_llm_guardrail() -> None:
     guardrail = AnyGuardrail.create(GuardrailName.ANYLLM)
 
-    result = guardrail.validate(
+    result: GuardrailOutput[bool, str, float] = guardrail.validate(
         "What is the weather like today?", policy="Do not provide harmful or dangerous information"
     )
 

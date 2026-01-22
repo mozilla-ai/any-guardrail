@@ -7,7 +7,7 @@ from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
 from any_guardrail.types import GuardrailInferenceOutput
 
 
-class OffTopic(HuggingFace[Any, Any]):
+class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
     """Abstract base class for the Off Topic models.
 
     For more information about the implementations about either off topic model, please see the below model cards:

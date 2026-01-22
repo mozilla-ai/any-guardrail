@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 PANGOLIN_INJECTION_LABEL = "unsafe"
 
 
-class Pangolin(HuggingFace[dict[str, Any], dict[str, Any]]):
+class Pangolin(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based models.
 
     For more information, please see the model card:

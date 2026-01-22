@@ -57,7 +57,7 @@ INPUT_DATA_FORMAT = """
 """
 
 
-class Glider(HuggingFace[ChatMessages, str]):
+class Glider(HuggingFace[ChatMessages, str, None, str, int | None]):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
@@ -82,7 +82,7 @@ class Glider(HuggingFace[ChatMessages, str]):
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int]:
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int | None]:
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -117,7 +117,7 @@ class Glider(HuggingFace[ChatMessages, str]):
         generated_text = self.model(message.data)[0]["generated_text"]
         return GuardrailInferenceOutput(data=generated_text)
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput[None, str, int]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput[None, str, int | None]:
         score = re.findall(r"<score>\n(\d+)\n</score>", model_outputs.data)
         if len(score) != 0 and score[0].isdigit():
             final_score = int(score[0])

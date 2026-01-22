@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 PROTECTAI_INJECTION_LABEL = "INJECTION"
 
 
-class Protectai(HuggingFace[dict[str, Any], dict[str, Any]]):
+class Protectai(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based models.
 
     For more information, please see the model card:

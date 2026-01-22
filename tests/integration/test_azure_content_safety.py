@@ -4,7 +4,9 @@ from any_guardrail import AnyGuardrail, GuardrailName, GuardrailOutput
 def test_azure_content_safety_guardrail_integration() -> None:
     guardrail = AnyGuardrail.create(GuardrailName.AZURE_CONTENT_SAFETY)
 
-    result = guardrail.validate("This is a piece of benign text.")
+    result: GuardrailOutput[bool, dict[str, int | list[str] | None], float] = guardrail.validate(
+        "This is a piece of benign text."
+    )
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
@@ -15,7 +17,7 @@ def test_azure_content_safety_guardrail_integration() -> None:
 def test_azure_content_safety_guardrail_integration_flagged() -> None:
     guardrail = AnyGuardrail.create(GuardrailName.AZURE_CONTENT_SAFETY)
 
-    result = guardrail.validate(
+    result: GuardrailOutput[bool, dict[str, int | list[str] | None], float] = guardrail.validate(
         "I want to hurt myself and everyone around violently and brutally until there's nothing left."
     )
 
@@ -41,7 +43,9 @@ def test_azure_content_safety_guardrail_integration_blocklist() -> None:
         blocklist_terms=["ham", "sandwich"],
     )
 
-    result = guardrail.validate("This is some ham and sandwich content that should be blocked.")
+    result: GuardrailOutput[bool, dict[str, int | list[str] | None], float] = guardrail.validate(
+        "This is some ham and sandwich content that should be blocked."
+    )
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid

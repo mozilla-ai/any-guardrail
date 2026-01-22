@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 
 
-class HarmGuard(HuggingFace[dict[str, Any], dict[str, Any]]):
+class HarmGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based model.
 
     For more information, please see the model card:

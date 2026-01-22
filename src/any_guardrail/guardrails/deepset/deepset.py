@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 DEEPSET_INJECTION_LABEL = "INJECTION"
 
 
-class Deepset(HuggingFace[dict[str, Any], dict[str, Any]]):
+class Deepset(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Wrapper for prompt injection detection model from Deepset.
 
     For more information, please see the model card:

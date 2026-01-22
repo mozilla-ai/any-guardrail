@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 JASPER_INJECTION_LABEL = "INJECTION"
 
 
-class Jasper(HuggingFace[dict[str, Any], dict[str, Any]]):
+class Jasper(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based models.
 
     For more information, please see the model card:

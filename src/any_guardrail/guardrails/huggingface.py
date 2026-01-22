@@ -13,11 +13,17 @@ except ImportError as e:
 
 from any_guardrail.base import Guardrail, GuardrailOutput
 from any_guardrail.types import (
+    ExplanationT,
     GuardrailInferenceOutput,
     GuardrailPreprocessOutput,
     InferenceT,
     PreprocessT,
+    ScoreT,
+    ValidT,
 )
+
+# Type alias for standard HuggingFace dict types
+HFDict = dict[str, Any]
 
 
 def _softmax(_outputs):  # type: ignore[no-untyped-def]
@@ -27,7 +33,7 @@ def _softmax(_outputs):  # type: ignore[no-untyped-def]
 
 
 def _match_injection_label(
-    model_outputs: GuardrailInferenceOutput[dict[str, Any]], injection_label: str, id2label: dict[int, str]
+    model_outputs: GuardrailInferenceOutput[HFDict], injection_label: str, id2label: dict[int, str]
 ) -> GuardrailOutput[bool, None, float]:
     """Match injection label from model outputs.
 
@@ -46,7 +52,9 @@ def _match_injection_label(
     return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
 
 
-class HuggingFace(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
+class HuggingFace(
+    Guardrail[ValidT, ExplanationT, ScoreT], ABC, Generic[PreprocessT, InferenceT, ValidT, ExplanationT, ScoreT]
+):
     """Wrapper for models from Hugging Face with typed preprocessing and inference stages.
 
     This base class provides a three-stage pipeline (preprocess -> inference -> postprocess)
@@ -85,7 +93,7 @@ class HuggingFace(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
             msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
             raise ValueError(msg)
 
-    def validate(self, input_text: str) -> GuardrailOutput[Any, Any, Any]:
+    def validate(self, input_text: str) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Validate whether the input text is safe or not."""
         model_inputs = self._pre_processing(input_text)
         model_outputs = self._inference(model_inputs)
@@ -123,7 +131,9 @@ class HuggingFace(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
         return GuardrailInferenceOutput(data=output)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[InferenceT]) -> GuardrailOutput[Any, Any, Any]:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[InferenceT]
+    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:

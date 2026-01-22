@@ -32,7 +32,7 @@ DEFAULT_MODEL_ID = "openai/gpt-5-nano"
 """Will be used as default argument for `model_id`"""
 
 
-class AnyLlm(Guardrail):
+class AnyLlm(Guardrail[bool, str, float]):
     """A guardrail using `any-llm`."""
 
     def validate(

@@ -3,11 +3,14 @@ from enum import Enum
 from typing import Any, ClassVar, Generic
 
 from any_guardrail.types import (
+    ExplanationT,
     GuardrailInferenceOutput,
     GuardrailOutput,
     GuardrailPreprocessOutput,
     InferenceT,
     PreprocessT,
+    ScoreT,
+    ValidT,
 )
 
 __all__ = [
@@ -38,19 +41,21 @@ class GuardrailName(str, Enum):
     AZURE_CONTENT_SAFETY = "azure_content_safety"
 
 
-class Guardrail(ABC):
+class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):
     """Base class for all guardrails."""
 
     SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     @abstractmethod
-    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput[Any, Any, Any]:
+    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Abstract method for validating some input. Each subclass implements its own signature."""
         msg = "Each subclass will create their own method."
         raise NotImplementedError(msg)
 
 
-class ThreeStageGuardrail(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
+class ThreeStageGuardrail(
+    Guardrail[ValidT, ExplanationT, ScoreT], ABC, Generic[PreprocessT, InferenceT, ValidT, ExplanationT, ScoreT]
+):
     """Base class for guardrails using preprocess -> inference -> postprocess with runtime validation.
 
     This abstract class provides a structured pipeline for guardrail implementations
@@ -105,7 +110,9 @@ class ThreeStageGuardrail(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
         ...
 
     @abstractmethod
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[InferenceT]) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[InferenceT]
+    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Transform inference output to GuardrailOutput.
 
         Args:

@@ -46,7 +46,9 @@ def error_message(message: str) -> Callable[[F], F]:
     return error_handler_decorator
 
 
-class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput]):
+class AzureContentSafety(
+    ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput, bool, dict[str, int | list[str] | None], float]
+):
     """Guardrail implementation using Azure Content Safety service."""
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]

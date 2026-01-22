@@ -7,7 +7,7 @@ from any_guardrail.types import GuardrailInferenceOutput
 SENTINEL_INJECTION_LABEL = "jailbreak"
 
 
-class Sentinel(HuggingFace[dict[str, Any], dict[str, Any]]):
+class Sentinel(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based model.
 
     For more information, please see the model card:

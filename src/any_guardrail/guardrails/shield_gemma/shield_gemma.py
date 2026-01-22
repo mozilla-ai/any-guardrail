@@ -22,7 +22,7 @@ correctly.
 DEFAULT_THRESHOLD: float = 0.5
 
 
-class ShieldGemma(HuggingFace[dict[str, Any], dict[str, Any]]):
+class ShieldGemma(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Wrapper class for Google ShieldGemma models.
 
     For more information, please visit the model cards: [Shield Gemma](https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789).

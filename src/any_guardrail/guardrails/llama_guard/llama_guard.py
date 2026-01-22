@@ -11,7 +11,7 @@ LlamaGuardPreprocessData = dict[str, Any] | Any  # dict for v4, tensor for v3
 LlamaGuardInferenceData = Any  # Generated tensor output
 
 
-class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData]):
+class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
     """Wrapper class for Llama Guard 3 & 4 implementations.
 
     For more information about the implementations about either off topic model, please see the below model cards:
