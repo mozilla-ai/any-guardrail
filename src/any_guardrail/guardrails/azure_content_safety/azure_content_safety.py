@@ -3,19 +3,26 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar
 
-from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
-from azure.ai.contentsafety.models import (
-    AddOrUpdateTextBlocklistItemsOptions,
-    AnalyzeImageOptions,
-    AnalyzeTextOptions,
-    ImageData,
-    RemoveTextBlocklistItemsOptions,
-    TextBlocklist,
-    TextBlocklistItem,
-    TextCategory,
-)
-from azure.core.credentials import AzureKeyCredential
-from azure.core.exceptions import HttpResponseError
+try:
+    from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
+    from azure.ai.contentsafety.models import (
+        AddOrUpdateTextBlocklistItemsOptions,
+        AnalyzeImageOptions,
+        AnalyzeTextOptions,
+        ImageData,
+        RemoveTextBlocklistItemsOptions,
+        TextBlocklist,
+        TextBlocklistItem,
+        TextCategory,
+    )
+    from azure.core.credentials import AzureKeyCredential
+    from azure.core.exceptions import HttpResponseError
+except ImportError as e:
+    msg = (
+        "azure-ai-contentsafety package is not installed. "
+        "Please install it with `pip install 'any-guardrail[azure-content-safety]'` to use AzureContentSafety guardrail."
+    )
+    raise ImportError(msg) from e
 
 from any_guardrail.base import Guardrail, GuardrailOutput
 
@@ -39,7 +46,12 @@ def error_message(message: str) -> Any:
 
 
 class AzureContentSafety(Guardrail):
-    """Guardrail implementation using Azure Content Safety service."""
+    """Guardrail implementation using Azure Content Safety service.
+
+    Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
+    Content Safety, visit the [official documentation](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/contentsafety/azure-ai-contentsafety`).
+
+    """
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]
 
@@ -110,18 +122,25 @@ class AzureContentSafety(Guardrail):
         return self._post_processing(model_outputs)
 
     @error_message("Was unable to create or update blocklist.")  # type: ignore [untyped-decorator]
-    def create_or_update_blocklist(self, blocklist_name: str, blocklist_description: str) -> None:
+    def create_or_update_blocklist(
+        self, blocklist_name: str, blocklist_description: str, add_to_blocklist_names: bool = True
+    ) -> None:
         """Create or update a blocklist in Azure Content Safety.
 
         Args:
             blocklist_name (str): The name of the blocklist.
             blocklist_description (str): The description of the blocklist.
+            add_to_blocklist_names (bool): Whether to add the blocklist name to the guardrail's blocklist_names.
 
         """
         self.blocklist_client.create_or_update_text_blocklist(
             blocklist_name=blocklist_name,
             options=TextBlocklist(blocklist_name=blocklist_name, description=blocklist_description),
         )
+        if add_to_blocklist_names:
+            self.blocklist_names.append(blocklist_name) if self.blocklist_names else setattr(
+                self, "blocklist_names", [blocklist_name]
+            )
 
     @error_message("Was unable to add blocklist items.")  # type: ignore [untyped-decorator]
     def add_blocklist_items(self, blocklist_name: str, blocklist_terms: list[str]) -> None:
@@ -207,6 +226,9 @@ class AzureContentSafety(Guardrail):
 
         """
         self.blocklist_client.delete_text_blocklist(blocklist_name=blocklist_name)
+        self.blocklist_names.remove(
+            blocklist_name
+        ) if self.blocklist_names and blocklist_name in self.blocklist_names else None
 
     @error_message("Was unable to delete blocklist item.")  # type: ignore [untyped-decorator]
     def delete_blocklist_items(self, blocklist_name: str, item_ids: list[str]) -> None:
