@@ -41,7 +41,7 @@ class GuardrailOutputAnyLLM(BaseModel):
     score: int
 
 
-class AnyLlm(Guardrail):
+class AnyLlm(Guardrail[bool, str, float]):
     """A guardrail using `any-llm`."""
 
     def validate(

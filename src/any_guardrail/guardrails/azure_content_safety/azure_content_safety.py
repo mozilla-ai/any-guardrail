@@ -57,10 +57,10 @@ class AzureContentSafety(
     ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput, bool, dict[str, int | list[str] | None], float]
 ):
     """Guardrail implementation using Azure Content Safety service.
-    
+
     Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
     Content Safety, visit the [official documentation](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/contentsafety/azure-ai-contentsafety`).
-    
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]
