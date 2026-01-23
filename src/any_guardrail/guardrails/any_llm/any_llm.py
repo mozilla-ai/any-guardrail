@@ -2,6 +2,7 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from any_llm import completion
+from pydantic import BaseModel
 
 from any_guardrail.base import Guardrail, GuardrailOutput
 
@@ -28,11 +29,19 @@ You must return the following:
 """
 """Will be used as default argument for `system_prompt`"""
 
-DEFAULT_MODEL_ID = "openai/gpt-5-nano"
+DEFAULT_MODEL_ID = "openai:gpt-5-nano"
 """Will be used as default argument for `model_id`"""
 
 
-class AnyLlm(Guardrail[bool, str, float]):
+class GuardrailOutputAnyLLM(BaseModel):
+    """Output model for AnyLlm guardrail."""
+
+    valid: bool
+    explanation: str
+    score: int
+
+
+class AnyLlm(Guardrail):
     """A guardrail using `any-llm`."""
 
     def validate(
@@ -63,7 +72,7 @@ class AnyLlm(Guardrail[bool, str, float]):
                 {"role": "system", "content": system_prompt.format(policy=policy)},
                 {"role": "user", "content": input_text},
             ],
-            response_format=GuardrailOutput,
+            response_format=GuardrailOutputAnyLLM,
             **kwargs,
         )
         return GuardrailOutput(**json.loads(result.choices[0].message.content))  # type: ignore[arg-type]
