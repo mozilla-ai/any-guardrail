@@ -5,11 +5,11 @@ import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import Guardrail
+from any_guardrail.guardrails.alinia import Alinia
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.llama_guard import LlamaGuard
-from any_guardrail.guardrails.alinia import Alinia
 
 
 def test_all_guardrails_in_enum() -> None:
