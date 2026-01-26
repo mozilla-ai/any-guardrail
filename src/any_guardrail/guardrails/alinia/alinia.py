@@ -1,0 +1,91 @@
+import requests
+import os
+from typing import Any
+
+from any_guardrail.base import Guardrail, GuardrailOutput
+
+class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]):
+    """Wraps the Alinia API for content moderation and safety detection.
+
+    This wrapper allows you to send conversations or text inputs to the Alinia API. You must get an API key from Alinia
+    and either set it to the ALINIA_API_KEY environment variable or pass it directly to the constructor. From Alinia, you'll also
+    be able to get the proper endpoint URL as well.
+    
+    Args:
+        endpoint (str): The Alinia API endpoint URL.
+        detection_config (str | dict): The detection configuration ID or a dictionary specifying detection parameters.
+        api_key (str | None): The API key for authenticating with the Alinia API. If not provided, it will be read from the ALINIA_API_KEY environment variable.
+        metadata (dict | None): Optional metadata to include with the request.
+        blocked_response (dict | None): Optional response to return if content is blocked.
+        stream (bool): Whether to use streaming for the API response.
+    """
+    def __init__(self,
+                 endpoint: str,
+                 detection_config: str | dict[str, float | bool] | dict[str, dict[str, float | bool | str]],
+                 api_key: str | None = None,
+                 metadata: dict[str, Any] | None = None,
+                 blocked_response: dict[str, str] | None = None,
+                 stream: bool = False):
+        if api_key:
+            self.api_key = api_key
+        elif os.getenv("ALINIA_API_KEY"):
+            self.api_key = os.getenv("ALINIA_API_KEY")
+        else:
+            raise ValueError("API key must be provided either as a parameter or through the ALINIA_API_KEY environment variable.")
+        self.endpoint = endpoint
+        self.detection_config = detection_config
+        self.metadata = metadata
+        self.blocked_response = blocked_response
+        self.stream = stream
+
+    def validate(self, 
+                 conversation: str | list[dict[str, str]],
+                 output: str | None = None,
+                 context_documents: list[str] | None = None) -> GuardrailOutput[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]:
+        """Validates the given conversation or text input using the Alinia API.
+        
+        This can be used for validation using any of the API endpoints provided by Alinia. If using sensitive information endpoint,
+        use the explanation from the GuardrailOutput to grab the recommended action text.
+
+        Args:
+            conversation (str | list[dict[str, str]]): The conversation or text input to validate.
+            output (str | None): Optional expected output to validate against.
+            context_documents (list[str] | None): Optional context documents to provide additional context for validation
+        """
+        response = self._inference(conversation, output, context_documents)
+        return self._post_processing(response)
+        
+    def _inference(self, 
+                  conversation: str | list[dict[str, str]],
+                  output: str | None = None,
+                  context_documents: list[str] | None = None) -> requests.Response:
+        response = requests.post(
+            self.endpoint,
+            headers={
+                "Authorization": f"Bearer {self.api_key}"
+            },
+            json={
+                "messages": conversation if isinstance(conversation, list) else None,
+                "input": conversation if isinstance(conversation, str) else None,
+                "output": output,
+                "context_documents": context_documents,
+                "detection_config": self.detection_config if isinstance(self.detection_config, dict) else None,
+                "detection_config_id": self.detection_config if isinstance(self.detection_config, str) else None,
+                "blocked_response": self.blocked_response,
+                "metadata": self.metadata,
+                "stream": self.stream,
+            }
+        )
+        if response.status_code != 200:
+            raise ValueError(f"Request to Alinia API failed with status code {response.status_code}: {response.text}")
+        return response
+    
+    def _post_processing(self, response: requests.Response) -> GuardrailOutput[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]:
+        explanation = response.json()
+        valid = not explanation.get("result").get("flagged")
+        score = explanation.get("result").get("category_details")
+        return GuardrailOutput(
+            valid=valid,
+            explanation=explanation,
+            score=score,
+        )

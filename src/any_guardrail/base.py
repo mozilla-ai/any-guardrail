@@ -39,6 +39,7 @@ class GuardrailName(str, Enum):
     SHIELD_GEMMA = "shield_gemma"
     LLAMA_GUARD = "llama_guard"
     AZURE_CONTENT_SAFETY = "azure_content_safety"
+    ALINIA = "alinia"
 
 
 class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):
