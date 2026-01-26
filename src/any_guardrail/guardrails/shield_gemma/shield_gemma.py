@@ -48,7 +48,7 @@ class ShieldGemma(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         self.model = AutoModelForCausalLM.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
     def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[dict[str, Any]]:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)

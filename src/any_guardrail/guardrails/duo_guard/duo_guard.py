@@ -51,7 +51,7 @@ class DuoGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, dict[str, bool]
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def _post_processing(

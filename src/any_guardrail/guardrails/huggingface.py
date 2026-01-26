@@ -101,7 +101,7 @@ class HuggingFace(
 
     def _load_model(self) -> None:
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
     def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[PreprocessT]:
         """Preprocess input text into model inputs.

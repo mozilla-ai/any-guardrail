@@ -27,7 +27,7 @@ class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData, bool, dict
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/jina-embeddings-v2-small-en-off-topic"]
 
     def _load_model(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithSharedBase.from_pretrained(self.model_id, base_model=base_model)
 

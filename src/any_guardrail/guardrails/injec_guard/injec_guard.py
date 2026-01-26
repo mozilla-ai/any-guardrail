@@ -21,7 +21,7 @@ class InjecGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float])
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id, trust_remote_code=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]

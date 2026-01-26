@@ -122,7 +122,7 @@ class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, 
                         "content": input_text,
                     },
                 ]
-        self._cached_model_inputs = self.tokenizer.apply_chat_template(conversation, **self.tokenizer_params, **kwargs)
+        self._cached_model_inputs = self.tokenizer.apply_chat_template(conversation, **self.tokenizer_params, **kwargs)  # type: ignore[arg-type]
         return GuardrailPreprocessOutput(data=self._cached_model_inputs)
 
     def _inference(
@@ -143,16 +143,17 @@ class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, 
     ) -> GuardrailOutput[bool, str, None]:
         if self._is_version_4:
             explanation = self.tokenizer.batch_decode(
-                model_outputs.data[:, self._cached_model_inputs["input_ids"].shape[-1] :], skip_special_tokens=True
+                model_outputs.data[:, self._cached_model_inputs["input_ids"].shape[-1] :],  # type: ignore[call-overload, index, union-attr]
+                skip_special_tokens=True,
             )[0]
 
             if "unsafe" in explanation.lower():
                 return GuardrailOutput(valid=False, explanation=explanation)
             return GuardrailOutput(valid=True, explanation=explanation)
 
-        prompt_len = self._cached_model_inputs.shape[1]
+        prompt_len = self._cached_model_inputs.shape[1]  # type: ignore[union-attr]
         output = model_outputs.data[:, prompt_len:]
-        explanation = self.tokenizer.decode(output[0])
+        explanation = self.tokenizer.decode(output[0])  # type: ignore[assignment]
 
         if "unsafe" in explanation.lower():
             return GuardrailOutput(valid=False, explanation=explanation)

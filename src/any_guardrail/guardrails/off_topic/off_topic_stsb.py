@@ -27,7 +27,7 @@ class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/stsb-roberta-base-off-topic"]
 
     def _load_model(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
 
