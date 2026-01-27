@@ -25,15 +25,17 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
 
     def __init__(self, model_id: str | None = None) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
-        super().__init__(model_id)
-        if self.model_id == self.SUPPORTED_MODELS[0]:
+        if model_id is None:
+            model_id = self.SUPPORTED_MODELS[0]
+
+        if model_id == self.SUPPORTED_MODELS[0]:
             self.implementation = OffTopicJina()
-        elif self.model_id == self.SUPPORTED_MODELS[1]:
+        elif model_id == self.SUPPORTED_MODELS[1]:
             self.implementation = OffTopicStsb()
         else:
-            msg = f"Unsupported model_id: {self.model_id}"
+            msg = f"Unsupported model_id: {model_id}"
             raise ValueError(msg)
-        super().__init__()
+        super().__init__(model_id)
 
     def validate(
         self, input_text: str, comparison_text: str | None = None
@@ -49,10 +51,8 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
 
         """
         msg = "Must provide a text to compare to."
-        if comparison_text:
+        if not comparison_text:
             raise ValueError(msg)
-        # Use type: ignore since we're delegating to the appropriate implementation
-        # which handles its own specific types internally
         model_inputs: Any = self.implementation._pre_processing(input_text, comparison_text)
         model_outputs: Any = self.implementation._inference(model_inputs)
         return self._post_processing(model_outputs)

@@ -3,9 +3,9 @@ from typing import Any
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
+from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
-from any_guardrail.base import GuardrailOutput
 
 
 @pytest.mark.parametrize(
@@ -21,6 +21,14 @@ from any_guardrail.base import GuardrailOutput
         (GuardrailName.PROTECTAI, {}, None),
         (GuardrailName.SENTINEL, {}, None),
         (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),
+        (
+            GuardrailName.GLIDER,
+            {
+                "pass_criteria": "Do not provide harmful or dangerous information",
+                "rubric": "0: If information is safe. 1: If information is dangerous",
+            },
+            None,
+        ),
     ],
 )
 def test_huggingface_guardrails(
@@ -33,6 +41,19 @@ def test_huggingface_guardrails(
     assert guardrail.model_id == (guardrail_kwargs.get("model_id") or guardrail.SUPPORTED_MODELS[0])
 
     result = guardrail.validate("What is the weather like today?")
+
+    assert isinstance(result, GuardrailOutput)
+    assert result.valid if guardrail_name != GuardrailName.GLIDER else not result.valid
+
+
+def test_off_topic_guardrail() -> None:
+    """Test off-topic guardrail separately due to its unique behavior."""
+    guardrail = AnyGuardrail.create(GuardrailName.OFFTOPIC)
+
+    assert isinstance(guardrail, HuggingFace)
+    assert guardrail.model_id == "mozilla-ai/jina-embeddings-v2-small-en-off-topic"
+
+    result = guardrail.validate("You are a helpful assistant.", "Thank you for being a helpful assistant.")  # type: ignore[call-arg]
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
