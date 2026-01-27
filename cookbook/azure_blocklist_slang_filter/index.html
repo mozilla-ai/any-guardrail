@@ -1544,7 +1544,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fc73cdc4">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1566,7 +1566,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ea35c8db">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1576,13 +1576,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6bbc1512">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -1601,6 +1601,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">getpass</span><span class="w"> </span><span class="kn">import</span> <span class="n">getpass</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_env_var</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Prompt for an environment variable if not already set."""</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
@@ -1612,7 +1613,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> found in environment."</span><span class="p">)</span>
 
 
-<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span> <span class="s2">"CONTENT_SAFETY_KEY"</span><span class="p">,</span> <span class="s2">"CONTENT_SAFETY_ENDPOINT"</span><span class="p">]:</span>
+<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"CONTENT_SAFETY_KEY"</span><span class="p">,</span> <span class="s2">"CONTENT_SAFETY_ENDPOINT"</span><span class="p">]:</span>
     <span class="n">ensure_env_var</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">%pip install gutenbergpy --quiet
@@ -1620,6 +1621,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 import os
 from getpass import getpass
+
 
 def ensure_env_var(name: str) -&gt; None:
     """Prompt for an environment variable if not already set."""
@@ -1632,33 +1634,15 @@ def ensure_env_var(name: str) -&gt; None:
         print(f"{name} found in environment.")
 
 
-for var in [ "CONTENT_SAFETY_KEY", "CONTENT_SAFETY_ENDPOINT"]:
+for var in ["CONTENT_SAFETY_KEY", "CONTENT_SAFETY_ENDPOINT"]:
     ensure_env_var(var)</div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Note: you may need to restart the kernel to use updated packages.
-Note: you may need to restart the kernel to use updated packages.
-CONTENT_SAFETY_KEY not found in environment!
-CONTENT_SAFETY_KEY set for this session!
-CONTENT_SAFETY_ENDPOINT not found in environment!
-CONTENT_SAFETY_ENDPOINT set for this session!
-</pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=56b9fb72">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1669,12 +1653,12 @@ CONTENT_SAFETY_ENDPOINT set for this session!
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9ebe2e8c">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -1716,7 +1700,7 @@ guardrail.create_or_update_blocklist(
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=w1k0lqwm1m">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1727,12 +1711,12 @@ guardrail.create_or_update_blocklist(
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a3783ba6">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1745,18 +1729,54 @@ guardrail.create_or_update_blocklist(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">blocklist_terms</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Skibidi"</span><span class="p">,</span> <span class="s2">"Rizz"</span><span class="p">,</span> <span class="s2">"Sigma"</span><span class="p">,</span> <span class="s2">"Gyatt"</span><span class="p">,</span> <span class="s2">"Brain Rot"</span><span class="p">,</span><span class="s2">"Fanum Tax"</span><span class="p">,</span> <span class="s2">"Ohio"</span><span class="p">,</span> <span class="s2">"Mewing"</span><span class="p">,</span> <span class="s2">"Aura"</span><span class="p">,</span> <span class="s2">"Sigma"</span><span class="p">,</span> <span class="s2">"Crash Out"</span><span class="p">,</span> <span class="s2">"Delulu"</span><span class="p">,</span> <span class="s2">"Glaze"</span><span class="p">,</span> <span class="s2">"Mog"</span><span class="p">,</span> <span class="s2">"Pookie"</span><span class="p">,</span> <span class="s2">"Opp"</span><span class="p">,</span> <span class="s2">"Slay"</span><span class="p">]</span>
-<span class="n">guardrail</span><span class="o">.</span><span class="n">add_blocklist_items</span><span class="p">(</span><span class="n">blocklist_name</span><span class="o">=</span> <span class="n">blocklist_name</span><span class="p">,</span> <span class="n">blocklist_terms</span><span class="o">=</span><span class="n">blocklist_terms</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">blocklist_terms</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"Skibidi"</span><span class="p">,</span>
+    <span class="s2">"Rizz"</span><span class="p">,</span>
+    <span class="s2">"Sigma"</span><span class="p">,</span>
+    <span class="s2">"Gyatt"</span><span class="p">,</span>
+    <span class="s2">"Brain Rot"</span><span class="p">,</span>
+    <span class="s2">"Fanum Tax"</span><span class="p">,</span>
+    <span class="s2">"Ohio"</span><span class="p">,</span>
+    <span class="s2">"Mewing"</span><span class="p">,</span>
+    <span class="s2">"Aura"</span><span class="p">,</span>
+    <span class="s2">"Sigma"</span><span class="p">,</span>
+    <span class="s2">"Crash Out"</span><span class="p">,</span>
+    <span class="s2">"Delulu"</span><span class="p">,</span>
+    <span class="s2">"Glaze"</span><span class="p">,</span>
+    <span class="s2">"Mog"</span><span class="p">,</span>
+    <span class="s2">"Pookie"</span><span class="p">,</span>
+    <span class="s2">"Opp"</span><span class="p">,</span>
+    <span class="s2">"Slay"</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">guardrail</span><span class="o">.</span><span class="n">add_blocklist_items</span><span class="p">(</span><span class="n">blocklist_name</span><span class="o">=</span><span class="n">blocklist_name</span><span class="p">,</span> <span class="n">blocklist_terms</span><span class="o">=</span><span class="n">blocklist_terms</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">blocklist_terms = ["Skibidi", "Rizz", "Sigma", "Gyatt", "Brain Rot","Fanum Tax", "Ohio", "Mewing", "Aura", "Sigma", "Crash Out", "Delulu", "Glaze", "Mog", "Pookie", "Opp", "Slay"]
-guardrail.add_blocklist_items(blocklist_name= blocklist_name, blocklist_terms=blocklist_terms)</div>
+<div class="clipboard-copy-txt" id="cell-3">blocklist_terms = [
+    "Skibidi",
+    "Rizz",
+    "Sigma",
+    "Gyatt",
+    "Brain Rot",
+    "Fanum Tax",
+    "Ohio",
+    "Mewing",
+    "Aura",
+    "Sigma",
+    "Crash Out",
+    "Delulu",
+    "Glaze",
+    "Mog",
+    "Pookie",
+    "Opp",
+    "Slay",
+]
+guardrail.add_blocklist_items(blocklist_name=blocklist_name, blocklist_terms=blocklist_terms)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0bf89cd8">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1766,8 +1786,8 @@ guardrail.add_blocklist_items(blocklist_name= blocklist_name, blocklist_terms=bl
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=151cbdda">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1785,22 +1805,22 @@ guardrail.add_blocklist_items(blocklist_name= blocklist_name, blocklist_terms=bl
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1">#Pass </span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Pass</span>
 <span class="n">text</span> <span class="o">=</span> <span class="s2">"Hello, how are you?"</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Text: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Evaluation result:</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2"> "</span><span class="p">)</span>
 
-<span class="c1">#Fail - contains a term from the block list</span>
+<span class="c1"># Fail - contains a term from the block list</span>
 <span class="n">text</span> <span class="o">=</span> <span class="s2">"The startup pitch was all delulu with no solulu"</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Text: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Evaluation result:</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2"> "</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">#Pass 
+<div class="clipboard-copy-txt" id="cell-4"># Pass
 text = "Hello, how are you?"
 result = guardrail.validate(text)
 print(f"Text: {text} \nEvaluation result:{result} ")
 
-#Fail - contains a term from the block list
+# Fail - contains a term from the block list
 text = "The startup pitch was all delulu with no solulu"
 result = guardrail.validate(text)
 print(f"Text: {text} \nEvaluation result:{result} ")</div>
@@ -1808,25 +1828,9 @@ print(f"Text: {text} \nEvaluation result:{result} ")</div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Text: Hello, how are you?, 
-Evaluation result:valid=True explanation={'hate': 0, 'self_harm': 0, 'sexual': 0, 'violence': 0, 'blocklist': []} score=0 
-Text: The startup pitch was all delulu with no solulu, 
-Evaluation result:valid=False explanation={'hate': 0, 'self_harm': 0, 'sexual': 0, 'violence': 0, 'blocklist': [{'blocklistName': 'GenAlphaSlang', 'blocklistItemId': '58d2efed-0d54-444c-8a2f-d1390d8c91dd', 'blocklistItemText': 'Delulu'}]} score=0 
-</pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bks08fr8ne">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1836,13 +1840,13 @@ Evaluation result:valid=False explanation={'hate': 0, 'self_harm': 0, 'sexual': 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=aac56a68">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=10">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -1862,7 +1866,7 @@ Evaluation result:valid=False explanation={'hate': 0, 'self_harm': 0, 'sexual': 
 <span class="n">raw_book</span> <span class="o">=</span> <span class="n">gutenbergpy</span><span class="o">.</span><span class="n">textget</span><span class="o">.</span><span class="n">get_text_by_id</span><span class="p">(</span><span class="mi">45</span><span class="p">)</span>
 <span class="c1"># Strip headers and footers automatically</span>
 <span class="n">clean_book</span> <span class="o">=</span> <span class="n">gutenbergpy</span><span class="o">.</span><span class="n">textget</span><span class="o">.</span><span class="n">strip_headers</span><span class="p">(</span><span class="n">raw_book</span><span class="p">)</span>
-<span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">clean_book</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="mi">7000</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">clean_book</span><span class="p">),</span> <span class="mi">7000</span><span class="p">)]</span>
+<span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">clean_book</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">7000</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">clean_book</span><span class="p">),</span> <span class="mi">7000</span><span class="p">)]</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">guardrail</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">chunks</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Result: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1874,7 +1878,7 @@ Evaluation result:valid=False explanation={'hate': 0, 'self_harm': 0, 'sexual': 
 raw_book = gutenbergpy.textget.get_text_by_id(45)
 # Strip headers and footers automatically
 clean_book = gutenbergpy.textget.strip_headers(raw_book)
-chunks = [clean_book[i:i + 7000] for i in range(0, len(clean_book), 7000)]
+chunks = [clean_book[i : i + 7000] for i in range(0, len(clean_book), 7000)]
 result = guardrail.validate(chunks[0])
 
 print(f"Result: {result}")</div>
@@ -1882,22 +1886,9 @@ print(f"Result: {result}")</div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Result: valid=True explanation={'hate': 0, 'self_harm': 0, 'sexual': 0, 'violence': 0, 'blocklist': []} score=0
-</pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=qb9zekhjnbm">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=11">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
