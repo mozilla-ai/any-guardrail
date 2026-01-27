@@ -63,29 +63,52 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
             context_documents (list[str] | None): Optional context documents to provide additional context for validation
 
         """
-        response = self._inference(conversation, output, context_documents)
+        params = self._pre_processing(conversation, output, context_documents)
+        response = self._inference(params)
         return self._post_processing(response)
 
-    def _inference(
+    def _pre_processing(
         self,
         conversation: str | list[dict[str, str]],
         output: str | None = None,
         context_documents: list[str] | None = None,
-    ) -> requests.Response:  # type: ignore[name-defined]
+    ) -> dict[str, Any]:
+        initial_json = {}
+
+        if isinstance(conversation, str):
+            initial_json["input"] = conversation
+        elif isinstance(conversation, list):
+            initial_json["messages"] = conversation  # type: ignore[assignment]
+        else:
+            msg = "Conversation must be either a string or a list of message dictionaries."
+            raise ValueError(msg)
+
+        if isinstance(self.detection_config, dict):
+            initial_json["detection_config"] = self.detection_config  # type: ignore[assignment]
+        elif isinstance(self.detection_config, str):
+            initial_json["detection_config_id"] = self.detection_config
+        else:
+            msg = "Detection configuration must be either a string ID or a dictionary."
+            raise ValueError(msg)
+
+        if self.metadata:
+            initial_json["metadata"] = self.metadata  # type: ignore[assignment]
+        if self.stream:
+            initial_json["stream"] = self.stream  # type: ignore[assignment]
+        if context_documents:
+            initial_json["context_documents"] = context_documents  # type: ignore[assignment]
+        if output:
+            initial_json["output"] = output
+        if self.blocked_response:
+            initial_json["blocked_response"] = self.blocked_response  # type: ignore[assignment]
+
+        return initial_json
+
+    def _inference(self, params: dict[str, Any]) -> requests.Response:  # type: ignore[name-defined]
         response = requests.post(  # type: ignore[attr-defined, no-untyped-call]
             self.endpoint,
             headers={"Authorization": f"Bearer {self.api_key}"},
-            json={
-                "messages": conversation if isinstance(conversation, list) else None,
-                "input": conversation if isinstance(conversation, str) else None,
-                "output": output,
-                "context_documents": context_documents,
-                "detection_config": self.detection_config if isinstance(self.detection_config, dict) else None,
-                "detection_config_id": self.detection_config if isinstance(self.detection_config, str) else None,
-                "blocked_response": self.blocked_response,
-                "metadata": self.metadata,
-                "stream": self.stream,
-            },
+            json=params,
         )
         if response.status_code != 200:
             msg = f"Request to Alinia API failed with status code {response.status_code}: {response.text}"
