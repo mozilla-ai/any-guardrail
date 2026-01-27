@@ -4,9 +4,14 @@ from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Lla
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+
+# Type alias for LlamaGuard - preprocessing can return either a dict (v4) or tensor (v3)
+LlamaGuardPreprocessData = dict[str, Any] | Any  # dict for v4, tensor for v3
+LlamaGuardInferenceData = Any  # Generated tensor output
 
 
-class LlamaGuard(HuggingFace):
+class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
     """Wrapper class for Llama Guard 3 & 4 implementations.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -47,7 +52,9 @@ class LlamaGuard(HuggingFace):
             raise ValueError(msg)
         super().__init__(model_id)
 
-    def validate(self, input_text: str, output_text: str | None = None, **kwargs: Any) -> GuardrailOutput:
+    def validate(
+        self, input_text: str, output_text: str | None = None, **kwargs: Any
+    ) -> GuardrailOutput[bool, str, None]:
         """Judge whether the input text or the input text, output text pair are unsafe based on the Llama taxonomy.
 
         Args:
@@ -68,7 +75,9 @@ class LlamaGuard(HuggingFace):
         self.tokenizer = self.tokenizer_class.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
         self.model = self.model_class.from_pretrained(self.model_id)
 
-    def _pre_processing(self, input_text: str, output_text: str | None = None, **kwargs: Any) -> Any:
+    def _pre_processing(
+        self, input_text: str, output_text: str | None = None, **kwargs: Any
+    ) -> GuardrailPreprocessOutput[LlamaGuardPreprocessData]:
         if output_text:
             if self.model_id == self.SUPPORTED_MODELS[0] or self._is_version_4:
                 conversation = [
@@ -113,31 +122,38 @@ class LlamaGuard(HuggingFace):
                         "content": input_text,
                     },
                 ]
-        self.model_inputs = self.tokenizer.apply_chat_template(conversation, **self.tokenizer_params, **kwargs)
-        return self.model_inputs
+        self._cached_model_inputs = self.tokenizer.apply_chat_template(conversation, **self.tokenizer_params, **kwargs)  # type: ignore[arg-type]
+        return GuardrailPreprocessOutput(data=self._cached_model_inputs)
 
-    def _inference(self, model_inputs: Any) -> Any:
+    def _inference(
+        self, model_inputs: GuardrailPreprocessOutput[LlamaGuardPreprocessData]
+    ) -> GuardrailInferenceOutput[LlamaGuardInferenceData]:
         if self._is_version_4:
-            return self.model.generate(**model_inputs, max_new_tokens=10, do_sample=False)
-        return self.model.generate(
-            model_inputs,
-            max_new_tokens=20,
-            pad_token_id=0,
-        )
+            output = self.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)
+        else:
+            output = self.model.generate(
+                model_inputs.data,
+                max_new_tokens=20,
+                pad_token_id=0,
+            )
+        return GuardrailInferenceOutput(data=output)
 
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]
+    ) -> GuardrailOutput[bool, str, None]:
         if self._is_version_4:
             explanation = self.tokenizer.batch_decode(
-                model_outputs[:, self.model_inputs["input_ids"].shape[-1] :], skip_special_tokens=True
+                model_outputs.data[:, self._cached_model_inputs["input_ids"].shape[-1] :],  # type: ignore[call-overload, index, union-attr]
+                skip_special_tokens=True,
             )[0]
 
             if "unsafe" in explanation.lower():
                 return GuardrailOutput(valid=False, explanation=explanation)
             return GuardrailOutput(valid=True, explanation=explanation)
 
-        prompt_len = self.model_inputs.shape[1]
-        output = model_outputs[:, prompt_len:]
-        explanation = self.tokenizer.decode(output[0])
+        prompt_len = self._cached_model_inputs.shape[1]  # type: ignore[union-attr]
+        output = model_outputs.data[:, prompt_len:]
+        explanation = self.tokenizer.decode(output[0])  # type: ignore[assignment]
 
         if "unsafe" in explanation.lower():
             return GuardrailOutput(valid=False, explanation=explanation)

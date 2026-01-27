@@ -1,5 +1,7 @@
+from typing import TYPE_CHECKING
+
 try:
-    from flow_judge import EvalInput, EvalOutput, FlowJudge
+    from flow_judge import EvalInput, FlowJudge
     from flow_judge.metrics import Metric, RubricItem  # type: ignore[attr-defined]
     from flow_judge.models import Hf
 
@@ -7,10 +9,15 @@ try:
 except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+
+if TYPE_CHECKING:
+    from flow_judge import EvalInput as EvalInputType
+    from flow_judge import EvalOutput as EvalOutputType
 
 
-class Flowjudge(Guardrail):
+class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str, int]):
     """Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric.
 
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
@@ -49,7 +56,7 @@ class Flowjudge(Guardrail):
         self.metric_prompt = self._define_metric_prompt()
         self.model = self._load_model()
 
-    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:
+    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput[None, str, int]:
         """Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:
@@ -62,7 +69,7 @@ class Flowjudge(Guardrail):
         """
         eval_input = self._pre_processing(inputs, output)
         result = self._inference(eval_input)
-        return GuardrailOutput(explanation=result.feedback, score=result.score)
+        return self._post_processing(result)
 
     def _load_model(self) -> FlowJudge:
         """Construct the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
@@ -103,8 +110,19 @@ class Flowjudge(Guardrail):
             processed_rubric.append(rubric_item)
         return processed_rubric
 
-    def _pre_processing(self, inputs: list[dict[str, str]], output: dict[str, str]) -> EvalInput:
-        return EvalInput(inputs=inputs, output=output)
+    def _pre_processing(
+        self, inputs: list[dict[str, str]], output: dict[str, str]
+    ) -> GuardrailPreprocessOutput["EvalInputType"]:
+        eval_input = EvalInput(inputs=inputs, output=output)
+        return GuardrailPreprocessOutput(data=eval_input)
 
-    def _inference(self, eval_input: EvalInput) -> EvalOutput:
-        return self.model.evaluate(eval_input, save_results=False)
+    def _inference(
+        self, eval_input: GuardrailPreprocessOutput["EvalInputType"]
+    ) -> GuardrailInferenceOutput["EvalOutputType"]:
+        result = self.model.evaluate(eval_input.data, save_results=False)
+        return GuardrailInferenceOutput(data=result)
+
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput["EvalOutputType"]
+    ) -> GuardrailOutput[None, str, int]:
+        return GuardrailOutput(explanation=model_outputs.data.feedback, score=model_outputs.data.score)

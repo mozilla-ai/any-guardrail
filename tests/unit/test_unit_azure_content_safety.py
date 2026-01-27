@@ -1,6 +1,9 @@
 from unittest import mock
 
+from azure.ai.contentsafety.models import TextCategory
+
 from any_guardrail.base import GuardrailOutput
+from any_guardrail.types import GuardrailInferenceOutput
 
 
 def test_azure_content_safety_guardrail_post_processing() -> None:
@@ -18,14 +21,14 @@ def test_azure_content_safety_guardrail_post_processing() -> None:
     # Mock model outputs
     mock_model_outputs = mock.MagicMock()
     mock_model_outputs.categories_analysis = [
-        mock.MagicMock(category="Hate", severity=0),
-        mock.MagicMock(category="SelfHarm", severity=2),
-        mock.MagicMock(category="Sexual", severity=4),
-        mock.MagicMock(category="Violence", severity=6),
+        mock.MagicMock(category=TextCategory.HATE, severity=0),
+        mock.MagicMock(category=TextCategory.SELF_HARM, severity=2),
+        mock.MagicMock(category=TextCategory.SEXUAL, severity=4),
+        mock.MagicMock(category=TextCategory.VIOLENCE, severity=6),
     ]
     mock_model_outputs.blocklists_match = None
 
-    result = guardrail._post_processing(mock_model_outputs)
+    result = guardrail._post_processing(GuardrailInferenceOutput(data=mock_model_outputs))
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
@@ -54,14 +57,14 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
     # Mock model outputs
     mock_model_outputs = mock.MagicMock()
     mock_model_outputs.categories_analysis = [
-        mock.MagicMock(category="Hate", severity=0),
-        mock.MagicMock(category="SelfHarm", severity=2),
-        mock.MagicMock(category="Sexual", severity=4),
-        mock.MagicMock(category="Violence", severity=6),
+        mock.MagicMock(category=TextCategory.HATE, severity=0),
+        mock.MagicMock(category=TextCategory.SELF_HARM, severity=2),
+        mock.MagicMock(category=TextCategory.SEXUAL, severity=4),
+        mock.MagicMock(category=TextCategory.VIOLENCE, severity=6),
     ]
     mock_model_outputs.blocklists_match = ["some inappropriate content"]
 
-    result = guardrail._post_processing(mock_model_outputs)
+    result = guardrail._post_processing(GuardrailInferenceOutput(data=mock_model_outputs))
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
@@ -90,14 +93,14 @@ def test_azure_content_safety_guardrail_post_processing_below_threshold() -> Non
     # Mock model outputs
     mock_model_outputs = mock.MagicMock()
     mock_model_outputs.categories_analysis = [
-        mock.MagicMock(category="Hate", severity=0),
-        mock.MagicMock(category="SelfHarm", severity=2),
-        mock.MagicMock(category="Sexual", severity=4),
-        mock.MagicMock(category="Violence", severity=4),
+        mock.MagicMock(category=TextCategory.HATE, severity=0),
+        mock.MagicMock(category=TextCategory.SELF_HARM, severity=2),
+        mock.MagicMock(category=TextCategory.SEXUAL, severity=4),
+        mock.MagicMock(category=TextCategory.VIOLENCE, severity=4),
     ]
     mock_model_outputs.blocklists_match = None
 
-    result = guardrail._post_processing(mock_model_outputs)
+    result = guardrail._post_processing(GuardrailInferenceOutput(data=mock_model_outputs))
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
@@ -126,14 +129,14 @@ def test_azure_content_safety_guardrail_post_processing_average_score() -> None:
     # Mock model outputs
     mock_model_outputs = mock.MagicMock()
     mock_model_outputs.categories_analysis = [
-        mock.MagicMock(category="Hate", severity=0),
-        mock.MagicMock(category="SelfHarm", severity=2),
-        mock.MagicMock(category="Sexual", severity=4),
-        mock.MagicMock(category="Violence", severity=6),
+        mock.MagicMock(category=TextCategory.HATE, severity=0),
+        mock.MagicMock(category=TextCategory.SELF_HARM, severity=2),
+        mock.MagicMock(category=TextCategory.SEXUAL, severity=4),
+        mock.MagicMock(category=TextCategory.VIOLENCE, severity=6),
     ]
     mock_model_outputs.blocklists_match = None
 
-    result = guardrail._post_processing(mock_model_outputs)
+    result = guardrail._post_processing(GuardrailInferenceOutput(data=mock_model_outputs))
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid

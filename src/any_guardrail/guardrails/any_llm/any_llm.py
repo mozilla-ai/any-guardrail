@@ -41,7 +41,7 @@ class GuardrailOutputAnyLLM(BaseModel):
     score: int
 
 
-class AnyLlm(Guardrail):
+class AnyLlm(Guardrail[bool, str, float]):
     """A guardrail using `any-llm`."""
 
     def validate(
@@ -51,7 +51,7 @@ class AnyLlm(Guardrail):
         model_id: str = DEFAULT_MODEL_ID,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
         **kwargs: Any,
-    ) -> GuardrailOutput:
+    ) -> GuardrailOutput[bool, str, float]:
         """Validate the `input_text` against the given `policy`.
 
         Args:
