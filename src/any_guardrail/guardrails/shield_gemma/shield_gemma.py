@@ -34,7 +34,6 @@ class ShieldGemma(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]
         "google/shieldgemma-2b",
         "google/shieldgemma-9b",
         "google/shieldgemma-27b",
-        "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
     ]
 
     def __init__(self, policy: str, threshold: float = DEFAULT_THRESHOLD, model_id: str | None = None) -> None:

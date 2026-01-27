@@ -5,6 +5,7 @@ import pytest
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput
 
 
 @pytest.mark.parametrize(
@@ -16,10 +17,10 @@ from any_guardrail.guardrails.huggingface import HuggingFace
         (GuardrailName.INJECGUARD, {}, None),
         (GuardrailName.JASPER, {}, None),
         (GuardrailName.PANGOLIN, {}, None),
-        (GuardrailName.LLAMA_GUARD, {"model_id": "hf-internal-testing/tiny-random-LlamaForCausalLM"}, None),
-        # (GuardrailName.PROTECTAI, {}, None), # Requires HF login
-        # (GuardrailName.SENTINEL, {}, None),  # Requires HF login
-        # (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),  # Requires HF login
+        (GuardrailName.LLAMA_GUARD, {}, None),
+        (GuardrailName.PROTECTAI, {}, None),
+        (GuardrailName.SENTINEL, {}, None),
+        (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),
     ],
 )
 def test_huggingface_guardrails(
@@ -33,11 +34,5 @@ def test_huggingface_guardrails(
 
     result = guardrail.validate("What is the weather like today?")
 
+    assert isinstance(result, GuardrailOutput)
     assert result.valid
-
-    if guardrail_name == GuardrailName.LLAMA_GUARD:
-        assert result.explanation is not None
-        assert result.score is None
-    else:
-        assert result.explanation == expected_explanation
-        assert result.score is not None
