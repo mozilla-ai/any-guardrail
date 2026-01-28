@@ -1,8 +1,11 @@
+import os
 from typing import Any
 
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
+
+RUNNING_IN_CI = os.environ.get("CI") == "true"
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
@@ -20,14 +23,20 @@ from any_guardrail.guardrails.huggingface import HuggingFace
         (GuardrailName.LLAMA_GUARD, {}, None),
         (GuardrailName.PROTECTAI, {}, None),
         (GuardrailName.SENTINEL, {}, None),
-        (GuardrailName.SHIELD_GEMMA, {"policy": "Do not provide harmful or dangerous information"}, None),
-        (
+        pytest.param(
+            GuardrailName.SHIELD_GEMMA,
+            {"policy": "Do not provide harmful or dangerous information"},
+            None,
+            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~5GB, needs 8GB+ RAM)"),
+        ),
+        pytest.param(
             GuardrailName.GLIDER,
             {
                 "pass_criteria": "Do not provide harmful or dangerous information",
                 "rubric": "0: If information is safe. 1: If information is dangerous",
             },
             None,
+            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~8GB, needs 10GB+ RAM)"),
         ),
     ],
 )
