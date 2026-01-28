@@ -33,10 +33,12 @@ jobs:
           restore-keys: |
             huggingface-${{ runner.os }}-
 
-      - name: Run Integration tests (parallel with xdist)
+      - name: Run Integration tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CONTENT_SAFETY_KEY: ${{ secrets.CONTENT_SAFETY_KEY }}
           CONTENT_SAFETY_ENDPOINT: ${{ secrets.CONTENT_SAFETY_ENDPOINT }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: pytest -v tests/integration -n auto --reruns 3 --reruns-delay 10
+          HF_HUB_DOWNLOAD_TIMEOUT: "300"
+          HF_HUB_ETAG_TIMEOUT: "30"
+        run: pytest -v tests/integration --reruns 3 --reruns-delay 10 --timeout 300
