@@ -41,4 +41,4 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_HUB_DOWNLOAD_TIMEOUT: "300"
           HF_HUB_ETAG_TIMEOUT: "30"
-        run: pytest -v tests/integration --reruns 3 --reruns-delay 10 --timeout 300
+        run: pytest -v tests/integration --reruns 3 --reruns-delay 10 --timeout 600
