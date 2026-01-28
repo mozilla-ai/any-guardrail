@@ -2,6 +2,7 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.types import GuardrailInferenceOutput
 
 DUOGUARD_CATEGORIES = [
     "Violent crimes",
@@ -21,7 +22,7 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(HuggingFace):
+class DuoGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, dict[str, bool], float]):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
     For more information, please see the model card:
@@ -50,13 +51,15 @@ class DuoGuard(HuggingFace):
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.MODELS_TO_TOKENIZER[self.model_id])
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
+    ) -> GuardrailOutput[bool, dict[str, bool], float]:
         from torch.nn.functional import sigmoid
 
-        probabilities = sigmoid(model_outputs["logits"][0]).tolist()
+        probabilities = sigmoid(model_outputs.data["logits"][0]).tolist()
         predicted_labels = {
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
         }

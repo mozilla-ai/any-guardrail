@@ -2,11 +2,12 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace, _match_injection_label
+from any_guardrail.types import GuardrailInferenceOutput
 
 INJECGUARD_LABEL = "injection"
 
 
-class InjecGuard(HuggingFace):
+class InjecGuard(HuggingFace[dict[str, Any], dict[str, Any], bool, None, float]):
     """Prompt injection detection encoder based model.
 
     For more information, please see the model card:
@@ -20,7 +21,9 @@ class InjecGuard(HuggingFace):
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id, trust_remote_code=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
-    def _post_processing(self, model_outputs: dict[str, Any]) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
+    ) -> GuardrailOutput[bool, None, float]:
         return _match_injection_label(model_outputs, INJECGUARD_LABEL, self.model.config.id2label)

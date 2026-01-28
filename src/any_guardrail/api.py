@@ -29,7 +29,7 @@ class AnyGuardrail:
         return model_ids
 
     @classmethod
-    def create(cls, guardrail_name: GuardrailName, **kwargs: Any) -> Guardrail:
+    def create(cls, guardrail_name: GuardrailName, **kwargs: Any) -> Guardrail[Any, Any, Any]:
         """Create a guardrail instance.
 
         Args:
@@ -44,7 +44,7 @@ class AnyGuardrail:
         return guardrail_class(**kwargs)
 
     @classmethod
-    def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:
+    def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail[Any, Any, Any]]:
         guardrail_module_name = f"{guardrail_name.value}"
         module_path = f"any_guardrail.guardrails.{guardrail_module_name}.{guardrail_module_name}"
 

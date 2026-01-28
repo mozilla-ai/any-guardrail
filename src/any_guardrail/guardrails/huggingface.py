@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Generic
 
 try:
     import numpy as np
@@ -12,6 +12,18 @@ except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
 from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.types import (
+    ExplanationT,
+    GuardrailInferenceOutput,
+    GuardrailPreprocessOutput,
+    InferenceT,
+    PreprocessT,
+    ScoreT,
+    ValidT,
+)
+
+# Type alias for standard HuggingFace dict types
+HFDict = dict[str, Any]
 
 
 def _softmax(_outputs):  # type: ignore[no-untyped-def]
@@ -21,16 +33,48 @@ def _softmax(_outputs):  # type: ignore[no-untyped-def]
 
 
 def _match_injection_label(
-    model_outputs: dict[str, Any], injection_label: str, id2label: dict[int, str]
-) -> GuardrailOutput:
-    logits = model_outputs["logits"][0].numpy()
+    model_outputs: GuardrailInferenceOutput[HFDict], injection_label: str, id2label: dict[int, str]
+) -> GuardrailOutput[bool, None, float]:
+    """Match injection label from model outputs.
+
+    Args:
+        model_outputs: The wrapped inference output containing logits.
+        injection_label: The label indicating injection/unsafe content.
+        id2label: Mapping from label IDs to label names.
+
+    Returns:
+        GuardrailOutput with valid=True if content is safe, valid=False if injection detected.
+
+    """
+    logits = model_outputs.data["logits"][0].numpy()
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
     return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
 
 
-class HuggingFace(Guardrail, ABC):
-    """Wrapper for models from Hugging Face."""
+class HuggingFace(
+    Guardrail[ValidT, ExplanationT, ScoreT], ABC, Generic[PreprocessT, InferenceT, ValidT, ExplanationT, ScoreT]
+):
+    """Wrapper for models from Hugging Face with typed preprocessing and inference stages.
+
+    This base class provides a three-stage pipeline (preprocess -> inference -> postprocess)
+    with runtime type validation via Pydantic wrappers.
+
+    Type Parameters:
+        PreprocessT: The type of data produced by preprocessing. Defaults to dict[str, Any]
+            for standard tokenizer output.
+        InferenceT: The type of data produced by inference. Defaults to dict[str, Any]
+            for standard model output with logits.
+
+    Example:
+        >>> class MyGuardrail(HuggingFace[dict[str, Any], dict[str, Any]]):
+        ...     SUPPORTED_MODELS = ["my-model"]
+        ...
+        ...     def _post_processing(self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]) -> GuardrailOutput:
+        ...         logits = model_outputs.data["logits"]
+        ...         return GuardrailOutput(valid=logits[0] > 0)
+
+    """
 
     def __init__(self, model_id: str | None = None) -> None:
         """Initialize the guardrail with a model ID."""
@@ -49,7 +93,7 @@ class HuggingFace(Guardrail, ABC):
             msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
             raise ValueError(msg)
 
-    def validate(self, input_text: str) -> GuardrailOutput:
+    def validate(self, input_text: str) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Validate whether the input text is safe or not."""
         model_inputs = self._pre_processing(input_text)
         model_outputs = self._inference(model_inputs)
@@ -57,21 +101,43 @@ class HuggingFace(Guardrail, ABC):
 
     def _load_model(self) -> None:
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)  # type: ignore[no-untyped-call]
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
 
-    def _pre_processing(self, input_text: str) -> Any:
-        return self.tokenizer(input_text, return_tensors="pt")
+    def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[PreprocessT]:
+        """Preprocess input text into model inputs.
 
-    def _inference(self, model_inputs: Any) -> Any:
+        Args:
+            input_text: The text to preprocess.
+
+        Returns:
+            GuardrailPreprocessOutput wrapping the tokenized input.
+
+        """
+        tokenized = self.tokenizer(input_text, return_tensors="pt")
+        return GuardrailPreprocessOutput(data=tokenized)
+
+    def _inference(self, model_inputs: GuardrailPreprocessOutput[PreprocessT]) -> GuardrailInferenceOutput[InferenceT]:
+        """Run model inference on preprocessed inputs.
+
+        Args:
+            model_inputs: The wrapped preprocessing output.
+
+        Returns:
+            GuardrailInferenceOutput wrapping the model output.
+
+        """
         with torch.no_grad():
-            return self.model(**model_inputs)
+            output = self.model(**model_inputs.data)
+        return GuardrailInferenceOutput(data=output)
 
     @abstractmethod
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[InferenceT]
+    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
         """Process the model outputs to return a GuardrailOutput.
 
         Args:
-            model_outputs: The outputs from the model inference.
+            model_outputs: The wrapped inference output.
 
         Returns:
             GuardrailOutput: The processed output indicating safety or other metrics.
