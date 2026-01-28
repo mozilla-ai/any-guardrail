@@ -141,6 +141,7 @@ tests = [
   "mktestdocs>=0.2.4",
   "pytest-xdist>=3.6.1",
   "pytest-timeout",
+  "pytest-rerunfailures>=14.0",
   "debugpy",
 ]
 
