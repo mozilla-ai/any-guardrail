@@ -4,9 +4,10 @@ from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
+from any_guardrail.types import GuardrailInferenceOutput
 
 
-class OffTopic(HuggingFace):
+class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
     """Abstract base class for the Off Topic models.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -34,7 +35,9 @@ class OffTopic(HuggingFace):
             raise ValueError(msg)
         super().__init__()
 
-    def validate(self, input_text: str, comparison_text: str | None = None) -> GuardrailOutput:
+    def validate(
+        self, input_text: str, comparison_text: str | None = None
+    ) -> GuardrailOutput[bool, dict[str, float], float]:
         """Compare two texts to see if they are relevant to each other.
 
         Args:
@@ -48,12 +51,16 @@ class OffTopic(HuggingFace):
         msg = "Must provide a text to compare to."
         if comparison_text:
             raise ValueError(msg)
-        model_inputs = self.implementation._pre_processing(input_text, comparison_text)
-        model_outputs = self.implementation._inference(model_inputs)
+        # Use type: ignore since we're delegating to the appropriate implementation
+        # which handles its own specific types internally
+        model_inputs: Any = self.implementation._pre_processing(input_text, comparison_text)
+        model_outputs: Any = self.implementation._inference(model_inputs)
         return self._post_processing(model_outputs)
 
     def _load_model(self) -> None:
         self.implementation._load_model()
 
-    def _post_processing(self, model_outputs: Any) -> GuardrailOutput:
+    def _post_processing(
+        self, model_outputs: GuardrailInferenceOutput[Any]
+    ) -> GuardrailOutput[bool, dict[str, float], float]:
         return self.implementation._post_processing(model_outputs)

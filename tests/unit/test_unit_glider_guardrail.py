@@ -4,6 +4,7 @@ import pytest
 
 from any_guardrail import GuardrailOutput
 from any_guardrail.guardrails.glider import Glider
+from any_guardrail.types import GuardrailInferenceOutput
 
 
 @pytest.mark.parametrize(
@@ -19,7 +20,7 @@ def test_glider_postprocessing(model_outputs: str, expected_score: float | None)
     with patch("any_guardrail.guardrails.glider.glider.Glider._load_model"):
         glider = Glider("foo", "bar")
 
-        result = glider._post_processing(model_outputs)
+        result = glider._post_processing(GuardrailInferenceOutput(data=model_outputs))
 
         assert isinstance(result, GuardrailOutput)
         assert result.score == expected_score
