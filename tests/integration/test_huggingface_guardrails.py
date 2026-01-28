@@ -4,11 +4,11 @@ from typing import Any
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-
-RUNNING_IN_CI = os.environ.get("CI") == "true"
 from any_guardrail.base import GuardrailOutput
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 from any_guardrail.guardrails.huggingface import HuggingFace
+
+RUNNING_IN_CI = os.environ.get("CI") == "true"
 
 
 @pytest.mark.parametrize(
