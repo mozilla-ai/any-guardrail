@@ -12,6 +12,7 @@ nav:
       - Custom Blocklists with Azure Content Safety : cookbook/azure_blocklist_slang_filter.ipynb
   - API Reference:
       - Guardrails:
+          - Alinia: api/guardrails/alinia.md
           - AnyLLM: api/guardrails/any_llm.md
           - Azure Content Safety: api/guardrails/azure_content_safety.md
           - Deepset: api/guardrails/deepset.md

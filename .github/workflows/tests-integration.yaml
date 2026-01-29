@@ -31,6 +31,8 @@ jobs:
           CONTENT_SAFETY_KEY: ${{ secrets.CONTENT_SAFETY_KEY }}
           CONTENT_SAFETY_ENDPOINT: ${{ secrets.CONTENT_SAFETY_ENDPOINT }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          ALINIA_ENDPOINT: ${{ secrets.ALINIA_ENDPOINT }}
+          ALINIA_API_KEY: ${{ secrets.ALINIA_API_KEY }}
           HF_HUB_DOWNLOAD_TIMEOUT: "300"
           HF_HUB_ETAG_TIMEOUT: "30"
         run: pytest -v tests/integration --reruns 3 --reruns-delay 10 --timeout 600
