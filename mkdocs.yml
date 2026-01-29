@@ -9,6 +9,7 @@ nav:
   - Cookbook:
       - Any LLM as a Guardrail: cookbook/any_llm_as_a_guardrail.ipynb
       - Customer Service Policy Guardrail: cookbook/customer_service_policy_guardrail.ipynb
+      - Custom Blocklists with Azure Content Safety : cookbook/azure_blocklist_slang_filter.ipynb
   - API Reference:
       - Guardrails:
           - Alinia: api/guardrails/alinia.md

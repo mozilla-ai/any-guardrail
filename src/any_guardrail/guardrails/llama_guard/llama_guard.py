@@ -25,7 +25,6 @@ class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, 
     SUPPORTED_MODELS: ClassVar = [
         "meta-llama/Llama-Guard-3-1B",
         "meta-llama/Llama-Guard-3-8B",
-        "hf-internal-testing/tiny-random-LlamaForCausalLM",
         "meta-llama/Llama-Guard-4-12B",
     ]
 
@@ -132,7 +131,7 @@ class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, 
             output = self.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)
         else:
             output = self.model.generate(
-                model_inputs.data,
+                model_inputs.data.get("input_ids"),
                 max_new_tokens=20,
                 pad_token_id=0,
             )
@@ -151,7 +150,7 @@ class LlamaGuard(HuggingFace[LlamaGuardPreprocessData, LlamaGuardInferenceData, 
                 return GuardrailOutput(valid=False, explanation=explanation)
             return GuardrailOutput(valid=True, explanation=explanation)
 
-        prompt_len = self._cached_model_inputs.shape[1]  # type: ignore[union-attr]
+        prompt_len = self._cached_model_inputs.get("input_ids").shape[1]  # type: ignore[union-attr]
         output = model_outputs.data[:, prompt_len:]
         explanation = self.tokenizer.decode(output[0])  # type: ignore[assignment]
 
