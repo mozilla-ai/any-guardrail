@@ -6,6 +6,7 @@ import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import Guardrail, ThreeStageGuardrail
+from any_guardrail.guardrails.alinia import Alinia
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.llama_guard import LlamaGuard
@@ -90,7 +91,7 @@ def test_model_load() -> None:
 
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if guardrail_class is AnyLlm or guardrail_class is LlamaGuard or guardrail_class is AzureContentSafety:
+        if guardrail_class is AnyLlm or guardrail_class is LlamaGuard or guardrail_class is AzureContentSafety or guardrail_class is Alinia:
             continue
 
         if guardrail_name == GuardrailName.FLOWJUDGE:

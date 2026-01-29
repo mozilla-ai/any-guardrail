@@ -47,7 +47,6 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     SUPPORTED_MODELS: ClassVar = [
         "meta-llama/Llama-Guard-3-1B",
         "meta-llama/Llama-Guard-3-8B",
-        "hf-internal-testing/tiny-random-LlamaForCausalLM",
         "meta-llama/Llama-Guard-4-12B",
     ]
 
@@ -173,7 +172,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
                 return GuardrailOutput(valid=False, explanation=explanation)
             return GuardrailOutput(valid=True, explanation=explanation)
 
-        prompt_len = self._cached_model_inputs['input_ids'].shape[1]
+        prompt_len = self._cached_model_inputs.get("input_ids").shape[1]
         output = model_outputs.data[:, prompt_len:]
         explanation = self.provider.tokenizer.decode(output[0])
 

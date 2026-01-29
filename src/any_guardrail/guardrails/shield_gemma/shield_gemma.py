@@ -34,7 +34,6 @@ class ShieldGemma(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, None
         "google/shieldgemma-2b",
         "google/shieldgemma-9b",
         "google/shieldgemma-27b",
-        "hf-internal-testing/tiny-random-Gemma3ForCausalLM",
     ]
 
     def __init__(
