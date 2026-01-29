@@ -91,7 +91,12 @@ def test_model_load() -> None:
 
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if guardrail_class is AnyLlm or guardrail_class is LlamaGuard or guardrail_class is AzureContentSafety or guardrail_class is Alinia:
+        if (
+            guardrail_class is AnyLlm
+            or guardrail_class is LlamaGuard
+            or guardrail_class is AzureContentSafety
+            or guardrail_class is Alinia
+        ):
             continue
 
         if guardrail_name == GuardrailName.FLOWJUDGE:

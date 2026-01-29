@@ -41,6 +41,7 @@ class HuggingFaceProvider(Provider[HFDict, HFDict]):
         tokenizer_id: str | None = None,
         trust_remote_code: bool = False,
     ) -> None:
+        """Initialize the HuggingFace provider."""
         if MISSING_PACKAGES_ERROR is not None:
             msg = "Missing packages for HuggingFace provider. You can try `pip install 'any-guardrail[huggingface]'`"
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
@@ -64,9 +65,9 @@ class HuggingFaceProvider(Provider[HFDict, HFDict]):
         if self.trust_remote_code:
             load_kwargs["trust_remote_code"] = True
 
-        self.model = self.model_class.from_pretrained(model_id, **load_kwargs, **kwargs)
+        self.model = self.model_class.from_pretrained(model_id, **load_kwargs, **kwargs)  # type: ignore[attr-defined]
         tokenizer_id = self.tokenizer_id or model_id
-        self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **load_kwargs)
+        self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **load_kwargs)  # type: ignore[attr-defined]
 
     def pre_process(self, input_text: str, **kwargs: Any) -> GuardrailPreprocessOutput[HFDict]:
         """Tokenize input text for model consumption.

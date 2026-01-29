@@ -26,7 +26,7 @@ class LlamaGuardProvider(HuggingFaceProvider):
                 output = self.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)
             else:
                 output = self.model.generate(
-                    model_inputs.data['input_ids'],
+                    model_inputs.data["input_ids"],
                     max_new_tokens=20,
                     pad_token_id=0,
                 )

@@ -32,8 +32,6 @@ class Provider(ABC, Generic[PreprocessT, InferenceT]):
         ...
 
     @abstractmethod
-    def infer(
-        self, model_inputs: GuardrailPreprocessOutput[PreprocessT]
-    ) -> GuardrailInferenceOutput[InferenceT]:
+    def infer(self, model_inputs: GuardrailPreprocessOutput[PreprocessT]) -> GuardrailInferenceOutput[InferenceT]:
         """Run inference on preprocessed inputs."""
         ...

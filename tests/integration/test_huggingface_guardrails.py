@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.base import ThreeStageGuardrail
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 
 RUNNING_IN_CI = os.environ.get("CI") == "true"
@@ -59,10 +59,11 @@ def test_off_topic_guardrail() -> None:
     """Test off-topic guardrail separately due to its unique behavior."""
     guardrail = AnyGuardrail.create(GuardrailName.OFFTOPIC)
 
-    assert isinstance(guardrail, HuggingFace)
-    assert guardrail.model_id == "mozilla-ai/jina-embeddings-v2-small-en-off-topic"
+    assert isinstance(guardrail, ThreeStageGuardrail)
+    assert hasattr(guardrail, "provider")
+    assert guardrail.model_id == "mozilla-ai/jina-embeddings-v2-small-en-off-topic"  # type: ignore[attr-defined]
 
-    result = guardrail.validate("You are a helpful assistant.", "Thank you for being a helpful assistant.")  # type: ignore[call-arg]
+    result = guardrail.validate("You are a helpful assistant.", "Thank you for being a helpful assistant.")
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
