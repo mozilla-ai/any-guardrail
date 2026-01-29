@@ -4,9 +4,9 @@ from typing import Any, ClassVar
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.models.cross_encoder_mlp import CrossEncoderWithMLP
+from any_guardrail.providers.base import Provider
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 BASEMODEL = "cross-encoder/stsb-roberta-base"
@@ -16,7 +16,40 @@ StsbPreprocessData = tuple[torch.Tensor, torch.Tensor]
 StsbInferenceData = Any  # Model output tensor
 
 
-class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
+class OffTopicStsbProvider(Provider[StsbPreprocessData, StsbInferenceData]):
+    """Provider for OffTopicStsb cross-encoder model."""
+
+    def __init__(self) -> None:
+        """Initialize the OffTopicStsb provider."""
+        self.model: Any = None
+        self.tokenizer: Any = None
+
+    def load_model(self, model_id: str, **kwargs: Any) -> None:
+        """Load base model and custom cross-encoder with MLP."""
+        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
+        base_model = AutoModel.from_pretrained(BASEMODEL)
+        self.model = CrossEncoderWithMLP.from_pretrained(model_id, base_model=base_model)
+
+    def pre_process(self, *args: Any, **kwargs: Any) -> GuardrailPreprocessOutput[StsbPreprocessData]:
+        """Preprocessing is handled by the guardrail."""
+        msg = "OffTopicStsb preprocessing is handled by the guardrail."
+        raise NotImplementedError(msg)
+
+    def infer(
+        self, model_inputs: GuardrailPreprocessOutput[StsbPreprocessData]
+    ) -> GuardrailInferenceOutput[StsbInferenceData]:
+        """Run cross-encoder inference with separate input_ids and attention_mask."""
+        data = model_inputs.data
+        if len(data) != 2:
+            msg = "Expected model_inputs to be a tuple of (input_ids, attention_mask)."
+            raise ValueError(msg)
+        input_ids, attention_mask = data
+        with torch.no_grad():
+            output = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        return GuardrailInferenceOutput(data=output)
+
+
+class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -26,16 +59,32 @@ class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict
 
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/stsb-roberta-base-off-topic"]
 
-    def _load_model(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
-        base_model = AutoModel.from_pretrained(BASEMODEL)
-        self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: OffTopicStsbProvider | None = None,
+    ) -> None:
+        """Initialize the OffTopicStsb guardrail."""
+        self.model_id = model_id or self.SUPPORTED_MODELS[0]
+        if self.model_id not in self.SUPPORTED_MODELS:
+            msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
+            raise ValueError(msg)
+        self.provider = provider or OffTopicStsbProvider()
+        self.provider.load_model(self.model_id)
+
+    def validate(
+        self, input_text: str, comparison_text: str | None = None
+    ) -> GuardrailOutput[bool, dict[str, float], float]:
+        """Validate whether the input text is on or off topic."""
+        model_inputs = self._pre_processing(input_text, comparison_text)
+        model_outputs = self._inference(model_inputs)
+        return self._post_processing(model_outputs)
 
     def _pre_processing(
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailPreprocessOutput[StsbPreprocessData]:
         warnings.warn("Truncating text to a maximum length of 514 tokens.", stacklevel=2)
-        encoding = self.tokenizer(
+        encoding = self.provider.tokenizer(
             input_text,
             comparison_text,
             return_tensors="pt",
@@ -44,22 +93,15 @@ class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict
             max_length=514,
             return_token_type_ids=False,
         )
-        input_ids = encoding["input_ids"]  # .to(device)
-        attention_mask = encoding["attention_mask"]  # .to(device)
+        input_ids = encoding["input_ids"]
+        attention_mask = encoding["attention_mask"]
         return GuardrailPreprocessOutput(data=(input_ids, attention_mask))
 
     def _inference(
         self,
         model_inputs: GuardrailPreprocessOutput[StsbPreprocessData],
     ) -> GuardrailInferenceOutput[StsbInferenceData]:
-        data = model_inputs.data
-        if len(data) != 2:
-            msg = "Expected model_inputs to be a tuple of (input_ids, attention_mask)."
-            raise ValueError(msg)
-        input_ids, attention_mask = data
-        with torch.no_grad():
-            output = self.model(input_ids=input_ids, attention_mask=attention_mask)
-        return GuardrailInferenceOutput(data=output)
+        return self.provider.infer(model_inputs)
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[StsbInferenceData]

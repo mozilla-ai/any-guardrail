@@ -1,13 +1,12 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
-from any_guardrail.types import GuardrailInferenceOutput
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
-class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
+class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
     """Abstract base class for the Off Topic models.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -25,7 +24,10 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
 
     def __init__(self, model_id: str | None = None) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
-        super().__init__(model_id)
+        self.model_id = model_id or self.SUPPORTED_MODELS[0]
+        if self.model_id not in self.SUPPORTED_MODELS:
+            msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
+            raise ValueError(msg)
         if self.model_id == self.SUPPORTED_MODELS[0]:
             self.implementation = OffTopicJina()
         elif self.model_id == self.SUPPORTED_MODELS[1]:
@@ -33,7 +35,7 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
         else:
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
-        super().__init__()
+        self.provider = self.implementation.provider
 
     def validate(
         self, input_text: str, comparison_text: str | None = None
@@ -57,8 +59,11 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
         model_outputs: Any = self.implementation._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    def _load_model(self) -> None:
-        self.implementation._load_model()
+    def _pre_processing(self, *args: Any, **kwargs: Any) -> GuardrailPreprocessOutput[Any]:
+        return self.implementation._pre_processing(*args, **kwargs)
+
+    def _inference(self, model_inputs: GuardrailPreprocessOutput[Any]) -> GuardrailInferenceOutput[Any]:
+        return self.implementation._inference(model_inputs)
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[Any]
