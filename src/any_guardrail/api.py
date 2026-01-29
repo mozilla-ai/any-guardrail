@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from any_guardrail.base import Guardrail, GuardrailName
+from any_guardrail.providers.base import Provider
 
 
 class AnyGuardrail:
@@ -29,11 +30,17 @@ class AnyGuardrail:
         return model_ids
 
     @classmethod
-    def create(cls, guardrail_name: GuardrailName, **kwargs: Any) -> Guardrail[Any, Any, Any]:
+    def create(
+        cls,
+        guardrail_name: GuardrailName,
+        provider: Provider[Any, Any] | None = None,
+        **kwargs: Any,
+    ) -> Guardrail[Any, Any, Any]:
         """Create a guardrail instance.
 
         Args:
             guardrail_name: The name of the guardrail to use.
+            provider: Optional provider instance to use for model loading and inference.
             **kwargs: Additional keyword arguments to pass to the guardrail constructor.
 
         Returns:
@@ -41,6 +48,8 @@ class AnyGuardrail:
 
         """
         guardrail_class = cls._get_guardrail_class(guardrail_name)
+        if provider is not None:
+            kwargs["provider"] = provider
         return guardrail_class(**kwargs)
 
     @classmethod

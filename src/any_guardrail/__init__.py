@@ -1,5 +1,6 @@
 from .api import AnyGuardrail
 from .base import Guardrail, GuardrailName, ThreeStageGuardrail
+from .providers import HuggingFaceProvider, Provider
 from .types import (
     ChatMessage,
     ChatMessages,
@@ -24,8 +25,10 @@ __all__ = [
     "GuardrailName",
     "GuardrailOutput",
     "GuardrailPreprocessOutput",
+    "HuggingFaceProvider",
     "InferenceT",
     "PreprocessT",
+    "Provider",
     "ScoreT",
     "ThreeStageGuardrail",
     "TokenizerDict",
