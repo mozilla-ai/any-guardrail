@@ -17,8 +17,8 @@ from any_guardrail.types import GuardrailInferenceOutput
     ],
 )
 def test_glider_postprocessing(model_outputs: str, expected_score: float | None) -> None:
-    with patch("any_guardrail.guardrails.glider.glider.Glider._load_model"):
-        glider = Glider("foo", "bar")
+    with patch("any_guardrail.guardrails.glider.glider.GliderProvider.load_model"):
+        glider = Glider(pass_criteria="foo", rubric="bar")  # noqa: S106
 
         result = glider._post_processing(GuardrailInferenceOutput(data=model_outputs))
 

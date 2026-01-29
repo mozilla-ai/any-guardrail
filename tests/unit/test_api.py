@@ -1,13 +1,13 @@
 from pathlib import Path
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.base import Guardrail
+from any_guardrail.base import Guardrail, ThreeStageGuardrail
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
-from any_guardrail.guardrails.huggingface import HuggingFace
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 
 
@@ -17,7 +17,7 @@ def test_all_guardrails_in_enum() -> None:
 
     guardrail_modules = []
     for item in guardrails_dir.iterdir():
-        if item.is_dir() and item.name not in ("__pycache__", "huggingface"):
+        if item.is_dir() and item.name != "__pycache__":
             for sub_item in item.iterdir():
                 if (
                     sub_item.is_file()
@@ -48,7 +48,7 @@ def test_guardrail_enum_values_match_module_names() -> None:
 
     actual_modules = set()
     for item in guardrails_dir.iterdir():
-        if item.is_dir() and item.name not in ("__pycache__", "huggingface"):
+        if item.is_dir() and item.name != "__pycache__":
             for sub_item in item.iterdir():
                 if (
                     sub_item.is_file()
@@ -83,50 +83,63 @@ def test_get_guardrail_class_all_valid_names() -> None:
 
 
 def test_model_load() -> None:
-    """Test that all guardrail models load the backend model on instantiation."""
+    """Test that all guardrail models call provider.load_model on instantiation."""
+    from any_guardrail.guardrails.glider.glider import GliderProvider
+    from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJinaProvider
+    from any_guardrail.providers.huggingface import HuggingFaceProvider
+
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if (
-            (guardrail_class is not AnyLlm)
-            and (guardrail_class is not LlamaGuard)
-            and (guardrail_class is not AzureContentSafety)
-        ):
+        if guardrail_class is AnyLlm or guardrail_class is LlamaGuard or guardrail_class is AzureContentSafety:
+            continue
+
+        if guardrail_name == GuardrailName.FLOWJUDGE:
             with patch.object(guardrail_class, "_load_model") as mock_load_model:
-                if guardrail_name == GuardrailName.FLOWJUDGE:
-                    mock_load_model.return_value = "mocked_model"
-                    name = "Dummy"
-                    criteria = "Dummy criteria"
-                    rubric = {0: "Dummy 0", 1: "Dummy 1"}
-                    required_inputs = ["dummy"]
-                    required_output = "response"
-                    guardrail = AnyGuardrail.create(
-                        guardrail_name=guardrail_name,
-                        name=name,
-                        criteria=criteria,
-                        rubric=rubric,
-                        required_inputs=required_inputs,
-                        required_output=required_output,
-                    )
-                else:
-                    mock_load_model.side_effect = lambda: setattr(guardrail_class, "model", "mocked_model")  # noqa: B023
-                    if guardrail_name == GuardrailName.SHIELD_GEMMA:
-                        guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, policy="Dummy")
-                    elif guardrail_name == GuardrailName.GLIDER:
-                        guardrail = AnyGuardrail.create(
-                            guardrail_name=guardrail_name,
-                            pass_criteria="Dummy",  # noqa: S106
-                            rubric="Dummy",
-                        )
-                    else:
-                        guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
+                mock_load_model.return_value = "mocked_model"
+                guardrail = AnyGuardrail.create(
+                    guardrail_name=guardrail_name,
+                    name="Dummy",
+                    criteria="Dummy criteria",
+                    rubric={0: "Dummy 0", 1: "Dummy 1"},
+                    required_inputs=["dummy"],
+                    required_output="response",
+                )
                 assert guardrail.model == "mocked_model"  # type: ignore[attr-defined]
+        elif guardrail_name == GuardrailName.GLIDER:
+            with patch.object(GliderProvider, "load_model") as mock_load:
+                guardrail = AnyGuardrail.create(
+                    guardrail_name=guardrail_name,
+                    pass_criteria="Dummy",  # noqa: S106
+                    rubric="Dummy",
+                )
+                mock_load.assert_called_once()
+                assert hasattr(guardrail, "provider")
+        elif guardrail_name == GuardrailName.DUOGUARD:
+            mock_provider = MagicMock(spec=HuggingFaceProvider)
+            mock_provider.tokenizer = MagicMock()
+            guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, provider=mock_provider)
+            mock_provider.load_model.assert_called_once()
+            assert hasattr(guardrail, "provider")
+        elif guardrail_name == GuardrailName.OFFTOPIC:
+            with patch.object(OffTopicJinaProvider, "load_model") as mock_load:
+                guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
+                mock_load.assert_called_once()
+                assert hasattr(guardrail, "provider")
+        else:
+            with patch.object(HuggingFaceProvider, "load_model") as mock_load:
+                kwargs: dict[str, Any] = {}
+                if guardrail_name == GuardrailName.SHIELD_GEMMA:
+                    kwargs["policy"] = "Dummy"
+                guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **kwargs)
+                mock_load.assert_called_once()
+                assert hasattr(guardrail, "provider")
 
 
 def test_post_processing_implementation() -> None:
-    """Test that all guardrail models that inherit from HuggingFace implement the _post_processing method."""
+    """Test that all ThreeStageGuardrail subclasses with a provider implement _post_processing."""
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
-        if issubclass(guardrail_class, HuggingFace):
+        if issubclass(guardrail_class, ThreeStageGuardrail):
             assert "_post_processing" in guardrail_class.__dict__, (
                 f"Guardrail class {guardrail_class} for {guardrail_name} does not have a _post_processing method"
             )
