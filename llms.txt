@@ -4,6 +4,7 @@
 
 - [Introduction](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/index.md)
 - [Quickstart](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/quickstart.md)
+- [Api - Guardrails - Alinia](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/alinia.md)
 - [Api - Guardrails - Any Llm](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/any_llm.md)
 - [Api - Guardrails - Azure Content Safety](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/azure_content_safety.md)
 - [Api - Guardrails - Deepset](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/refs/heads/main/docs/api/guardrails/deepset.md)
