@@ -25,9 +25,9 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
 
     def __init__(
         self,
-        endpoint: str,
         detection_config: str | dict[str, float | bool] | dict[str, dict[str, float | bool | str]],
         api_key: str | None = None,
+        endpoint: str | None = None,
         metadata: dict[str, Any] | None = None,
         blocked_response: dict[str, str] | None = None,
         stream: bool = False,
@@ -40,7 +40,15 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
         else:
             msg = "API key must be provided either as a parameter or through the ALINIA_API_KEY environment variable."
             raise ValueError(msg)
-        self.endpoint = endpoint
+
+        if endpoint:
+            self.endpoint = endpoint
+        elif os.getenv("ALINIA_ENDPOINT"):
+            self.endpoint = os.getenv("ALINIA_ENDPOINT")  # type: ignore[assignment]
+        else:
+            msg = "Endpoint URL must be provided either as a parameter or through the ALINIA_ENDPOINT environment variable."
+            raise ValueError(msg)
+
         self.detection_config = detection_config
         self.metadata = metadata
         self.blocked_response = blocked_response
