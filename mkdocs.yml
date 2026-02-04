@@ -7,6 +7,7 @@ nav:
   - Intro: index.md
   - Quick Start: quickstart.md
   - Cookbook:
+      - Alinia Guardrail Usage: cookbook/alinia_guardrail_usage.ipynb
       - Any LLM as a Guardrail: cookbook/any_llm_as_a_guardrail.ipynb
       - Customer Service Policy Guardrail: cookbook/customer_service_policy_guardrail.ipynb
       - Custom Blocklists with Azure Content Safety : cookbook/azure_blocklist_slang_filter.ipynb

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import StrEnum
 from typing import Any, ClassVar, Generic
 
 from any_guardrail.types import (
@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-class GuardrailName(str, Enum):
+class GuardrailName(StrEnum):
     """String enum for supported guardrails."""
 
     ANYLLM = "any_llm"
