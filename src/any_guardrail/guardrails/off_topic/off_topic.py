@@ -37,7 +37,7 @@ class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
         else:
             self.implementation = OffTopicStsb(provider=provider)
 
-    def validate(
+    def validate(  # type: ignore[override]
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailOutput[bool, dict[str, float], float]:
         """Compare two texts to see if they are relevant to each other.

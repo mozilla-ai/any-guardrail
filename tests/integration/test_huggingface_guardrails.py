@@ -63,7 +63,9 @@ def test_off_topic_guardrail() -> None:
     assert hasattr(guardrail, "provider")
     assert guardrail.model_id == "mozilla-ai/jina-embeddings-v2-small-en-off-topic"  # type: ignore[attr-defined]
 
-    result = guardrail.validate("You are a helpful assistant.", "Thank you for being a helpful assistant.")
+    result = guardrail.validate(
+        "You are a helpful assistant.", comparison_text="Thank you for being a helpful assistant."
+    )
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid

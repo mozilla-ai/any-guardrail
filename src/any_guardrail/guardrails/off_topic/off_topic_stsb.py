@@ -41,14 +41,6 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bo
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
 
-    def validate(
-        self, input_text: str, comparison_text: str | None = None
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
-        """Validate whether the input text is on or off topic."""
-        model_inputs = self._pre_processing(input_text, comparison_text)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
-
     def _pre_processing(
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailPreprocessOutput[StsbPreprocessData]:

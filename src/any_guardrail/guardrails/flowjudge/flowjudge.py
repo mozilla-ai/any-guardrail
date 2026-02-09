@@ -56,7 +56,7 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
         self.metric_prompt = self._define_metric_prompt()
         self.model = self._load_model()
 
-    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput[None, str, int]:
+    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput[None, str, int]:  # type: ignore[override]
         """Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:

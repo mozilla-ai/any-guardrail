@@ -64,25 +64,6 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         self.provider = provider or default_provider
         self.provider.load_model(self.model_id)
 
-    def validate(
-        self, input_text: str, output_text: str | None = None, **kwargs: Any
-    ) -> GuardrailOutput[bool, str, None]:
-        """Judge whether the input text or the input text, output text pair are unsafe based on the Llama taxonomy.
-
-        Args:
-            input_text: the prior text before hitting a system or model.
-            output_text: the succeeding text after hitting a system or model.
-            **kwargs: additional keyword arguments, specifically supporting 'excluded_category_keys' and 'categories'.
-                Please see Llama Guard documentation for more details.
-
-        Returns:
-            Provides an explanation that can be parsed to see whether the text is safe or not.
-
-        """
-        model_inputs = self._pre_processing(input_text, output_text, **kwargs)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
-
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailPreprocessOutput[LlamaGuardPreprocessData]:

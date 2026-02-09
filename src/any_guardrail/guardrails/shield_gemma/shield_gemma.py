@@ -65,12 +65,6 @@ class ShieldGemma(StandardGuardrail):
             self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
         self.provider.load_model(self.model_id)
 
-    def validate(self, input_text: str) -> BinaryScoreOutput:
-        """Validate whether the input text is safe or not."""
-        model_inputs = self._pre_processing(input_text)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
-
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         tokenized = self.provider.tokenizer(formatted_prompt, return_tensors="pt")  # type: ignore[attr-defined]

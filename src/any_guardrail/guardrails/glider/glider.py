@@ -94,20 +94,20 @@ class Glider(ThreeStageGuardrail[ChatMessages, str, None, str, int | None]):
         self.provider = provider  # Reserved for future extensibility
         self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int | None]:
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int | None]:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
-            input_text: the initial text.
-            output_text: the subsequent text.
+            input_text: The initial text to evaluate.
+            output_text: Optional subsequent text to evaluate alongside input.
 
         Returns:
-            An explanation in the format provided by the system prompt.
+            GuardrailOutput with explanation in the format provided by the system prompt.
 
         """
-        message = self._pre_processing(input_text, output_text)
-        result = self._inference(message)
-        return self._post_processing(result)
+        model_inputs = self._pre_processing(input_text, output_text)
+        model_outputs = self._inference(model_inputs)
+        return self._post_processing(model_outputs)
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None

@@ -39,7 +39,7 @@ class HarmGuard(StandardGuardrail):
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 
-    def validate(self, input_text: str, output_text: str | None = None) -> BinaryScoreOutput:
+    def validate(self, input_text: str, output_text: str | None = None) -> BinaryScoreOutput:  # type: ignore[override]
         """Validate whether the input (and optionally output) text is safe.
 
         Args:

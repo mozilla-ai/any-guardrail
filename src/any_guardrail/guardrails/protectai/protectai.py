@@ -30,12 +30,6 @@ class Protectai(StandardGuardrail):
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 
-    def validate(self, input_text: str) -> BinaryScoreOutput:
-        """Validate whether the input text is safe or not."""
-        model_inputs = self._pre_processing(input_text)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
-
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         return self.provider.pre_process(input_text)
 

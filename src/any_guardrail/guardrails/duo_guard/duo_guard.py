@@ -59,12 +59,6 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], floa
         self.provider.load_model(self.model_id)
         self.provider.tokenizer.pad_token = self.provider.tokenizer.eos_token  # type: ignore[attr-defined]
 
-    def validate(self, input_text: str) -> GuardrailOutput[bool, dict[str, bool], float]:
-        """Validate whether the input text is safe or not."""
-        model_inputs = self._pre_processing(input_text)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
-
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         return self.provider.pre_process(input_text)
 
