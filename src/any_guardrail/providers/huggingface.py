@@ -11,15 +11,13 @@ except ImportError as e:
 
 from any_guardrail.providers.base import Provider
 from any_guardrail.types import (
+    AnyDict,
     GuardrailInferenceOutput,
     GuardrailPreprocessOutput,
 )
 
-# Type alias for standard HuggingFace dict types
-HFDict = dict[str, Any]
 
-
-class HuggingFaceProvider(Provider[HFDict, HFDict]):
+class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
     """Standard HuggingFace provider for sequence classification models.
 
     Handles model loading via transformers, tokenization-based preprocessing,
@@ -61,7 +59,7 @@ class HuggingFaceProvider(Provider[HFDict, HFDict]):
             **kwargs: Additional keyword arguments passed to from_pretrained.
 
         """
-        load_kwargs: dict[str, Any] = {}
+        load_kwargs: AnyDict = {}
         if self.trust_remote_code:
             load_kwargs["trust_remote_code"] = True
 
@@ -69,7 +67,7 @@ class HuggingFaceProvider(Provider[HFDict, HFDict]):
         tokenizer_id = self.tokenizer_id or model_id
         self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **load_kwargs)  # type: ignore[attr-defined]
 
-    def pre_process(self, input_text: str, **kwargs: Any) -> GuardrailPreprocessOutput[HFDict]:
+    def pre_process(self, input_text: str, **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Tokenize input text for model consumption.
 
         Args:
@@ -83,7 +81,7 @@ class HuggingFaceProvider(Provider[HFDict, HFDict]):
         tokenized = self.tokenizer(input_text, return_tensors="pt", **kwargs)
         return GuardrailPreprocessOutput(data=tokenized)
 
-    def infer(self, model_inputs: GuardrailPreprocessOutput[HFDict]) -> GuardrailInferenceOutput[HFDict]:
+    def infer(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:
         """Run model inference on preprocessed inputs.
 
         Args:

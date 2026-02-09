@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic
 
 from any_guardrail.types import (
+    AnyDict,
     GuardrailInferenceOutput,
     GuardrailPreprocessOutput,
     InferenceT,
@@ -35,3 +36,8 @@ class Provider(ABC, Generic[PreprocessT, InferenceT]):
     def infer(self, model_inputs: GuardrailPreprocessOutput[PreprocessT]) -> GuardrailInferenceOutput[InferenceT]:
         """Run inference on preprocessed inputs."""
         ...
+
+
+# Standard provider type alias
+StandardProvider = Provider[AnyDict, AnyDict]
+"""Type alias for providers using standard AnyDict inputs/outputs."""

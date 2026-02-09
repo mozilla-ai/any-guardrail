@@ -1,36 +1,15 @@
 from typing import Any, ClassVar
 
+import torch
+
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 # Type alias for LlamaGuard - preprocessing can return either a dict (v4) or tensor (v3)
-LlamaGuardPreprocessData = dict[str, Any] | Any  # dict for v4, tensor for v3
+LlamaGuardPreprocessData = AnyDict | Any  # dict for v4, tensor for v3
 LlamaGuardInferenceData = Any  # Generated tensor output
-
-
-class LlamaGuardProvider(HuggingFaceProvider):
-    """Provider for LlamaGuard models that uses generate() for inference."""
-
-    def __init__(self, is_version_4: bool, model_class: type, tokenizer_class: type) -> None:
-        """Initialize the LlamaGuard provider."""
-        super().__init__(model_class=model_class, tokenizer_class=tokenizer_class)
-        self.is_version_4 = is_version_4
-
-    def infer(self, model_inputs: GuardrailPreprocessOutput[Any]) -> GuardrailInferenceOutput[Any]:
-        """Run generate() instead of forward pass."""
-        import torch
-
-        with torch.no_grad():
-            if self.is_version_4:
-                output = self.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)
-            else:
-                output = self.model.generate(
-                    model_inputs.data["input_ids"],
-                    max_new_tokens=20,
-                    pad_token_id=0,
-                )
-        return GuardrailInferenceOutput(data=output)
 
 
 class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
@@ -50,20 +29,23 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         "meta-llama/Llama-Guard-4-12B",
     ]
 
-    def __init__(self, model_id: str | None = None, provider: LlamaGuardProvider | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,
+    ) -> None:
         """Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3."""
         from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Llama4ForConditionalGeneration
 
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
         if self._is_version_4:
-            self.tokenizer_params: dict[str, Any] = {
+            self.tokenizer_params: AnyDict = {
                 "return_tensors": "pt",
                 "add_generation_prompt": True,
                 "tokenize": True,
                 "return_dict": True,
             }
-            default_provider: LlamaGuardProvider = LlamaGuardProvider(
-                is_version_4=self._is_version_4,
+            default_provider = HuggingFaceProvider(
                 model_class=Llama4ForConditionalGeneration,
                 tokenizer_class=AutoProcessor,
             )
@@ -71,8 +53,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
             self.tokenizer_params = {
                 "return_tensors": "pt",
             }
-            default_provider = LlamaGuardProvider(
-                is_version_4=self._is_version_4,
+            default_provider = HuggingFaceProvider(
                 model_class=AutoModelForCausalLM,
                 tokenizer_class=AutoTokenizer,
             )
@@ -149,7 +130,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
                         "content": input_text,
                     },
                 ]
-        self._cached_model_inputs = self.provider.tokenizer.apply_chat_template(
+        self._cached_model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
             conversation, **self.tokenizer_params, **kwargs
         )
         return GuardrailPreprocessOutput(data=self._cached_model_inputs)
@@ -157,13 +138,23 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[LlamaGuardPreprocessData]
     ) -> GuardrailInferenceOutput[LlamaGuardInferenceData]:
-        return self.provider.infer(model_inputs)
+        """Run generate() for inference."""
+        with torch.no_grad():
+            if self._is_version_4:
+                output = self.provider.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)  # type: ignore[attr-defined]
+            else:
+                output = self.provider.model.generate(  # type: ignore[attr-defined]
+                    model_inputs.data["input_ids"],
+                    max_new_tokens=20,
+                    pad_token_id=0,
+                )
+        return GuardrailInferenceOutput(data=output)
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]
     ) -> GuardrailOutput[bool, str, None]:
         if self._is_version_4:
-            explanation = self.provider.tokenizer.batch_decode(
+            explanation = self.provider.tokenizer.batch_decode(  # type: ignore[attr-defined]
                 model_outputs.data[:, self._cached_model_inputs["input_ids"].shape[-1] :],
                 skip_special_tokens=True,
             )[0]
@@ -174,7 +165,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
 
         prompt_len = self._cached_model_inputs.get("input_ids").shape[1]
         output = model_outputs.data[:, prompt_len:]
-        explanation = self.provider.tokenizer.decode(output[0])
+        explanation = self.provider.tokenizer.decode(output[0])  # type: ignore[attr-defined]
 
         if "unsafe" in explanation.lower():
             return GuardrailOutput(valid=False, explanation=explanation)

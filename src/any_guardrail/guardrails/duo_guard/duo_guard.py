@@ -1,8 +1,12 @@
-from typing import Any, ClassVar
+from typing import ClassVar
+
+from torch.nn.functional import sigmoid
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import AnyDict, StandardInferenceOutput, StandardPreprocessOutput
 
 DUOGUARD_CATEGORIES = [
     "Violent crimes",
@@ -22,7 +26,7 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, dict[str, bool], float]):
+class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], float]):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
     For more information, please see the model card:
@@ -46,17 +50,14 @@ class DuoGuard(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, dict[st
         self,
         model_id: str | None = None,
         threshold: float = DUOGUARD_DEFAULT_THRESHOLD,
-        provider: HuggingFaceProvider | None = None,
+        provider: StandardProvider | None = None,
     ) -> None:
         """Initialize the DuoGuard model."""
-        self.model_id = model_id or self.SUPPORTED_MODELS[0]
-        if self.model_id not in self.SUPPORTED_MODELS:
-            msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
-            raise ValueError(msg)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.threshold = threshold
         self.provider = provider or HuggingFaceProvider(tokenizer_id=self.MODELS_TO_TOKENIZER[self.model_id])
         self.provider.load_model(self.model_id)
-        self.provider.tokenizer.pad_token = self.provider.tokenizer.eos_token
+        self.provider.tokenizer.pad_token = self.provider.tokenizer.eos_token  # type: ignore[attr-defined]
 
     def validate(self, input_text: str) -> GuardrailOutput[bool, dict[str, bool], float]:
         """Validate whether the input text is safe or not."""
@@ -64,19 +65,13 @@ class DuoGuard(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, dict[st
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[dict[str, Any]]:
+    def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         return self.provider.pre_process(input_text)
 
-    def _inference(
-        self, model_inputs: GuardrailPreprocessOutput[dict[str, Any]]
-    ) -> GuardrailInferenceOutput[dict[str, Any]]:
+    def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
-    ) -> GuardrailOutput[bool, dict[str, bool], float]:
-        from torch.nn.functional import sigmoid
-
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput[bool, dict[str, bool], float]:
         probabilities = sigmoid(model_outputs.data["logits"][0]).tolist()
         predicted_labels = {
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)

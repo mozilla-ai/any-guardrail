@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,7 +17,8 @@ from any_guardrail.types import GuardrailInferenceOutput
     ],
 )
 def test_glider_postprocessing(model_outputs: str, expected_score: float | None) -> None:
-    with patch("any_guardrail.guardrails.glider.glider.GliderProvider.load_model"):
+    with patch("transformers.pipeline") as mock_pipeline:
+        mock_pipeline.return_value = MagicMock()
         glider = Glider(pass_criteria="foo", rubric="bar")  # noqa: S106
 
         result = glider._post_processing(GuardrailInferenceOutput(data=model_outputs))

@@ -3,6 +3,7 @@ from enum import StrEnum
 from typing import Any, ClassVar, Generic
 
 from any_guardrail.types import (
+    AnyDict,
     ExplanationT,
     GuardrailInferenceOutput,
     GuardrailOutput,
@@ -124,3 +125,8 @@ class ThreeStageGuardrail(
 
         """
         ...
+
+
+# Standard guardrail type alias
+StandardGuardrail = ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]
+"""Type alias for standard guardrails using AnyDict and binary score output."""

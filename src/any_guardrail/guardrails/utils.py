@@ -1,11 +1,27 @@
-from typing import Any
-
 import numpy as np
 
-from any_guardrail.types import GuardrailInferenceOutput, GuardrailOutput
+from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailOutput
 
-# Type alias for standard HuggingFace dict types
-HFDict = dict[str, Any]
+
+def default(model_id: str | None, supported_models: list[str]) -> str:
+    """Resolve and validate model_id against supported models.
+
+    Args:
+        model_id: The model ID provided by the user, or None to use the default.
+        supported_models: List of supported model IDs.
+
+    Returns:
+        The resolved model ID (first supported model if None was provided).
+
+    Raises:
+        ValueError: If model_id is not in supported_models.
+
+    """
+    resolved_id = model_id or supported_models[0]
+    if resolved_id not in supported_models:
+        msg = f"Only supports {supported_models}. Please use this path to instantiate model."
+        raise ValueError(msg)
+    return resolved_id
 
 
 def _softmax(_outputs):  # type: ignore[no-untyped-def]
@@ -15,7 +31,7 @@ def _softmax(_outputs):  # type: ignore[no-untyped-def]
 
 
 def match_injection_label(
-    model_outputs: GuardrailInferenceOutput[HFDict], injection_label: str, id2label: dict[int, str]
+    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str, id2label: dict[int, str]
 ) -> GuardrailOutput[bool, None, float]:
     """Match injection label from model outputs.
 

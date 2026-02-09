@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
@@ -22,20 +24,18 @@ class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
 
     implementation: OffTopicJina | OffTopicStsb
 
-    def __init__(self, model_id: str | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,  # Reserved for future extensibility
+    ) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
-        self.model_id = model_id or self.SUPPORTED_MODELS[0]
-        if self.model_id not in self.SUPPORTED_MODELS:
-            msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
-            raise ValueError(msg)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.provider = provider  # Reserved for future extensibility
         if self.model_id == self.SUPPORTED_MODELS[0]:
-            self.implementation = OffTopicJina()
-        elif model_id == self.SUPPORTED_MODELS[1]:
-            self.implementation = OffTopicStsb()
+            self.implementation = OffTopicJina(provider=provider)
         else:
-            msg = f"Unsupported model_id: {model_id}"
-            raise ValueError(msg)
-        self.provider = self.implementation.provider
+            self.implementation = OffTopicStsb(provider=provider)
 
     def validate(
         self, input_text: str, comparison_text: str | None = None

@@ -1,8 +1,17 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from torch.nn.functional import softmax
+
+from any_guardrail.base import GuardrailOutput, StandardGuardrail
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import (
+    BinaryScoreOutput,
+    GuardrailPreprocessOutput,
+    StandardInferenceOutput,
+    StandardPreprocessOutput,
+)
 
 SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
 prompt is in violation of the defined safety policies.
@@ -22,7 +31,7 @@ correctly.
 DEFAULT_THRESHOLD: float = 0.5
 
 
-class ShieldGemma(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, None, float]):
+class ShieldGemma(StandardGuardrail):
     """Wrapper class for Google ShieldGemma models.
 
     For more information, please visit the model cards: [Shield Gemma](https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789).
@@ -41,13 +50,10 @@ class ShieldGemma(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, None
         policy: str,
         threshold: float = DEFAULT_THRESHOLD,
         model_id: str | None = None,
-        provider: HuggingFaceProvider | None = None,
+        provider: StandardProvider | None = None,
     ) -> None:
         """Initialize the ShieldGemma guardrail."""
-        self.model_id = model_id or self.SUPPORTED_MODELS[0]
-        if self.model_id not in self.SUPPORTED_MODELS:
-            msg = f"Only supports {self.SUPPORTED_MODELS}. Please use this path to instantiate model."
-            raise ValueError(msg)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
@@ -59,29 +65,23 @@ class ShieldGemma(ThreeStageGuardrail[dict[str, Any], dict[str, Any], bool, None
             self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
         self.provider.load_model(self.model_id)
 
-    def validate(self, input_text: str) -> GuardrailOutput[bool, None, float]:
+    def validate(self, input_text: str) -> BinaryScoreOutput:
         """Validate whether the input text is safe or not."""
         model_inputs = self._pre_processing(input_text)
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    def _pre_processing(self, input_text: str) -> GuardrailPreprocessOutput[dict[str, Any]]:
+    def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
-        tokenized = self.provider.tokenizer(formatted_prompt, return_tensors="pt")
+        tokenized = self.provider.tokenizer(formatted_prompt, return_tensors="pt")  # type: ignore[attr-defined]
         return GuardrailPreprocessOutput(data=tokenized)
 
-    def _inference(
-        self, model_inputs: GuardrailPreprocessOutput[dict[str, Any]]
-    ) -> GuardrailInferenceOutput[dict[str, Any]]:
+    def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[dict[str, Any]]
-    ) -> GuardrailOutput[bool, None, float]:
-        from torch.nn.functional import softmax
-
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
         logits = model_outputs.data["logits"]
-        vocab = self.provider.tokenizer.get_vocab()
+        vocab = self.provider.tokenizer.get_vocab()  # type: ignore[attr-defined]
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]
         probabilities = softmax(selected_logits, dim=0)
         score = probabilities[0].item()

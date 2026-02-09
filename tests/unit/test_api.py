@@ -84,18 +84,21 @@ def test_get_guardrail_class_all_valid_names() -> None:
 
 
 def test_model_load() -> None:
-    """Test that all guardrail models call provider.load_model on instantiation."""
-    from any_guardrail.guardrails.glider.glider import GliderProvider
-    from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJinaProvider
+    """Test that guardrails with providers call provider.load_model on instantiation."""
+    from any_guardrail.guardrails.glider.glider import Glider
+    from any_guardrail.guardrails.off_topic.off_topic import OffTopic
     from any_guardrail.providers.huggingface import HuggingFaceProvider
 
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
+        # Skip guardrails that don't use the standard provider pattern
         if (
             guardrail_class is AnyLlm
             or guardrail_class is LlamaGuard
             or guardrail_class is AzureContentSafety
             or guardrail_class is Alinia
+            or guardrail_class is Glider  # Loads model directly, no provider
+            or guardrail_class is OffTopic  # Loads model directly, no provider
         ):
             continue
 
@@ -111,26 +114,12 @@ def test_model_load() -> None:
                     required_output="response",
                 )
                 assert guardrail.model == "mocked_model"  # type: ignore[attr-defined]
-        elif guardrail_name == GuardrailName.GLIDER:
-            with patch.object(GliderProvider, "load_model") as mock_load:
-                guardrail = AnyGuardrail.create(
-                    guardrail_name=guardrail_name,
-                    pass_criteria="Dummy",  # noqa: S106
-                    rubric="Dummy",
-                )
-                mock_load.assert_called_once()
-                assert hasattr(guardrail, "provider")
         elif guardrail_name == GuardrailName.DUOGUARD:
             mock_provider = MagicMock(spec=HuggingFaceProvider)
             mock_provider.tokenizer = MagicMock()
             guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, provider=mock_provider)
             mock_provider.load_model.assert_called_once()
             assert hasattr(guardrail, "provider")
-        elif guardrail_name == GuardrailName.OFFTOPIC:
-            with patch.object(OffTopicJinaProvider, "load_model") as mock_load:
-                guardrail = AnyGuardrail.create(guardrail_name=guardrail_name)
-                mock_load.assert_called_once()
-                assert hasattr(guardrail, "provider")
         else:
             with patch.object(HuggingFaceProvider, "load_model") as mock_load:
                 kwargs: dict[str, Any] = {}
