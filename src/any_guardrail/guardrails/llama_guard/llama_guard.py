@@ -1,6 +1,7 @@
 from typing import Any, ClassVar
 
 import torch
+from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Llama4ForConditionalGeneration
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.providers.base import StandardProvider
@@ -35,8 +36,6 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         provider: StandardProvider | None = None,
     ) -> None:
         """Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3."""
-        from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Llama4ForConditionalGeneration
-
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
         if self._is_version_4:
             self.tokenizer_params: AnyDict = {

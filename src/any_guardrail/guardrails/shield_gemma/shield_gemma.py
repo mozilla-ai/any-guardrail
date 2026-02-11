@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from torch.nn.functional import softmax
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from any_guardrail.base import GuardrailOutput, StandardGuardrail
 from any_guardrail.guardrails.utils import default
@@ -60,8 +61,6 @@ class ShieldGemma(StandardGuardrail):
         if provider is not None:
             self.provider = provider
         else:
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-
             self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
         self.provider.load_model(self.model_id)
 

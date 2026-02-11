@@ -9,7 +9,10 @@ from any_guardrail.base import Guardrail, ThreeStageGuardrail
 from any_guardrail.guardrails.alinia import Alinia
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
+from any_guardrail.guardrails.glider.glider import Glider
 from any_guardrail.guardrails.llama_guard import LlamaGuard
+from any_guardrail.guardrails.off_topic.off_topic import OffTopic
+from any_guardrail.providers.huggingface import HuggingFaceProvider
 
 
 def test_all_guardrails_in_enum() -> None:
@@ -85,10 +88,6 @@ def test_get_guardrail_class_all_valid_names() -> None:
 
 def test_model_load() -> None:
     """Test that guardrails with providers call provider.load_model on instantiation."""
-    from any_guardrail.guardrails.glider.glider import Glider
-    from any_guardrail.guardrails.off_topic.off_topic import OffTopic
-    from any_guardrail.providers.huggingface import HuggingFaceProvider
-
     for guardrail_name in GuardrailName:
         guardrail_class = AnyGuardrail._get_guardrail_class(guardrail_name)
         # Skip guardrails that don't use the standard provider pattern

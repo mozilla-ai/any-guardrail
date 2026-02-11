@@ -1,6 +1,8 @@
 import re
 from typing import ClassVar
 
+from transformers import pipeline
+
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
@@ -85,8 +87,6 @@ class Glider(ThreeStageGuardrail[ChatMessages, str, None, str, int | None]):
         provider: StandardProvider | None = None,  # Reserved for future extensibility
     ) -> None:
         """Initialize the GLIDER guardrail."""
-        from transformers import pipeline
-
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.pass_criteria = pass_criteria
         self.rubric = rubric
