@@ -1,13 +1,14 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
-from any_guardrail.types import GuardrailInferenceOutput
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
-class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
+class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
     """Abstract base class for the Off Topic models.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -23,21 +24,20 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
 
     implementation: OffTopicJina | OffTopicStsb
 
-    def __init__(self, model_id: str | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,  # Reserved for future extensibility
+    ) -> None:
         """Off Topic model based on one of two implementations decided by model ID."""
-        if model_id is None:
-            model_id = self.SUPPORTED_MODELS[0]
-
-        if model_id == self.SUPPORTED_MODELS[0]:
-            self.implementation = OffTopicJina()
-        elif model_id == self.SUPPORTED_MODELS[1]:
-            self.implementation = OffTopicStsb()
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.provider = provider  # Reserved for future extensibility
+        if self.model_id == self.SUPPORTED_MODELS[0]:
+            self.implementation = OffTopicJina(provider=provider)
         else:
-            msg = f"Unsupported model_id: {model_id}"
-            raise ValueError(msg)
-        super().__init__(model_id)
+            self.implementation = OffTopicStsb(provider=provider)
 
-    def validate(
+    def validate(  # type: ignore[override]
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailOutput[bool, dict[str, float], float]:
         """Compare two texts to see if they are relevant to each other.
@@ -57,8 +57,11 @@ class OffTopic(HuggingFace[Any, Any, bool, dict[str, float], float]):
         model_outputs: Any = self.implementation._inference(model_inputs)
         return self._post_processing(model_outputs)
 
-    def _load_model(self) -> None:
-        self.implementation._load_model()
+    def _pre_processing(self, *args: Any, **kwargs: Any) -> GuardrailPreprocessOutput[Any]:
+        return self.implementation._pre_processing(*args, **kwargs)
+
+    def _inference(self, model_inputs: GuardrailPreprocessOutput[Any]) -> GuardrailInferenceOutput[Any]:
+        return self.implementation._inference(model_inputs)
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[Any]

@@ -1,8 +1,11 @@
 import re
 from typing import ClassVar
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from transformers import pipeline
+
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 SYSTEM_PROMPT_GLIDER = """
@@ -57,7 +60,7 @@ INPUT_DATA_FORMAT = """
 """
 
 
-class Glider(HuggingFace[ChatMessages, str, None, str, int | None]):
+class Glider(ThreeStageGuardrail[ChatMessages, str, None, str, int | None]):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
@@ -67,6 +70,7 @@ class Glider(HuggingFace[ChatMessages, str, None, str, int | None]):
         model_id: HuggingFace path to model.
         pass_criteria: A question or description of what you are validating.
         rubric: A scoring rubric, describing to the model how to score the provided data.
+        provider: Reserved for future extensibility. Currently unused.
 
     Raise:
         ValueError: Can only use model path to GLIDER from HuggingFace.
@@ -75,33 +79,35 @@ class Glider(HuggingFace[ChatMessages, str, None, str, int | None]):
 
     SUPPORTED_MODELS: ClassVar = ["PatronusAI/glider"]
 
-    def __init__(self, pass_criteria: str, rubric: str, model_id: str | None = None) -> None:
+    def __init__(
+        self,
+        pass_criteria: str,
+        rubric: str,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,  # Reserved for future extensibility
+    ) -> None:
         """Initialize the GLIDER guardrail."""
-        super().__init__(model_id)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.pass_criteria = pass_criteria
         self.rubric = rubric
         self.system_prompt = SYSTEM_PROMPT_GLIDER
+        self.provider = provider  # Reserved for future extensibility
+        self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int | None]:
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[None, str, int | None]:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
-            input_text: the initial text.
-            output_text: the subsequent text.
+            input_text: The initial text to evaluate.
+            output_text: Optional subsequent text to evaluate alongside input.
 
         Returns:
-            An explanation in the format provided by the system prompt.
+            GuardrailOutput with explanation in the format provided by the system prompt.
 
         """
-        message = self._pre_processing(input_text, output_text)
-        result = self._inference(message)
-        return self._post_processing(result)
-
-    def _load_model(self) -> None:
-        from transformers import pipeline
-
-        pipe = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
-        self.model = pipe
+        model_inputs = self._pre_processing(input_text, output_text)
+        model_outputs = self._inference(model_inputs)
+        return self._post_processing(model_outputs)
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None
@@ -114,7 +120,8 @@ class Glider(HuggingFace[ChatMessages, str, None, str, int | None]):
         return GuardrailPreprocessOutput(data=[{"role": "user", "content": prompt}])
 
     def _inference(self, message: GuardrailPreprocessOutput[ChatMessages]) -> GuardrailInferenceOutput[str]:
-        generated_text = self.model(message.data)[0]["generated_text"]
+        """Run text-generation pipeline on chat messages."""
+        generated_text: str = self.model(message.data)[0]["generated_text"]  # type: ignore[assignment]
         return GuardrailInferenceOutput(data=generated_text)
 
     def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput[None, str, int | None]:

@@ -103,11 +103,24 @@ class GuardrailInferenceOutput(BaseModel, Generic[InferenceT]):
 
 
 # Type aliases for common patterns
-TokenizerDict = dict[str, Any]
-"""Type alias for tokenizer output dictionaries."""
+AnyDict = dict[str, Any]
+"""Type alias for generic dictionary with string keys and any values."""
+
+TokenizerDict = AnyDict
+"""Type alias for tokenizer output dictionaries (alias for AnyDict)."""
 
 ChatMessage = dict[str, str]
 """Type alias for a single chat message with role and content."""
 
 ChatMessages = list[ChatMessage]
 """Type alias for a list of chat messages."""
+
+# Standard type aliases for common guardrail patterns
+StandardPreprocessOutput = GuardrailPreprocessOutput[AnyDict]
+"""Type alias for standard preprocessing output with AnyDict data."""
+
+StandardInferenceOutput = GuardrailInferenceOutput[AnyDict]
+"""Type alias for standard inference output with AnyDict data."""
+
+BinaryScoreOutput = GuardrailOutput[bool, None, float]
+"""Type alias for binary valid/invalid output with float score."""

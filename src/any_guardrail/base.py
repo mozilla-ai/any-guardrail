@@ -3,6 +3,7 @@ from enum import StrEnum
 from typing import Any, ClassVar, Generic
 
 from any_guardrail.types import (
+    AnyDict,
     ExplanationT,
     GuardrailInferenceOutput,
     GuardrailOutput,
@@ -124,3 +125,26 @@ class ThreeStageGuardrail(
 
         """
         ...
+
+    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+        """Default validation pipeline: preprocess -> inference -> postprocess.
+
+        Args:
+            input_text: The text to validate.
+            **kwargs: Additional arguments passed to preprocessing (e.g., output_text, comparison_text).
+
+        Returns:
+            GuardrailOutput with validation results.
+
+        Note:
+            Subclasses can override this method to customize the signature or add validation logic.
+
+        """
+        model_inputs = self._pre_processing(input_text, **kwargs)
+        model_outputs = self._inference(model_inputs)
+        return self._post_processing(model_outputs)
+
+
+# Standard guardrail type alias
+StandardGuardrail = ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]
+"""Type alias for standard guardrails using AnyDict and binary score output."""

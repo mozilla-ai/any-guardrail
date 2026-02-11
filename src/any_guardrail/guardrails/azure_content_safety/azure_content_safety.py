@@ -117,7 +117,7 @@ class AzureContentSafety(
                     raise ValueError(msg)
         self.blocklist_names = blocklist_names
 
-    def validate(self, content: str) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:
+    def validate(self, content: str) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:  # type: ignore[override]
         """Validate content using Azure Content Safety.
 
         Args:

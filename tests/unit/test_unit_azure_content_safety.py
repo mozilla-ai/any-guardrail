@@ -3,13 +3,12 @@ from unittest import mock
 from azure.ai.contentsafety.models import TextCategory
 
 from any_guardrail.base import GuardrailOutput
+from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
 from any_guardrail.types import GuardrailInferenceOutput
 
 
 def test_azure_content_safety_guardrail_post_processing() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail."""
-    from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
-
     guardrail = AzureContentSafety(
         endpoint="https://fake-endpoint.cognitiveservices.azure.com/",
         api_key="fake-api-key",
@@ -44,8 +43,6 @@ def test_azure_content_safety_guardrail_post_processing() -> None:
 
 def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with blocklist match."""
-    from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
-
     guardrail = AzureContentSafety(
         endpoint="https://fake-endpoint.cognitiveservices.azure.com/",
         api_key="fake-api-key",
@@ -80,8 +77,6 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
 
 def test_azure_content_safety_guardrail_post_processing_below_threshold() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with score below threshold."""
-    from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
-
     guardrail = AzureContentSafety(
         endpoint="https://fake-endpoint.cognitiveservices.azure.com/",
         api_key="fake-api-key",
@@ -116,8 +111,6 @@ def test_azure_content_safety_guardrail_post_processing_below_threshold() -> Non
 
 def test_azure_content_safety_guardrail_post_processing_average_score() -> None:
     """Test the _post_processing method of AzureContentSafety guardrail with average score calculation."""
-    from any_guardrail.guardrails.azure_content_safety.azure_content_safety import AzureContentSafety
-
     guardrail = AzureContentSafety(
         endpoint="https://fake-endpoint.cognitiveservices.azure.com/",
         api_key="fake-api-key",

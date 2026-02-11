@@ -4,9 +4,10 @@ from typing import Any, ClassVar
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.models.cross_encoder_mlp import CrossEncoderWithMLP
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 BASEMODEL = "cross-encoder/stsb-roberta-base"
@@ -16,7 +17,7 @@ StsbPreprocessData = tuple[torch.Tensor, torch.Tensor]
 StsbInferenceData = Any  # Model output tensor
 
 
-class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
+class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -26,7 +27,16 @@ class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict
 
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/stsb-roberta-base-off-topic"]
 
-    def _load_model(self) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,  # Reserved for future extensibility
+    ) -> None:
+        """Initialize the OffTopicStsb guardrail."""
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.provider = provider  # Reserved for future extensibility
+
+        # Load model and tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithMLP.from_pretrained(self.model_id, base_model=base_model)
@@ -44,18 +54,16 @@ class OffTopicStsb(HuggingFace[StsbPreprocessData, StsbInferenceData, bool, dict
             max_length=514,
             return_token_type_ids=False,
         )
-        input_ids = encoding["input_ids"]  # .to(device)
-        attention_mask = encoding["attention_mask"]  # .to(device)
+        input_ids = encoding["input_ids"]
+        attention_mask = encoding["attention_mask"]
         return GuardrailPreprocessOutput(data=(input_ids, attention_mask))
 
     def _inference(
         self,
         model_inputs: GuardrailPreprocessOutput[StsbPreprocessData],
     ) -> GuardrailInferenceOutput[StsbInferenceData]:
+        """Run cross-encoder inference with separate input_ids and attention_mask."""
         data = model_inputs.data
-        if len(data) != 2:
-            msg = "Expected model_inputs to be a tuple of (input_ids, attention_mask)."
-            raise ValueError(msg)
         input_ids, attention_mask = data
         with torch.no_grad():
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)

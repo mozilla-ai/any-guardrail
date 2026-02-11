@@ -4,9 +4,10 @@ from typing import Any, ClassVar
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from any_guardrail.base import GuardrailOutput
-from any_guardrail.guardrails.huggingface import HuggingFace
+from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.models.cross_encoder_shared import CrossEncoderWithSharedBase
+from any_guardrail.guardrails.utils import default
+from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 BASEMODEL = "jinaai/jina-embeddings-v2-small-en"
@@ -16,7 +17,7 @@ JinaPreprocessData = tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tenso
 JinaInferenceData = Any  # Model output tensor
 
 
-class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData, bool, dict[str, float], float]):
+class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData, bool, dict[str, float], float]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -26,7 +27,16 @@ class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData, bool, dict
 
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/jina-embeddings-v2-small-en-off-topic"]
 
-    def _load_model(self) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,  # Reserved for future extensibility
+    ) -> None:
+        """Initialize the OffTopicJina guardrail."""
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.provider = provider  # Reserved for future extensibility
+
+        # Load model and tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(BASEMODEL)
         base_model = AutoModel.from_pretrained(BASEMODEL)
         self.model = CrossEncoderWithSharedBase.from_pretrained(self.model_id, base_model=base_model)
@@ -41,20 +51,18 @@ class OffTopicJina(HuggingFace[JinaPreprocessData, JinaInferenceData, bool, dict
         inputs2 = self.tokenizer(
             comparison_text, return_tensors="pt", truncation=True, padding="max_length", max_length=1024
         )
-        input_ids1 = inputs1["input_ids"]  # .to(device)
-        attention_mask1 = inputs1["attention_mask"]  # .to(device)
-        input_ids2 = inputs2["input_ids"]  # .to(device)
-        attention_mask2 = inputs2["attention_mask"]  # .to(device)
+        input_ids1 = inputs1["input_ids"]
+        attention_mask1 = inputs1["attention_mask"]
+        input_ids2 = inputs2["input_ids"]
+        attention_mask2 = inputs2["attention_mask"]
         return GuardrailPreprocessOutput(data=(input_ids1, attention_mask1, input_ids2, attention_mask2))
 
     def _inference(
         self,
         model_inputs: GuardrailPreprocessOutput[JinaPreprocessData],
     ) -> GuardrailInferenceOutput[JinaInferenceData]:
+        """Run cross-encoder inference with four separate tensor inputs."""
         data = model_inputs.data
-        if len(data) != 4:
-            msg = "Expected model_inputs to be a tuple of (input_ids1, attention_mask1, input_ids2, attention_mask2)."
-            raise ValueError(msg)
         input_ids1, attention_mask1, input_ids2, attention_mask2 = data
         with torch.no_grad():
             output = self.model(

@@ -1,9 +1,9 @@
 import os
-from typing import Any
 
 import requests
 
 from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.types import AnyDict
 
 
 class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]):
@@ -28,7 +28,7 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
         detection_config: str | dict[str, float | bool] | dict[str, dict[str, float | bool | str]],
         api_key: str | None = None,
         endpoint: str | None = None,
-        metadata: dict[str, Any] | None = None,
+        metadata: AnyDict | None = None,
         blocked_response: dict[str, str] | None = None,
         stream: bool = False,
     ):
@@ -80,7 +80,7 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
         conversation: str | list[dict[str, str]],
         output: str | None = None,
         context_documents: list[str] | None = None,
-    ) -> dict[str, Any]:
+    ) -> AnyDict:
         initial_json = {}
 
         if isinstance(conversation, str):
@@ -112,7 +112,7 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
 
         return initial_json
 
-    def _inference(self, params: dict[str, Any]) -> requests.Response:  # type: ignore[name-defined]
+    def _inference(self, params: AnyDict) -> requests.Response:  # type: ignore[name-defined]
         response = requests.post(  # type: ignore[attr-defined, no-untyped-call]
             self.endpoint,
             headers={"Authorization": f"Bearer {self.api_key}"},
