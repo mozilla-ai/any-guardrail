@@ -19,7 +19,7 @@ repos:
         exclude: \.ambr$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.0"
+    rev: "v0.15.10"
     hooks:
       - id: ruff
         args:
@@ -38,12 +38,12 @@ repos:
         verbose: true
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.1"
+    rev: "v2.4.2"
     hooks:
       - id: codespell
         exclude: CODE_OF_CONDUCT.md|tests/assets
 
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.9.0
+    rev: 0.9.1
     hooks:
       - id: nbstripout
