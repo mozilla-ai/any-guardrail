@@ -31,10 +31,11 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: "uv run mypy"
-        args: []
+        entry: "uv run mypy src tests"
         language: system
         types: [python]
+        pass_filenames: false
+        require_serial: true
         verbose: true
 
   - repo: https://github.com/codespell-project/codespell
