@@ -18,9 +18,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent
 COOKBOOKS_SRC = REPO_ROOT / "docs" / "cookbook"
-GITHUB_COLAB_BASE = (
-    "https://colab.research.google.com/github/mozilla-ai/any-guardrail/blob/main/docs/cookbook"
-)
+GITHUB_COLAB_BASE = "https://colab.research.google.com/github/mozilla-ai/any-guardrail/blob/main/docs/cookbook"
 
 
 def _is_install_only_cell(source: str) -> bool:
@@ -56,9 +54,7 @@ def notebook_to_md(notebook_path: Path) -> str:
 
     lines: list[str] = []
     lines.append(f"# {title}\n")
-    lines.append(
-        f"[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({colab_url})\n"
-    )
+    lines.append(f"[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({colab_url})\n")
 
     first_heading_skipped = False
 
@@ -96,6 +92,7 @@ def notebook_to_md(notebook_path: Path) -> str:
 
 
 def main(out_dir: Path | None = None) -> None:
+    """Convert cookbook notebooks to Markdown under ``out_dir``."""
     dest = out_dir or COOKBOOKS_SRC
     dest.mkdir(parents=True, exist_ok=True)
 

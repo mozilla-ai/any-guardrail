@@ -103,6 +103,7 @@ def validate_summary(summary: str, site_dir: Path) -> None:
 
 
 def main() -> None:
+    """Build the GitBook-flavored Markdown site into ``site/``."""
     # Create site/ fresh
     if SITE_DIR.exists():
         shutil.rmtree(SITE_DIR)
@@ -112,11 +113,13 @@ def main() -> None:
     print("Generating API docs...")
     sys.path.insert(0, str(SCRIPT_DIR))
     import generate_api_docs
+
     generate_api_docs.main(SITE_DIR / "api")
 
     # Generate cookbooks directly into site/cookbook/
     print("Converting cookbooks...")
     import generate_cookbooks
+
     generate_cookbooks.main(SITE_DIR / "cookbook")
 
     # Copy plain Markdown docs (index.md, quickstart.md, api/*.md top-level)

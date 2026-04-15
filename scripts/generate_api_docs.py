@@ -227,7 +227,9 @@ def _types_page() -> str:
                 field_doc = field_info.description or ""
                 rows.append(f"| `{field_name}` | `{ann_str}` | {field_doc} |")
             if rows:
-                lines.append("| Field | Type | Description |\n|-------|------|-------------|\n" + "\n".join(rows) + "\n")
+                lines.append(
+                    "| Field | Type | Description |\n|-------|------|-------------|\n" + "\n".join(rows) + "\n"
+                )
 
     return "\n".join(lines)
 
@@ -256,7 +258,11 @@ def _guardrails_index_page() -> str:
 GUARDRAILS = [
     ("any_guardrail.guardrails.alinia.alinia", "Alinia", "alinia.md"),
     ("any_guardrail.guardrails.any_llm.any_llm", "AnyLlm", "any-llm.md"),
-    ("any_guardrail.guardrails.azure_content_safety.azure_content_safety", "AzureContentSafety", "azure-content-safety.md"),
+    (
+        "any_guardrail.guardrails.azure_content_safety.azure_content_safety",
+        "AzureContentSafety",
+        "azure-content-safety.md",
+    ),
     ("any_guardrail.guardrails.deepset.deepset", "Deepset", "deepset.md"),
     ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),
     ("any_guardrail.guardrails.flowjudge.flowjudge", "Flowjudge", "flowjudge.md"),
@@ -279,6 +285,7 @@ GUARDRAILS = [
 
 
 def main(out_dir: Path | None = None) -> None:
+    """Generate API reference Markdown under ``out_dir`` (default ``docs/api``)."""
     api_dir = out_dir or DEFAULT_OUT
     api_dir.mkdir(parents=True, exist_ok=True)
     guardrails_dir = api_dir / "guardrails"
