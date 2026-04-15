@@ -1,0 +1,48 @@
+# Flowjudge
+
+Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric.
+
+Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
+
+Args:
+    name: User defined metric name.
+    criteria: User defined question that they want answered by FlowJudge model.
+    rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
+        value means.
+    required_inputs: A list of what is required for the judge to consider.
+    required_output: What is the expected output from the judge.
+
+Raises:
+    ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
+
+## Constructor
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `name` | `str` | Yes | — |
+| `criteria` | `str` | Yes | — |
+| `rubric` | `dict[int, str]` | Yes | — |
+| `required_inputs` | `list[str]` | Yes | — |
+| `required_output` | `str` | Yes | — |
+
+Initialize the FlowJudgeClass.
+
+## validate
+
+Classifies the desired input and output according to the associated metric provided to the judge.
+
+Args:
+    inputs: A dictionary mapping the required input names to the inputs.
+    output: A dictionary mapping the required output name to the output.
+
+Return:
+    A score from the RubricItems and feedback related to the rubric and criteria.
+
+**Parameters**
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `inputs` | `list[dict[str, str]]` | Yes | — |
+| `output` | `dict[str, str]` | Yes | — |
+
+**Returns:** `GuardrailOutput[NoneType, str, int]`
