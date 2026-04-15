@@ -8,12 +8,22 @@ on:
       - 'docs/**'
       - 'src/**'
       - 'scripts/hooks.py'
+      - 'scripts/generate_api_docs.py'
+      - 'scripts/generate_cookbooks.py'
+      - 'scripts/convert_to_gitbook.py'
+      - '.gitbook.yaml'
+      - '.github/workflows/docs.yaml'
   pull_request:
     paths:
       - mkdocs.yml
       - 'docs/**'
       - 'src/**'
       - 'scripts/hooks.py'
+      - 'scripts/generate_api_docs.py'
+      - 'scripts/generate_cookbooks.py'
+      - 'scripts/convert_to_gitbook.py'
+      - '.gitbook.yaml'
+      - '.github/workflows/docs.yaml'
   workflow_dispatch:
 
 jobs:
@@ -39,13 +49,37 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Install dependencies
-        run: |
-          uv sync --group docs
+        run: uv sync --group docs --extra all
 
-      - name: Build docs
+      - name: Build GitBook site
+        run: uv run python scripts/convert_to_gitbook.py
+
+      - name: Upload generated site as PR artifact
         if: github.event_name == 'pull_request'
-        run: mkdocs build -s
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitbook-site-preview
+          path: site/
 
-      - name: Publish docs
+      - name: Deploy to gitbook-docs branch
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
-        run: mkdocs gh-deploy
+        run: |
+          cp .gitbook.yaml site/.gitbook.yaml
+
+          # Move site/ outside the repo before switching branches
+          mv site/ /tmp/gitbook-site/
+
+          git fetch origin gitbook-docs || true
+          if git rev-parse --verify origin/gitbook-docs >/dev/null 2>&1; then
+            git checkout gitbook-docs
+          else
+            git checkout --orphan gitbook-docs
+            git rm -rf .
+          fi
+
+          rsync -a --delete --exclude='.git' /tmp/gitbook-site/ .
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: update GitBook documentation from ${{ github.sha }}"
+            git push origin gitbook-docs
+          fi
