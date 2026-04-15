@@ -1,35 +1,9 @@
 site_name: any-guardrail
-
 repo_url: https://github.com/mozilla-ai/any-guardrail
 repo_name: any-guardrail
 
-nav:
-  - Intro: index.md
-  - Quick Start: quickstart.md
-  - Cookbook:
-      - Alinia Guardrail Usage: cookbook/alinia_guardrail_usage.ipynb
-      - Any LLM as a Guardrail: cookbook/any_llm_as_a_guardrail.ipynb
-      - Customer Service Policy Guardrail: cookbook/customer_service_policy_guardrail.ipynb
-      - Custom Blocklists with Azure Content Safety : cookbook/azure_blocklist_slang_filter.ipynb
-  - API Reference:
-      - Guardrails:
-          - Alinia: api/guardrails/alinia.md
-          - AnyLLM: api/guardrails/any_llm.md
-          - Azure Content Safety: api/guardrails/azure_content_safety.md
-          - Deepset: api/guardrails/deepset.md
-          - Duo Guard: api/guardrails/duo_guard.md
-          - FlowJudge: api/guardrails/flowjudge.md
-          - Glider: api/guardrails/glider.md
-          - Harm Guard: api/guardrails/harm_guard.md
-          - InjecGuard: api/guardrails/injec_guard.md
-          - Jasper: api/guardrails/jasper.md
-          - OffTopic: api/guardrails/off_topic.md
-          - Pangolin: api/guardrails/pangolin.md
-          - ProtectAI: api/guardrails/protectai.md
-          - Sentinel: api/guardrails/sentinel.md
-          - Shield Gemma: api/guardrails/shield_gemma.md
-          - Llama Guard: api/guardrails/llama_guard.md
-      - AnyGuardrail: api/any_guardrail.md
+docs_dir: site
+
 theme:
   name: material
   font:
@@ -54,7 +28,6 @@ theme:
   features:
     - content.code.copy
     - content.tabs.link
-    - content.action.edit
     - navigation.expand
     - navigation.footer
 
@@ -77,19 +50,4 @@ markdown_extensions:
       alternate_style: true
 
 plugins:
-- search
-- include-markdown
-- mkdocstrings:
-    handlers:
-      python:
-        options:
-          show_root_heading: true
-          heading_level: 3
-- mkdocs-jupyter:
-      no_input: false
-      show_input: true
-
-hooks:
-  - scripts/hooks.py
-
-edit_uri: edit/main/docs/
+  - search
