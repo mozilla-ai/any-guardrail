@@ -6,14 +6,6 @@ Factory class for creating guardrail instances.
 
 Create a guardrail instance.
 
-Args:
-    guardrail_name: The name of the guardrail to use.
-    provider: Optional provider instance to use for model loading and inference.
-    **kwargs: Additional keyword arguments to pass to the guardrail constructor.
-
-Returns:
-    A guardrail instance.
-
 **Parameters**
 
 | Parameter | Type | Required | Default |

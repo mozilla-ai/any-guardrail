@@ -34,11 +34,6 @@ Validate conversation or text input using the Alinia API.
 This can be used for validation using any of the API endpoints provided by Alinia. If using sensitive information endpoint,
 use the explanation from the GuardrailOutput to grab the recommended action text.
 
-Args:
-    conversation (str | list[dict[str, str]]): The conversation or text input to validate.
-    output (str | None): Optional expected output to validate against.
-    context_documents (list[str] | None): Optional context documents to provide additional context for validation
-
 **Parameters**
 
 | Parameter | Type | Required | Default |

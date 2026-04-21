@@ -31,13 +31,6 @@ Initialize the FlowJudgeClass.
 
 Classifies the desired input and output according to the associated metric provided to the judge.
 
-Args:
-    inputs: A dictionary mapping the required input names to the inputs.
-    output: A dictionary mapping the required output name to the output.
-
-Return:
-    A score from the RubricItems and feedback related to the rubric and criteria.
-
 **Parameters**
 
 | Parameter | Type | Required | Default |

@@ -10,17 +10,6 @@ Initialize self.  See help(type(self)) for accurate signature.
 
 Validate the `input_text` against the given `policy`.
 
-Args:
-    input_text (str): The text to validate.
-    policy (str): The policy to validate against.
-    model_id (str, optional): The model ID to use.
-    system_prompt (str, optional): The system prompt to use.
-        Expected to have a `{policy}` placeholder.
-    **kwargs: Additional keyword arguments to pass to `any_llm.completion` function.
-
-Returns:
-    GuardrailOutput: The output of the validation.
-
 **Parameters**
 
 | Parameter | Type | Required | Default |
