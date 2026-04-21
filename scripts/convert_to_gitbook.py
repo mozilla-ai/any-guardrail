@@ -55,8 +55,8 @@ SUMMARY = """\
   * [ShieldGemma](api/guardrails/shield-gemma.md)
 """
 
-# Plain Markdown docs to copy verbatim from docs/ (excludes api/guardrails/ — generated directly)
-STATIC_MD_GLOBS = ["*.md", "api/*.md"]
+# Plain Markdown docs to copy verbatim from docs/ (api/ is fully generated — never copy from source)
+STATIC_MD_GLOBS = ["*.md"]
 
 # Static asset directories
 ASSET_DIRS = ["images", "assets"]
