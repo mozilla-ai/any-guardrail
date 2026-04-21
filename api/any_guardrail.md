@@ -11,7 +11,7 @@ Create a guardrail instance.
 | Parameter | Type | Required | Default |
 |-----------|------|----------|---------|
 | `guardrail_name` | `GuardrailName` | Yes | — |
-| `provider` | `Provider[Any, Any] | None` | No | `None` |
+| `provider` | `Optional[Provider[Any, Any]]` | No | `None` |
 
 **Returns:** `Guardrail[Any, Any, Any]`
 

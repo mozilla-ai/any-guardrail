@@ -22,9 +22,9 @@ Example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `valid` | `~ValidT | None` |  |
-| `explanation` | `~ExplanationT | None` |  |
-| `score` | `~ScoreT | None` |  |
+| `valid` | `Optional[~ValidT]` |  |
+| `explanation` | `Optional[~ExplanationT]` |  |
+| `score` | `Optional[~ScoreT]` |  |
 
 ## GuardrailPreprocessOutput
 
