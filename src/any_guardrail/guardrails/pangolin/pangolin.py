@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from any_guardrail.base import StandardGuardrail
@@ -19,9 +20,14 @@ class Pangolin(StandardGuardrail):
 
     SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base"]
 
-    def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        local_dir: str | Path | None = None,
+        provider: StandardProvider | None = None,
+    ) -> None:
         """Initialize the Pangolin guardrail."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 

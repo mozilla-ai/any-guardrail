@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from any_guardrail.base import GuardrailOutput, StandardGuardrail
@@ -30,11 +31,12 @@ class HarmGuard(StandardGuardrail):
     def __init__(
         self,
         model_id: str | None = None,
+        local_dir: str | Path | None = None,
         threshold: float = HARMGUARD_DEFAULT_THRESHOLD,
         provider: StandardProvider | None = None,
     ) -> None:
         """Initialize the HarmGuard guardrail."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.threshold = threshold
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)

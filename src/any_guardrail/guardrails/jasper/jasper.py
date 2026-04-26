@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from any_guardrail.base import StandardGuardrail
@@ -19,6 +20,8 @@ class Jasper(StandardGuardrail):
 
     Args:
         model_id: HuggingFace path to model.
+        local_dir: Path to a local model directory. When provided, weights are loaded
+            from disk; model_id is still required and validated.
 
     Raises:
         ValueError: Can only use model paths for Jasper models from HuggingFace.
@@ -27,9 +30,14 @@ class Jasper(StandardGuardrail):
 
     SUPPORTED_MODELS: ClassVar = ["JasperLS/gelectra-base-injection", "JasperLS/deberta-v3-base-injection"]
 
-    def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        local_dir: str | Path | None = None,
+        provider: StandardProvider | None = None,
+    ) -> None:
         """Initialize the Jasper guardrail."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 

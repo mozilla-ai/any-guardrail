@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from torch.nn.functional import softmax
@@ -51,10 +52,11 @@ class ShieldGemma(StandardGuardrail):
         policy: str,
         threshold: float = DEFAULT_THRESHOLD,
         model_id: str | None = None,
+        local_dir: str | Path | None = None,
         provider: StandardProvider | None = None,
     ) -> None:
         """Initialize the ShieldGemma guardrail."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
