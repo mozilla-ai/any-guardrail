@@ -129,6 +129,29 @@ def test_model_load() -> None:
                 assert hasattr(guardrail, "provider")
 
 
+def test_local_dir_loads_from_disk(tmp_path: Path) -> None:
+    """Test that local_dir passes resolved path to load_model while still validating model_id."""
+    with patch.object(HuggingFaceProvider, "load_model") as mock_load:
+        guardrail = AnyGuardrail.create(
+            guardrail_name=GuardrailName.SENTINEL,
+            model_id="qualifire/prompt-injection-sentinel",
+            local_dir=tmp_path,
+        )
+        assert mock_load.call_count == 1
+        called_model_id = mock_load.call_args[0][0]
+        assert called_model_id == str(tmp_path.resolve())
+        assert guardrail.model_id == str(tmp_path.resolve())  # type: ignore[attr-defined]
+
+
+def test_local_dir_without_model_id_raises(tmp_path: Path) -> None:
+    """Test that local_dir without model_id raises ValueError."""
+    with pytest.raises(ValueError, match="model_id is required when local_dir is provided"):
+        AnyGuardrail.create(
+            guardrail_name=GuardrailName.SENTINEL,
+            local_dir=tmp_path,
+        )
+
+
 def test_post_processing_implementation() -> None:
     """Test that all ThreeStageGuardrail subclasses with a provider implement _post_processing."""
     for guardrail_name in GuardrailName:

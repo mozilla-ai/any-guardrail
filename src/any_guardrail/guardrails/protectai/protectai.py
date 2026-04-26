@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from any_guardrail.base import StandardGuardrail
@@ -24,9 +25,14 @@ class Protectai(StandardGuardrail):
         "ProtectAI/deberta-v3-base-prompt-injection-v2",
     ]
 
-    def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
+    def __init__(
+        self,
+        model_id: str | None = None,
+        local_dir: str | Path | None = None,
+        provider: StandardProvider | None = None,
+    ) -> None:
         """Initialize the Protectai guardrail."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 
