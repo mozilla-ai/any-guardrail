@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from torch.nn.functional import sigmoid
@@ -49,13 +50,14 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], floa
     def __init__(
         self,
         model_id: str | None = None,
+        local_dir: str | Path | None = None,
         threshold: float = DUOGUARD_DEFAULT_THRESHOLD,
         provider: StandardProvider | None = None,
     ) -> None:
         """Initialize the DuoGuard model."""
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self.model_id = default(model_id, self.SUPPORTED_MODELS, local_dir)
         self.threshold = threshold
-        self.provider = provider or HuggingFaceProvider(tokenizer_id=self.MODELS_TO_TOKENIZER[self.model_id])
+        self.provider = provider or HuggingFaceProvider(tokenizer_id=self.MODELS_TO_TOKENIZER[model_id or self.SUPPORTED_MODELS[0]])
         self.provider.load_model(self.model_id)
         self.provider.tokenizer.pad_token = self.provider.tokenizer.eos_token  # type: ignore[attr-defined]
 

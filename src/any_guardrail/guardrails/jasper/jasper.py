@@ -20,6 +20,8 @@ class Jasper(StandardGuardrail):
 
     Args:
         model_id: HuggingFace path to model.
+        local_dir: Path to a local model directory. When provided, weights are loaded
+            from disk; model_id is still required and validated.
 
     Raises:
         ValueError: Can only use model paths for Jasper models from HuggingFace.
