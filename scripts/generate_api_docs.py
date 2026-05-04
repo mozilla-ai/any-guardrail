@@ -80,7 +80,7 @@ def _sig_table(func: Any, skip_self: bool = True) -> str:
 
     rows = []
     for name, param in sig.parameters.items():
-        if skip_self and name == "self":
+        if skip_self and name in ("self", "cls"):
             continue
         if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
             continue
@@ -114,6 +114,20 @@ def _clean_docstring(doc: str | None) -> str:
     return textwrap.dedent(doc).strip()
 
 
+def _doc_summary(doc: str | None) -> str:
+    """Return only the description portion of a Google-style docstring.
+
+    Strips Args:, Returns:, Raises:, Note:, Example: sections so they don't
+    appear as raw text alongside the generated parameter table.
+    """
+    if not doc:
+        return ""
+    text = textwrap.dedent(doc).strip()
+    # Split at the first Google-style section header
+    summary = re.split(r"\n\s*(?:Args|Returns|Raises|Note|Example|Examples)\s*:", text)[0]
+    return summary.strip()
+
+
 def _section(title: str, level: int = 2) -> str:
     return f"{'#' * level} {title}\n"
 
@@ -144,7 +158,7 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
 
     init = getattr(cls, "__init__", None)
     if init:
-        init_doc = _clean_docstring(inspect.getdoc(init))
+        init_doc = _doc_summary(inspect.getdoc(init))
         lines.append(_section("Constructor"))
         table = _sig_table(init)
         if table:
@@ -155,7 +169,7 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
     validate = getattr(cls, "validate", None)
     if validate and not getattr(validate, "__isabstractmethod__", False):
         lines.append(_section("validate"))
-        val_doc = _clean_docstring(inspect.getdoc(validate))
+        val_doc = _doc_summary(inspect.getdoc(validate))
         if val_doc:
             lines.append(val_doc + "\n")
         table = _sig_table(validate)
@@ -190,7 +204,7 @@ def _any_guardrail_page() -> str:
         method = getattr(AnyGuardrail, method_name, None)
         if method is None:
             continue
-        doc = _clean_docstring(inspect.getdoc(method))
+        doc = _doc_summary(inspect.getdoc(method))
         lines.append(_section(method_name))
         if doc:
             lines.append(doc + "\n")
