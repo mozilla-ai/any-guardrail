@@ -11,7 +11,7 @@ from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import AnyDict, ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 GraniteGuardianPreprocessData = AnyDict
-GraniteGuardianInferenceData = Any  # Generated token tensor
+GraniteGuardianInferenceData = AnyDict  # {"output": generated_tensor, "prompt_len": int}
 
 GUARDIAN_JUDGE_THINK = (
     "<think>As a judge agent, carefully analyze whether the provided text meets the "
@@ -27,7 +27,7 @@ GUARDIAN_JUDGE_NOTHINK = (
     "Output empty <think>\n</think> tags followed by your score in <score></score> tags."
 )
 
-SCORE_PATTERN = re.compile(r"<score>\s*(yes|no)\s*</score>", re.IGNORECASE | re.DOTALL)
+SCORE_PATTERN = re.compile(r"<score>\s*(yes|no)\s*</score>", re.IGNORECASE)
 THINK_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 MAX_NEW_TOKENS_NOTHINK = 48
@@ -105,9 +105,7 @@ class GraniteGuardianRisk:
     )
 
 
-class GraniteGuardian(
-    ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData, bool, str, str]
-):
+class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData, bool, str, str]):
     """Wrapper class for IBM Granite Guardian 4.1 models.
 
     Granite Guardian is a hybrid-thinking safety/judge model that evaluates whether a
@@ -146,12 +144,6 @@ class GraniteGuardian(
     Raises:
         ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
 
-    Note:
-        A single instance caches the most recent prompt length between
-        ``_pre_processing`` and ``_post_processing`` to slice generated tokens, so
-        it is **not thread-safe**. Use one instance per thread, or serialize
-        ``validate`` calls.
-
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -178,8 +170,6 @@ class GraniteGuardian(
                 tokenizer_class=AutoTokenizer,
             )
         self.provider.load_model(self.model_id)
-
-        self._cached_input_length: int = 0
 
     def validate(
         self,
@@ -283,13 +273,13 @@ class GraniteGuardian(
         model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
             messages, **template_kwargs, **kwargs
         )
-        self._cached_input_length = model_inputs["input_ids"].shape[-1]
         return GuardrailPreprocessOutput(data=model_inputs)
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[GraniteGuardianPreprocessData]
     ) -> GuardrailInferenceOutput[GraniteGuardianInferenceData]:
         """Run ``generate()`` with think-aware token budget."""
+        prompt_len = int(model_inputs.data["input_ids"].shape[-1])
         max_new_tokens = MAX_NEW_TOKENS_THINK if self.think else MAX_NEW_TOKENS_NOTHINK
         with torch.no_grad():
             output = self.provider.model.generate(  # type: ignore[attr-defined]
@@ -297,7 +287,7 @@ class GraniteGuardian(
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
             )
-        return GuardrailInferenceOutput(data=output)
+        return GuardrailInferenceOutput(data={"output": output, "prompt_len": prompt_len})
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[GraniteGuardianInferenceData]
@@ -315,7 +305,9 @@ class GraniteGuardian(
           ``<think>...</think>`` reasoning block).
 
         """
-        generated = model_outputs.data[:, self._cached_input_length :]
+        output = model_outputs.data["output"]
+        prompt_len = model_outputs.data["prompt_len"]
+        generated = output[:, prompt_len:]
         decoded: str = self.provider.tokenizer.decode(  # type: ignore[attr-defined]
             generated[0], skip_special_tokens=True
         )

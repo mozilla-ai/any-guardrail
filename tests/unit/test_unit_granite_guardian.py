@@ -21,7 +21,6 @@ def guardian_instance() -> GraniteGuardian:
     instance.model_id = "ibm-granite/granite-guardian-4.1-8b"
     instance.criteria = GraniteGuardianRisk.HARM
     instance.think = False
-    instance._cached_input_length = 0
     return instance
 
 
@@ -57,14 +56,15 @@ def test_parse_generation(model_outputs: str, expected_valid: bool | None, expec
 
 def test_post_processing_decodes_generated_suffix(guardian_instance: GraniteGuardian) -> None:
     """Post-processing slices off the prompt tokens and decodes only the generated tail."""
-    guardian_instance._cached_input_length = 10
     full_tokens = torch.tensor([[0] * 10 + [1, 2, 3]])
 
     provider = MagicMock()
     provider.tokenizer.decode.return_value = "<score>no</score>"
     guardian_instance.provider = provider
 
-    result = guardian_instance._post_processing(GuardrailInferenceOutput(data=full_tokens))
+    result = guardian_instance._post_processing(
+        GuardrailInferenceOutput(data={"output": full_tokens, "prompt_len": 10})
+    )
 
     # Verify only the generated suffix was passed to the decoder.
     call_args = provider.tokenizer.decode.call_args
@@ -134,8 +134,7 @@ def test_pre_processing_basic(guardian_instance: GraniteGuardian) -> None:
     assert kwargs["return_tensors"] == "pt"
     assert "documents" not in kwargs
     assert "available_tools" not in kwargs
-    assert guardian_instance._cached_input_length == 4
-    assert output.data is fake_tokens
+    assert output.data == fake_tokens
 
 
 def test_pre_processing_forwards_documents(guardian_instance: GraniteGuardian) -> None:
@@ -191,6 +190,28 @@ def test_pre_processing_passes_messages_positionally(guardian_instance: GraniteG
     assert messages[1] == {"role": "assistant", "content": "assistant a"}
     assert messages[2]["role"] == "user"
     assert "<guardian>" in messages[2]["content"]
+
+
+def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardian) -> None:
+    """The typed validate() override forwards documents and available_tools to the tokenizer."""
+    fake_tokens = {"input_ids": torch.tensor([[1, 2]]), "attention_mask": torch.tensor([[1, 1]])}
+    provider = _make_mock_provider(fake_tokens)
+
+    # Mock model.generate and tokenizer.decode so the full validate pipeline runs end-to-end.
+    provider.model.generate.return_value = torch.tensor([[1, 2, 3]])
+    provider.tokenizer.decode.return_value = "<score>no</score>"
+    guardian_instance.provider = provider
+
+    docs = [{"doc_id": "0", "text": "context"}]
+    tools = [{"name": "t", "description": "d", "parameters": {}}]
+
+    result = guardian_instance.validate("q", output_text="r", documents=docs, available_tools=tools)
+
+    _, kwargs = provider.tokenizer.apply_chat_template.call_args
+    assert kwargs["documents"] == docs
+    assert kwargs["available_tools"] == tools
+    assert result.valid is True
+    assert result.score == "no"
 
 
 def test_risk_constants_are_nonempty_strings() -> None:

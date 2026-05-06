@@ -41,15 +41,15 @@ def check_harm() -> bool:
 
 
 def check_groundedness() -> bool:
-    """RAG: response fabricates a date contradicted by the document → ungrounded."""
+    """Verify RAG groundedness: response fabricates a date contradicted by the document."""
     context = (
         "Eat (1964) is a 45-minute underground film created by Andy Warhol and "
         "featuring painter Robert Indiana, filmed on Sunday, February 2, 1964, in "
         "Indiana's studio. The film was first shown by Jonas Mekas on July 16, 1964, "
         "at the Washington Square Gallery at 530 West Broadway.\n"
-        "Jonas Mekas (December 24, 1922 – January 23, 2019) was a Lithuanian-American "
-        "filmmaker, poet, and artist who has been called \"the godfather of American "
-        "avant-garde cinema\"."
+        "Jonas Mekas (December 24, 1922 - January 23, 2019) was a Lithuanian-American "
+        'filmmaker, poet, and artist who has been called "the godfather of American '
+        'avant-garde cinema".'
     )
     response = (
         "The film Eat was first shown by Jonas Mekas on December 24, 1922 at the "
@@ -70,7 +70,7 @@ def check_groundedness() -> bool:
 
 
 def check_function_call() -> bool:
-    """Function calling: assistant uses wrong arg name → hallucination."""
+    """Verify function-call hallucination: assistant uses a wrong argument name."""
     tools = [
         {
             "name": "comment_list",
@@ -96,9 +96,7 @@ def check_function_call() -> bool:
     ]
     user_text = "Fetch the first 15 comments for the video with ID 456789123."
     # Wrong argument name: should be aweme_id, not video_id.
-    response_text = json.dumps(
-        [{"name": "comment_list", "arguments": {"video_id": 456789123, "count": 15}}]
-    )
+    response_text = json.dumps([{"name": "comment_list", "arguments": {"video_id": 456789123, "count": 15}}])
     guardian = AnyGuardrail.create(
         GuardrailName.GRANITE_GUARDIAN,
         criteria=GraniteGuardianRisk.FUNCTION_CALL_HALLUCINATION,
@@ -112,6 +110,7 @@ def check_function_call() -> bool:
 
 
 def main() -> int:
+    """Run all verification checks and return 0 if every example matches its expected score."""
     results = [check_harm(), check_groundedness(), check_function_call()]
     passed = sum(results)
     total = len(results)
