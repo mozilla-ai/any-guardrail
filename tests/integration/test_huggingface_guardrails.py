@@ -37,6 +37,12 @@ RUNNING_IN_CI = os.environ.get("CI") == "true"
             None,
             marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~8GB, needs 10GB+ RAM)"),
         ),
+        pytest.param(
+            GuardrailName.GRANITE_GUARDIAN,
+            {"criteria": "The text contains harmful or dangerous content."},
+            None,
+            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~16GB, needs 20GB+ RAM)"),
+        ),
     ],
 )
 def test_huggingface_guardrails(

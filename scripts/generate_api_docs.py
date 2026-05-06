@@ -281,6 +281,11 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),
     ("any_guardrail.guardrails.flowjudge.flowjudge", "Flowjudge", "flowjudge.md"),
     ("any_guardrail.guardrails.glider.glider", "Glider", "glider.md"),
+    (
+        "any_guardrail.guardrails.granite_guardian.granite_guardian",
+        "GraniteGuardian",
+        "granite-guardian.md",
+    ),
     ("any_guardrail.guardrails.harm_guard.harm_guard", "HarmGuard", "harm-guard.md"),
     ("any_guardrail.guardrails.injec_guard.injec_guard", "InjecGuard", "injec-guard.md"),
     ("any_guardrail.guardrails.jasper.jasper", "Jasper", "jasper.md"),
