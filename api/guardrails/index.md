@@ -9,6 +9,7 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Duoguard](duo-guard.md) | `GuardrailName.DUOGUARD` |
 | [Flowjudge](flowjudge.md) | `GuardrailName.FLOWJUDGE` |
 | [Glider](glider.md) | `GuardrailName.GLIDER` |
+| [Granite_guardian](granite-guardian.md) | `GuardrailName.GRANITE_GUARDIAN` |
 | [Harmguard](harm-guard.md) | `GuardrailName.HARMGUARD` |
 | [Injecguard](injec-guard.md) | `GuardrailName.INJECGUARD` |
 | [Jasper](jasper.md) | `GuardrailName.JASPER` |
