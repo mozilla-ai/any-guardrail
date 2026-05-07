@@ -30,6 +30,7 @@ class GuardrailName(StrEnum):
     DUOGUARD = "duo_guard"
     FLOWJUDGE = "flowjudge"
     GLIDER = "glider"
+    GRANITE_GUARDIAN = "granite_guardian"
     HARMGUARD = "harm_guard"
     INJECGUARD = "injec_guard"
     JASPER = "jasper"

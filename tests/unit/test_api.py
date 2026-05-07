@@ -124,6 +124,8 @@ def test_model_load() -> None:
                 kwargs: dict[str, Any] = {}
                 if guardrail_name == GuardrailName.SHIELD_GEMMA:
                     kwargs["policy"] = "Dummy"
+                elif guardrail_name == GuardrailName.GRANITE_GUARDIAN:
+                    kwargs["criteria"] = "Dummy"
                 guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **kwargs)
                 mock_load.assert_called_once()
                 assert hasattr(guardrail, "provider")

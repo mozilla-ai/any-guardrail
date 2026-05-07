@@ -22,6 +22,7 @@
   * [DuoGuard](api/guardrails/duo-guard.md)
   * [FlowJudge](api/guardrails/flowjudge.md)
   * [Glider](api/guardrails/glider.md)
+  * [GraniteGuardian](api/guardrails/granite-guardian.md)
   * [HarmGuard](api/guardrails/harm-guard.md)
   * [InjecGuard](api/guardrails/injec-guard.md)
   * [Jasper](api/guardrails/jasper.md)
