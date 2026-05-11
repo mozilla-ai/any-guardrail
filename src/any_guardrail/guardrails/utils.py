@@ -48,3 +48,27 @@ def match_injection_label(
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
     return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
+
+
+def match_injection_label_batch(
+    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str, id2label: dict[int, str]
+) -> list[GuardrailOutput[bool, None, float]]:
+    """Match injection label for a batch of model outputs.
+
+    Args:
+        model_outputs: The wrapped inference output containing logits with a leading
+            batch dimension (shape ``(batch_size, num_classes)``).
+        injection_label: The label indicating injection/unsafe content.
+        id2label: Mapping from label IDs to label names.
+
+    Returns:
+        A list of GuardrailOutputs, one per input in the batch, in the same order.
+
+    """
+    logits = model_outputs.data["logits"].numpy()
+    scores = _softmax(logits)  # type: ignore[no-untyped-call]
+    outputs: list[GuardrailOutput[bool, None, float]] = []
+    for row in scores:
+        label = id2label[row.argmax().item()]
+        outputs.append(GuardrailOutput(valid=label != injection_label, score=row.max().item()))
+    return outputs

@@ -1,7 +1,7 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from any_guardrail.base import StandardGuardrail
-from any_guardrail.guardrails.utils import default, match_injection_label
+from any_guardrail.guardrails.utils import default, match_injection_label, match_injection_label_batch
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import BinaryScoreOutput, StandardInferenceOutput, StandardPreprocessOutput
@@ -33,3 +33,12 @@ class Deepset(StandardGuardrail):
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
         return match_injection_label(model_outputs, DEEPSET_INJECTION_LABEL, self.provider.model.config.id2label)  # type: ignore[attr-defined]
+
+    def _validate_batch(self, input_texts: list[str], **kwargs: Any) -> list[BinaryScoreOutput]:
+        model_inputs = self.provider.pre_process(input_texts, **kwargs)
+        model_outputs = self.provider.infer(model_inputs)
+        return match_injection_label_batch(
+            model_outputs,
+            DEEPSET_INJECTION_LABEL,
+            self.provider.model.config.id2label,  # type: ignore[attr-defined]
+        )

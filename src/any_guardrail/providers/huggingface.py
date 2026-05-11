@@ -67,17 +67,22 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         tokenizer_id = self.tokenizer_id or model_id
         self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **load_kwargs)  # type: ignore[attr-defined]
 
-    def pre_process(self, input_text: str, **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
+    def pre_process(self, input_text: str | list[str], **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Tokenize input text for model consumption.
 
         Args:
-            input_text: The text to preprocess.
+            input_text: A single text or a list of texts to preprocess. When a list
+                is supplied, ``padding=True`` is added automatically (unless caller
+                already specified a ``padding`` argument) so the resulting tensors
+                can be stacked into a batch.
             **kwargs: Additional keyword arguments passed to the tokenizer.
 
         Returns:
             GuardrailPreprocessOutput wrapping the tokenized input.
 
         """
+        if isinstance(input_text, list) and "padding" not in kwargs:
+            kwargs["padding"] = True
         tokenized = self.tokenizer(input_text, return_tensors="pt", **kwargs)
         return GuardrailPreprocessOutput(data=tokenized)
 
