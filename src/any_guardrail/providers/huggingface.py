@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, ClassVar
 
 try:
     import torch
@@ -49,6 +49,12 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
     """
 
+    # Keys that have dedicated constructor parameters and would create
+    # model/tokenizer mismatches if also passed via ``model_kwargs``.
+    _RESERVED_MODEL_KWARGS: ClassVar[frozenset[str]] = frozenset(
+        {"trust_remote_code", "cache_dir", "revision", "torch_dtype"}
+    )
+
     def __init__(
         self,
         model_class: type | None = None,
@@ -66,6 +72,16 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         if MISSING_PACKAGES_ERROR is not None:
             msg = "Missing packages for HuggingFace provider. You can try `pip install 'any-guardrail[huggingface]'`"
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
+
+        if model_kwargs:
+            reserved_used = self._RESERVED_MODEL_KWARGS & model_kwargs.keys()
+            if reserved_used:
+                msg = (
+                    f"model_kwargs cannot contain reserved keys {sorted(reserved_used)}; "
+                    f"use the dedicated constructor parameters instead so the model and "
+                    f"tokenizer stay in sync."
+                )
+                raise ValueError(msg)
 
         self.model_class = model_class or AutoModelForSequenceClassification
         self.tokenizer_class = tokenizer_class or AutoTokenizer
@@ -120,6 +136,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
         Provider-level ``tokenizer_kwargs`` (e.g. ``max_length``, ``truncation``,
         ``padding``) are applied first; per-call ``kwargs`` override them.
+        ``return_tensors`` defaults to ``"pt"`` but can be overridden via either
+        ``tokenizer_kwargs`` or per-call ``kwargs``.
 
         Args:
             input_text: The text to preprocess.
@@ -130,7 +148,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
         """
         call_kwargs: AnyDict = {**self.tokenizer_kwargs, **kwargs}
-        tokenized = self.tokenizer(input_text, return_tensors="pt", **call_kwargs)
+        call_kwargs.setdefault("return_tensors", "pt")
+        tokenized = self.tokenizer(input_text, **call_kwargs)
         if self.device is not None:
             tokenized = tokenized.to(self.device)
         return GuardrailPreprocessOutput(data=tokenized)

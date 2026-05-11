@@ -216,6 +216,37 @@ def test_device_passed_through(device: str) -> None:
     assert provider.device == device
 
 
+@pytest.mark.parametrize("reserved_key", ["trust_remote_code", "cache_dir", "revision", "torch_dtype"])
+def test_reserved_keys_in_model_kwargs_rejected(reserved_key: str) -> None:
+    """Reserved keys in ``model_kwargs`` raise ValueError to prevent model/tokenizer mismatches."""
+    with pytest.raises(ValueError, match="reserved keys"):
+        HuggingFaceProvider(model_kwargs={reserved_key: "anything"})
+
+
+def test_pre_process_return_tensors_can_be_overridden_via_tokenizer_kwargs() -> None:
+    """``return_tensors`` set in ``tokenizer_kwargs`` is honored instead of crashing on a duplicate kwarg."""
+    tokenizer = MagicMock(return_value={"input_ids": [[1, 2, 3]]})
+    provider = HuggingFaceProvider(tokenizer_kwargs={"return_tensors": "np"})
+    provider.tokenizer = tokenizer
+
+    provider.pre_process("hello")
+
+    _, kwargs = tokenizer.call_args
+    assert kwargs["return_tensors"] == "np"
+
+
+def test_pre_process_return_tensors_can_be_overridden_per_call() -> None:
+    """``return_tensors`` set as a per-call kwarg is honored instead of crashing on a duplicate kwarg."""
+    tokenizer = MagicMock(return_value={"input_ids": [[1, 2, 3]]})
+    provider = HuggingFaceProvider()
+    provider.tokenizer = tokenizer
+
+    provider.pre_process("hello", return_tensors="np")
+
+    _, kwargs = tokenizer.call_args
+    assert kwargs["return_tensors"] == "np"
+
+
 def test_load_model_uses_to_device_with_real_signature() -> None:
     """End-to-end verification using ``patch`` on the real transformers loader interfaces."""
     model = MagicMock()
