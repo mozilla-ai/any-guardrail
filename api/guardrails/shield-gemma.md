@@ -31,6 +31,6 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 
 | Parameter | Type | Required | Default |
 |-----------|------|----------|---------|
-| `input_text` | `str` | Yes | — |
+| `input_text` | `str | list[str]` | Yes | — |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
