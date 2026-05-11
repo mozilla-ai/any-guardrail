@@ -278,6 +278,9 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
             messages, **template_kwargs, **kwargs
         )
+        device = getattr(self.provider, "device", None)
+        if device is not None and hasattr(model_inputs, "to"):
+            model_inputs = model_inputs.to(device)
         return GuardrailPreprocessOutput(data=model_inputs)
 
     def _inference(
