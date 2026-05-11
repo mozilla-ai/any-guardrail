@@ -30,6 +30,10 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         tokenizer_id: Override the tokenizer model ID (defaults to the same as model_id).
         trust_remote_code: Whether to trust remote code when loading models. Forwarded
             to both the model and tokenizer ``from_pretrained`` calls.
+        device: The torch device to load the model on (e.g., ``"cpu"``, ``"cuda"``,
+            ``"cuda:0"``, ``"mps"``). When ``None``, the model stays on the device
+            chosen by ``transformers`` (typically CPU). Tokenized inputs are moved
+            to this device automatically before inference.
         torch_dtype: The torch dtype to load the model with (e.g. ``torch.float16``,
             ``torch.bfloat16``). Forwarded to the model's ``from_pretrained``.
         cache_dir: Filesystem path used to cache downloaded model and tokenizer
@@ -51,6 +55,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         tokenizer_class: type | None = None,
         tokenizer_id: str | None = None,
         trust_remote_code: bool = False,
+        device: str | None = None,
         torch_dtype: Any | None = None,
         cache_dir: str | None = None,
         revision: str | None = None,
@@ -66,6 +71,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         self.tokenizer_class = tokenizer_class or AutoTokenizer
         self.tokenizer_id = tokenizer_id
         self.trust_remote_code = trust_remote_code
+        self.device = device
         self.torch_dtype = torch_dtype
         self.cache_dir = cache_dir
         self.revision = revision
@@ -99,13 +105,13 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
         """
         common_kwargs = self._build_from_pretrained_kwargs()
-
         model_load_kwargs: AnyDict = {**common_kwargs, **self.model_kwargs}
         if self.torch_dtype is not None:
             model_load_kwargs["torch_dtype"] = self.torch_dtype
         model_load_kwargs.update(kwargs)
-
         self.model = self.model_class.from_pretrained(model_id, **model_load_kwargs)  # type: ignore[attr-defined]
+        if self.device is not None:
+            self.model = self.model.to(self.device)
         tokenizer_id = self.tokenizer_id or model_id
         self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **common_kwargs)  # type: ignore[attr-defined]
 
@@ -125,6 +131,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         """
         call_kwargs: AnyDict = {**self.tokenizer_kwargs, **kwargs}
         tokenized = self.tokenizer(input_text, return_tensors="pt", **call_kwargs)
+        if self.device is not None:
+            tokenized = tokenized.to(self.device)
         return GuardrailPreprocessOutput(data=tokenized)
 
     def infer(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:

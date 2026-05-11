@@ -44,7 +44,7 @@ def match_injection_label(
         GuardrailOutput with valid=True if content is safe, valid=False if injection detected.
 
     """
-    logits = model_outputs.data["logits"][0].numpy()
+    logits = model_outputs.data["logits"][0].cpu().numpy()
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     label = id2label[scores.argmax().item()]
     return GuardrailOutput(valid=label != injection_label, score=scores.max().item())

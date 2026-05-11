@@ -113,6 +113,9 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         self._cached_model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
             conversation, **self.tokenizer_params, **kwargs
         )
+        device = getattr(self.provider, "device", None)
+        if device is not None and hasattr(self._cached_model_inputs, "to"):
+            self._cached_model_inputs = self._cached_model_inputs.to(device)
         return GuardrailPreprocessOutput(data=self._cached_model_inputs)
 
     def _inference(

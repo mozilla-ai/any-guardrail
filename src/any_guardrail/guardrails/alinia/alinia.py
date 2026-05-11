@@ -112,8 +112,8 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
 
         return initial_json
 
-    def _inference(self, params: AnyDict) -> requests.Response:  # type: ignore[name-defined]
-        response = requests.post(  # type: ignore[attr-defined, no-untyped-call]
+    def _inference(self, params: AnyDict) -> requests.Response:
+        response = requests.post(
             self.endpoint,
             headers={"Authorization": f"Bearer {self.api_key}"},
             json=params,
@@ -125,7 +125,7 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
 
     def _post_processing(
         self,
-        response: requests.Response,  # type: ignore[name-defined]
+        response: requests.Response,
     ) -> GuardrailOutput[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]:
         explanation = response.json()
         valid = not explanation.get("result").get("flagged")
