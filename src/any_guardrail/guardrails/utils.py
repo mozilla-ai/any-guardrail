@@ -65,7 +65,7 @@ def match_injection_label_batch(
         A list of GuardrailOutputs, one per input in the batch, in the same order.
 
     """
-    logits = model_outputs.data["logits"].numpy()
+    logits = model_outputs.data["logits"].detach().cpu().numpy()
     scores = _softmax(logits)  # type: ignore[no-untyped-call]
     outputs: list[GuardrailOutput[bool, None, float]] = []
     for row in scores:

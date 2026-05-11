@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic, overload
 
 from any_guardrail.types import (
     AnyDict,
@@ -127,7 +127,13 @@ class ThreeStageGuardrail(
         """
         ...
 
-    def validate(  # type: ignore[override]
+    @overload
+    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]: ...
+
+    @overload
+    def validate(self, input_text: list[str], **kwargs: Any) -> list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]: ...
+
+    def validate(
         self, input_text: str | list[str], **kwargs: Any
     ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT] | list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]:
         """Default validation pipeline: preprocess -> inference -> postprocess.

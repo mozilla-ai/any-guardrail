@@ -215,7 +215,9 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         # Granite Guardian only supports single-string inputs; ``super().validate``
         # is statically typed as returning a union to support batch on other
         # subclasses, but the runtime contract here is always a single output.
-        assert not isinstance(result, list)
+        if isinstance(result, list):
+            msg = "GraniteGuardian.validate received a list input but only supports single strings."
+            raise TypeError(msg)
         return result
 
     def _build_guardian_block(self) -> str:
