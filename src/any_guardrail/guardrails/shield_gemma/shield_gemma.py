@@ -67,6 +67,9 @@ class ShieldGemma(StandardGuardrail):
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
         tokenized = self.provider.tokenizer(formatted_prompt, return_tensors="pt")  # type: ignore[attr-defined]
+        device = getattr(self.provider, "device", None)
+        if device is not None:
+            tokenized = tokenized.to(device)
         return GuardrailPreprocessOutput(data=tokenized)
 
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:

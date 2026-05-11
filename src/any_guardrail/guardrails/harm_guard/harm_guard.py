@@ -66,13 +66,16 @@ class HarmGuard(StandardGuardrail):
             tokenized = self.provider.tokenizer(input_text, return_tensors="pt")  # type: ignore[attr-defined]
         else:
             tokenized = self.provider.tokenizer(input_text, output_text, return_tensors="pt")  # type: ignore[attr-defined]
+        device = getattr(self.provider, "device", None)
+        if device is not None:
+            tokenized = tokenized.to(device)
         return GuardrailPreprocessOutput(data=tokenized)
 
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
-        logits = model_outputs.data["logits"][0].numpy()
+        logits = model_outputs.data["logits"][0].cpu().numpy()
         scores = _softmax(logits)  # type: ignore[no-untyped-call]
         final_score = float(scores[1])  # scores[1] is the unsafe probability
         return GuardrailOutput(valid=final_score < self.threshold, score=final_score)

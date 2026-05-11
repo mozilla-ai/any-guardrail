@@ -29,6 +29,10 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         tokenizer_class: The transformers tokenizer class to use. Defaults to AutoTokenizer.
         tokenizer_id: Override the tokenizer model ID (defaults to the same as model_id).
         trust_remote_code: Whether to trust remote code when loading models.
+        device: The torch device to load the model on (e.g., ``"cpu"``, ``"cuda"``,
+            ``"cuda:0"``, ``"mps"``). When ``None``, the model stays on the device
+            chosen by ``transformers`` (typically CPU). Tokenized inputs are moved
+            to this device automatically before inference.
 
     """
 
@@ -38,6 +42,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         tokenizer_class: type | None = None,
         tokenizer_id: str | None = None,
         trust_remote_code: bool = False,
+        device: str | None = None,
     ) -> None:
         """Initialize the HuggingFace provider."""
         if MISSING_PACKAGES_ERROR is not None:
@@ -48,6 +53,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         self.tokenizer_class = tokenizer_class or AutoTokenizer
         self.tokenizer_id = tokenizer_id
         self.trust_remote_code = trust_remote_code
+        self.device = device
         self.model: Any = None
         self.tokenizer: Any = None
 
@@ -64,6 +70,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
             load_kwargs["trust_remote_code"] = True
 
         self.model = self.model_class.from_pretrained(model_id, **load_kwargs, **kwargs)  # type: ignore[attr-defined]
+        if self.device is not None:
+            self.model = self.model.to(self.device)
         tokenizer_id = self.tokenizer_id or model_id
         self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **load_kwargs)  # type: ignore[attr-defined]
 
@@ -79,6 +87,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
         """
         tokenized = self.tokenizer(input_text, return_tensors="pt", **kwargs)
+        if self.device is not None:
+            tokenized = tokenized.to(self.device)
         return GuardrailPreprocessOutput(data=tokenized)
 
     def infer(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:
