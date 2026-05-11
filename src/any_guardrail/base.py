@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic, overload
 
 from any_guardrail.types import (
     AnyDict,
@@ -127,23 +127,64 @@ class ThreeStageGuardrail(
         """
         ...
 
-    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+    @overload
+    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]: ...
+
+    @overload
+    def validate(self, input_text: list[str], **kwargs: Any) -> list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]: ...
+
+    def validate(
+        self, input_text: str | list[str], **kwargs: Any
+    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT] | list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]:
         """Default validation pipeline: preprocess -> inference -> postprocess.
 
         Args:
-            input_text: The text to validate.
+            input_text: The text to validate. If a list is supplied, each item is
+                validated and a list of GuardrailOutputs is returned in the same
+                order. Subclasses can override ``_validate_batch`` to enable true
+                batched inference; the default iterates over inputs.
             **kwargs: Additional arguments passed to preprocessing (e.g., output_text, comparison_text).
 
         Returns:
-            GuardrailOutput with validation results.
+            GuardrailOutput when ``input_text`` is a string, or a list of
+            GuardrailOutputs when ``input_text`` is a list.
 
         Note:
             Subclasses can override this method to customize the signature or add validation logic.
 
         """
+        if isinstance(input_text, list):
+            return self._validate_batch(input_text, **kwargs)
         model_inputs = self._pre_processing(input_text, **kwargs)
         model_outputs = self._inference(model_inputs)
         return self._post_processing(model_outputs)
+
+    def _validate_batch(
+        self, input_texts: list[str], **kwargs: Any
+    ) -> list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]:
+        """Validate a batch of inputs.
+
+        Default implementation iterates over the list and validates each item
+        independently. Subclasses that can perform true batched inference (e.g.
+        encoder classifiers via padded tokenization) should override this method
+        to take advantage of vectorized inference.
+
+        Args:
+            input_texts: The texts to validate.
+            **kwargs: Additional keyword arguments passed to each ``validate`` call.
+
+        Returns:
+            A list of GuardrailOutputs, one per input, in the same order.
+
+        """
+        results: list[GuardrailOutput[ValidT, ExplanationT, ScoreT]] = []
+        for text in input_texts:
+            result = self.validate(text, **kwargs)
+            if isinstance(result, list):
+                msg = "validate() returned a list for a single string input; check subclass overrides."
+                raise TypeError(msg)
+            results.append(result)
+        return results
 
 
 # Standard guardrail type alias

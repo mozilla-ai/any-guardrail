@@ -171,7 +171,7 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             )
         self.provider.load_model(self.model_id)
 
-    def validate(
+    def validate(  # type: ignore[override]
         self,
         input_text: str,
         output_text: str | None = None,
@@ -205,13 +205,20 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             block in think mode).
 
         """
-        return super().validate(
+        result = super().validate(
             input_text,
             output_text=output_text,
             documents=documents,
             available_tools=available_tools,
             **kwargs,
         )
+        # Granite Guardian only supports single-string inputs; ``super().validate``
+        # is statically typed as returning a union to support batch on other
+        # subclasses, but the runtime contract here is always a single output.
+        if isinstance(result, list):
+            msg = "GraniteGuardian.validate received a list input but only supports single strings."
+            raise TypeError(msg)
+        return result
 
     def _build_guardian_block(self) -> str:
         judge_instruction = GUARDIAN_JUDGE_THINK if self.think else GUARDIAN_JUDGE_NOTHINK
