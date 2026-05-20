@@ -192,6 +192,53 @@ def _stub_page(class_name: str) -> str:
     )
 
 
+def _provider_page(module_path: str, class_name: str) -> str:
+    """Generate a reference page for a Provider implementation.
+
+    Mirrors ``_guardrail_page`` but skips guardrail-specific sections
+    (SUPPORTED_MODELS, validate) and surfaces the provider's lifecycle
+    methods instead (load_model, pre_process, infer, close).
+    """
+    import importlib
+
+    mod = importlib.import_module(module_path)
+    cls = getattr(mod, class_name)
+
+    lines: list[str] = [f"# {class_name}\n"]
+
+    class_doc = _clean_docstring(inspect.getdoc(cls))
+    if class_doc:
+        lines.append(class_doc + "\n")
+
+    init = getattr(cls, "__init__", None)
+    if init:
+        init_doc = _doc_summary(inspect.getdoc(init))
+        lines.append(_section("Constructor"))
+        table = _sig_table(init)
+        if table:
+            lines.append(table + "\n")
+        if init_doc and init_doc != class_doc:
+            lines.append(init_doc + "\n")
+
+    for method_name in ("load_model", "pre_process", "infer", "close"):
+        method = getattr(cls, method_name, None)
+        if method is None:
+            continue
+        lines.append(_section(method_name))
+        method_doc = _doc_summary(inspect.getdoc(method))
+        if method_doc:
+            lines.append(method_doc + "\n")
+        table = _sig_table(method)
+        if table:
+            lines.append("**Parameters**\n")
+            lines.append(table + "\n")
+        ret = _return_annotation(method)
+        if ret:
+            lines.append(f"**Returns:** `{ret}`\n")
+
+    return "\n".join(lines)
+
+
 def _any_guardrail_page() -> str:
     from any_guardrail.api import AnyGuardrail
 
@@ -269,6 +316,11 @@ def _guardrails_index_page() -> str:
 # Guardrail registry: (module_path, ClassName, output_filename)
 # ---------------------------------------------------------------------------
 
+PROVIDERS = [
+    ("any_guardrail.providers.encoderfile", "EncoderfileProvider", "encoderfile.md"),
+]
+
+
 GUARDRAILS = [
     ("any_guardrail.guardrails.alinia.alinia", "Alinia", "alinia.md"),
     ("any_guardrail.guardrails.any_llm.any_llm", "AnyLlm", "any-llm.md"),
@@ -329,6 +381,18 @@ def main(out_dir: Path | None = None) -> None:
             print(f"  WARNING: falling back to stub for {filename}: {exc}", file=sys.stderr)
             content = _stub_page(class_name)
         path = guardrails_dir / filename
+        path.write_text(content, encoding="utf-8")
+        print(f"  {path}")
+
+    providers_dir = api_dir / "providers"
+    providers_dir.mkdir(parents=True, exist_ok=True)
+    for module_path, class_name, filename in PROVIDERS:
+        try:
+            content = _provider_page(module_path, class_name)
+        except Exception as exc:
+            print(f"  WARNING: falling back to stub for {filename}: {exc}", file=sys.stderr)
+            content = _stub_page(class_name)
+        path = providers_dir / filename
         path.write_text(content, encoding="utf-8")
         print(f"  {path}")
 
