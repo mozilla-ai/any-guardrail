@@ -1,8 +1,7 @@
 from typing import Any, ClassVar
 
-import numpy as np
-
 try:
+    import numpy as np
     import torch
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
