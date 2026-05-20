@@ -15,7 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface, azure-content-safety]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile]"
 ]
 
 flowjudge = [
@@ -32,6 +32,12 @@ huggingface = [
 azure-content-safety = [
     "azure-ai-contentsafety>=1.0.0",
     "pathvalidate>=3.3.1",
+]
+
+encoderfile = [
+    "huggingface-hub>=0.33.4",
+    "hf-xet>=1.1.5",
+    "numpy>=1.26",
 ]
 
 [project.urls]
