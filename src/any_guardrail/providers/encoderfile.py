@@ -160,7 +160,7 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
 
     def _wait_ready(self) -> None:
         """Poll ``/predict`` with a tiny input until the server responds or times out."""
-        assert self.base_url is not None  # noqa: S101
+        assert self.base_url is not None
         deadline = time.monotonic() + self.startup_timeout
         probe_payload = json.dumps({"inputs": ["ready?"]}).encode("utf-8")
         last_error: Exception | None = None
@@ -290,8 +290,8 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         self.base_url = None
 
     def __del__(self) -> None:
-        # Best-effort cleanup on GC. atexit also covers process exit.
+        """Best-effort cleanup on GC. ``atexit`` also covers process exit."""
         try:
             self.close()
-        except Exception:  # noqa: BLE001 - __del__ must never raise
+        except Exception:  # noqa: S110 - __del__ must never raise
             pass

@@ -41,8 +41,10 @@ def test_protectai_via_encoderfile() -> None:
 
         assert unsafe.valid is False
         assert safe.valid is True
-        assert unsafe.score is not None and unsafe.score > 0.5
-        assert safe.score is not None and safe.score > 0.5
+        assert unsafe.score is not None
+        assert unsafe.score > 0.5
+        assert safe.score is not None
+        assert safe.score > 0.5
     finally:
         provider.close()
 

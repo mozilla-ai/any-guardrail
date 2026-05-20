@@ -102,9 +102,7 @@ def test_load_model_uses_binary_path(tmp_path: Any, fake_subprocess: Any, fake_r
     assert provider.base_url == "http://127.0.0.1:12345"
 
 
-def test_load_model_auto_downloads_correct_artifact(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
-) -> None:
+def test_load_model_auto_downloads_correct_artifact(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
     binary = tmp_path / "downloaded.encoderfile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -198,9 +196,7 @@ def test_close_is_idempotent() -> None:
     provider.close()
 
 
-def test_load_model_makes_binary_executable(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
-) -> None:
+def test_load_model_makes_binary_executable(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
     binary = tmp_path / "not_executable.encoderfile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
     binary.chmod(0o644)  # explicitly remove exec bit
