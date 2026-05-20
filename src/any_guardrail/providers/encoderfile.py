@@ -154,9 +154,13 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         return Path(downloaded)
 
     def _ensure_executable(self, path: Path) -> None:
-        """Make sure the binary at ``path`` has the user-executable bit set."""
+        """Make sure the binary at ``path`` has the owner-executable bit set.
+
+        Only the owner-execute bit is added — downloaded artifacts shouldn't be
+        made world-executable on the host.
+        """
         current_mode = path.stat().st_mode
-        path.chmod(current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        path.chmod(current_mode | stat.S_IXUSR)
 
     def _wait_ready(self) -> None:
         """Poll ``/predict`` with a tiny input until the server responds or times out."""
