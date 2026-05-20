@@ -205,6 +205,12 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         """
         del kwargs  # not used; the binary owns all model state.
 
+        # If a previous binary is still running (e.g. caller is reusing the
+        # provider with a new model_id), tear it down first so we don't leak
+        # the subprocess and its port.
+        if self.process is not None:
+            self.close()
+
         binary = self._resolve_binary(model_id)
         if not binary.exists():
             msg = f"encoderfile binary not found at {binary}"
