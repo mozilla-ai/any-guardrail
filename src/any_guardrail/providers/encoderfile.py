@@ -176,13 +176,13 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
                 )
                 raise RuntimeError(msg)
             try:
-                request = urllib.request.Request(  # noqa: S310 - localhost only
+                request = urllib.request.Request(  # noqa: S310 - URL targets the encoderfile subprocess this provider spawned
                     f"{self.base_url}/predict",
                     data=probe_payload,
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                with urllib.request.urlopen(request, timeout=2.0) as resp:  # noqa: S310 - localhost only
+                with urllib.request.urlopen(request, timeout=2.0) as resp:  # noqa: S310 - URL targets the encoderfile subprocess this provider spawned
                     if 200 <= resp.status < 500:
                         return
             except (urllib.error.URLError, ConnectionError, OSError) as e:
@@ -262,13 +262,13 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
             raise RuntimeError(msg)
 
         payload = json.dumps(model_inputs.data).encode("utf-8")
-        request = urllib.request.Request(  # noqa: S310 - localhost only
+        request = urllib.request.Request(  # noqa: S310 - URL targets the encoderfile subprocess this provider spawned
             f"{self.base_url}/predict",
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(request, timeout=self.request_timeout) as resp:  # noqa: S310 - localhost only
+        with urllib.request.urlopen(request, timeout=self.request_timeout) as resp:  # noqa: S310 - URL targets the encoderfile subprocess this provider spawned
             body = resp.read()
         parsed = json.loads(body)
         results = parsed["results"]
