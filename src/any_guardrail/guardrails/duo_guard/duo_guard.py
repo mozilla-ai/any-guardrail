@@ -1,7 +1,5 @@
 from typing import ClassVar
 
-from torch.nn.functional import sigmoid
-
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
@@ -55,9 +53,16 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], floa
         """Initialize the DuoGuard model."""
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.threshold = threshold
-        self.provider = provider or HuggingFaceProvider(tokenizer_id=self.MODELS_TO_TOKENIZER[self.model_id])
+        self.provider = provider or HuggingFaceProvider(
+            tokenizer_id=self.MODELS_TO_TOKENIZER[self.model_id],
+            multi_label=True,
+        )
         self.provider.load_model(self.model_id)
-        self.provider.tokenizer.pad_token = self.provider.tokenizer.eos_token  # type: ignore[attr-defined]
+        # Qwen-family tokenizers ship without a pad token; HF needs one for padded batching.
+        # Encoderfile bakes tokenizer config into the binary, so there's no tokenizer to touch.
+        tokenizer = getattr(self.provider, "tokenizer", None)
+        if tokenizer is not None:
+            tokenizer.pad_token = tokenizer.eos_token
 
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         return self.provider.pre_process(input_text)
@@ -66,10 +71,15 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], floa
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput[bool, dict[str, bool], float]:
-        probabilities = sigmoid(model_outputs.data["logits"][0]).tolist()
+        # Providers expose per-category probabilities in ``scores``:
+        # HuggingFaceProvider applies sigmoid when ``multi_label=True``; the
+        # encoderfile binary applies sigmoid internally for multi-label heads.
+        probabilities = list(model_outputs.data["scores"][0])
         predicted_labels = {
             category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
         }
         return GuardrailOutput(
-            valid=not any(predicted_labels.values()), explanation=predicted_labels, score=max(probabilities)
+            valid=not any(predicted_labels.values()),
+            explanation=predicted_labels,
+            score=float(max(probabilities)),
         )

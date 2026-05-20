@@ -1,5 +1,3 @@
-import numpy as np
-
 from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailOutput
 
 
@@ -24,51 +22,42 @@ def default(model_id: str | None, supported_models: list[str]) -> str:
     return resolved_id
 
 
-def _softmax(_outputs):  # type: ignore[no-untyped-def]
-    maxes = np.max(_outputs, axis=-1, keepdims=True)
-    shifted_exp = np.exp(_outputs - maxes)
-    return shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
-
-
 def match_injection_label(
-    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str, id2label: dict[int, str]
+    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str
 ) -> GuardrailOutput[bool, None, float]:
     """Match injection label from model outputs.
 
     Args:
-        model_outputs: The wrapped inference output containing logits.
+        model_outputs: Inference output with the uniform shape produced by providers
+            (``predicted_labels`` and ``scores`` keys).
         injection_label: The label indicating injection/unsafe content.
-        id2label: Mapping from label IDs to label names.
 
     Returns:
         GuardrailOutput with valid=True if content is safe, valid=False if injection detected.
 
     """
-    logits = model_outputs.data["logits"][0].cpu().numpy()
-    scores = _softmax(logits)  # type: ignore[no-untyped-call]
-    label = id2label[scores.argmax().item()]
-    return GuardrailOutput(valid=label != injection_label, score=scores.max().item())
+    label = model_outputs.data["predicted_labels"][0]
+    score = float(model_outputs.data["scores"][0].max())
+    return GuardrailOutput(valid=label != injection_label, score=score)
 
 
 def match_injection_label_batch(
-    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str, id2label: dict[int, str]
+    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str
 ) -> list[GuardrailOutput[bool, None, float]]:
     """Match injection label for a batch of model outputs.
 
     Args:
-        model_outputs: The wrapped inference output containing logits with a leading
-            batch dimension (shape ``(batch_size, num_classes)``).
+        model_outputs: Inference output with the uniform shape produced by providers
+            (``predicted_labels`` and ``scores`` keys, batched).
         injection_label: The label indicating injection/unsafe content.
-        id2label: Mapping from label IDs to label names.
 
     Returns:
         A list of GuardrailOutputs, one per input in the batch, in the same order.
 
     """
-    logits = model_outputs.data["logits"].detach().cpu().numpy()
-    scores = _softmax(logits)  # type: ignore[no-untyped-call]
-    outputs: list[GuardrailOutput[bool, None, float]] = []
-    for row in scores:
-        label = id2label[row.argmax().item()]
-        outputs.append(GuardrailOutput(valid=label != injection_label, score=row.max().item()))
-    return outputs
+    predicted_labels = model_outputs.data["predicted_labels"]
+    scores = model_outputs.data["scores"]
+    return [
+        GuardrailOutput(valid=label != injection_label, score=float(row.max()))
+        for label, row in zip(predicted_labels, scores, strict=True)
+    ]

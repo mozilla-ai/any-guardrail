@@ -1,5 +1,7 @@
 from typing import Any, ClassVar
 
+import numpy as np
+
 try:
     import torch
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -15,6 +17,18 @@ from any_guardrail.types import (
     GuardrailInferenceOutput,
     GuardrailPreprocessOutput,
 )
+
+
+def _softmax(logits: "np.ndarray[Any, Any]") -> "np.ndarray[Any, Any]":
+    maxes = np.max(logits, axis=-1, keepdims=True)
+    shifted_exp = np.exp(logits - maxes)
+    result: np.ndarray[Any, Any] = shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
+    return result
+
+
+def _sigmoid(logits: "np.ndarray[Any, Any]") -> "np.ndarray[Any, Any]":
+    result: np.ndarray[Any, Any] = 1.0 / (1.0 + np.exp(-logits))
+    return result
 
 
 class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
@@ -67,8 +81,14 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         revision: str | None = None,
         model_kwargs: AnyDict | None = None,
         tokenizer_kwargs: AnyDict | None = None,
+        multi_label: bool = False,
     ) -> None:
-        """Initialize the HuggingFace provider."""
+        """Initialize the HuggingFace provider.
+
+        ``multi_label=True`` switches the activation in ``infer()`` from softmax
+        to sigmoid, so ``scores`` carries per-class probabilities for models
+        whose categories are not mutually exclusive (e.g. DuoGuard).
+        """
         if MISSING_PACKAGES_ERROR is not None:
             msg = "Missing packages for HuggingFace provider. You can try `pip install 'any-guardrail[huggingface]'`"
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
@@ -93,6 +113,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         self.revision = revision
         self.model_kwargs: AnyDict = dict(model_kwargs) if model_kwargs else {}
         self.tokenizer_kwargs: AnyDict = dict(tokenizer_kwargs) if tokenizer_kwargs else {}
+        self.multi_label = multi_label
         self.model: Any = None
         self.tokenizer: Any = None
 
@@ -162,13 +183,38 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
     def infer(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:
         """Run model inference on preprocessed inputs.
 
+        Returns a uniform shape shared with other providers:
+
+        - ``logits``: numpy array of raw model logits, shape ``(batch, num_classes)``.
+        - ``scores``: softmax of logits, same shape.
+        - ``predicted_indices``: list of argmax indices, one per row.
+        - ``predicted_labels``: list of labels resolved via ``model.config.id2label``.
+
+        Pushing label-resolution into the provider lets downstream guardrails read
+        ``predicted_labels`` directly, so they work against any provider (including
+        EncoderfileProvider whose binary returns labels natively).
+
         Args:
             model_inputs: The wrapped preprocessing output.
 
         Returns:
-            GuardrailInferenceOutput wrapping the model output.
+            GuardrailInferenceOutput wrapping the uniform inference output.
 
         """
         with torch.no_grad():
             output = self.model(**model_inputs.data)
-        return GuardrailInferenceOutput(data=output)
+        # ``.float()`` is a no-op for float32 but is required for bf16/fp16 logits,
+        # which numpy doesn't accept directly.
+        logits = output.logits.detach().float().cpu().numpy()
+        scores = _sigmoid(logits) if self.multi_label else _softmax(logits)
+        predicted_indices = scores.argmax(axis=-1).tolist()
+        id2label = self.model.config.id2label
+        predicted_labels = [id2label[i] for i in predicted_indices]
+        return GuardrailInferenceOutput(
+            data={
+                "logits": logits,
+                "scores": scores,
+                "predicted_indices": predicted_indices,
+                "predicted_labels": predicted_labels,
+            }
+        )
