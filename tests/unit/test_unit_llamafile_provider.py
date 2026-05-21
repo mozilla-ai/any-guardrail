@@ -84,9 +84,7 @@ def test_load_model_auto_downloads_from_artifact_map(
     provider.close()
 
 
-def test_load_model_with_repo_id_filename_override(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
-) -> None:
+def test_load_model_with_repo_id_filename_override(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
     binary = tmp_path / "override.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -139,9 +137,7 @@ def test_load_model_passes_n_gpu_layers_and_ctx_size(
     provider.close()
 
 
-def test_load_model_closes_previous_subprocess(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
-) -> None:
+def test_load_model_closes_previous_subprocess(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
     mock_popen, _ = fake_subprocess
@@ -158,9 +154,7 @@ def test_load_model_closes_previous_subprocess(
     provider.close()
 
 
-def test_load_model_makes_binary_executable(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
-) -> None:
+def test_load_model_makes_binary_executable(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
     binary = tmp_path / "not_executable.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
     binary.chmod(0o644)
@@ -208,9 +202,7 @@ def test_wait_ready_raises_if_subprocess_exits(tmp_path: Any) -> None:
             provider.load_model("ibm-granite/granite-guardian-4.1-8b")
 
 
-def test_generate_chat_posts_correct_payload(
-    tmp_path: Any, fake_subprocess: Any
-) -> None:
+def test_generate_chat_posts_correct_payload(tmp_path: Any, fake_subprocess: Any) -> None:
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -247,9 +239,7 @@ def test_generate_chat_posts_correct_payload(
     provider.close()
 
 
-def test_generate_chat_includes_chat_template_kwargs_only_when_nonempty(
-    tmp_path: Any, fake_subprocess: Any
-) -> None:
+def test_generate_chat_includes_chat_template_kwargs_only_when_nonempty(tmp_path: Any, fake_subprocess: Any) -> None:
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -285,9 +275,7 @@ def test_generate_chat_includes_chat_template_kwargs_only_when_nonempty(
     provider.close()
 
 
-def test_generate_chat_forwards_temperature_when_sampling(
-    tmp_path: Any, fake_subprocess: Any
-) -> None:
+def test_generate_chat_forwards_temperature_when_sampling(tmp_path: Any, fake_subprocess: Any) -> None:
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -336,9 +324,7 @@ def test_generate_chat_omits_temperature_when_sampling_without_explicit_value(
     provider.close()
 
 
-def test_generate_chat_pins_temperature_zero_in_greedy_mode(
-    tmp_path: Any, fake_subprocess: Any
-) -> None:
+def test_generate_chat_pins_temperature_zero_in_greedy_mode(tmp_path: Any, fake_subprocess: Any) -> None:
     """Greedy decoding (do_sample=False, the default) must pin temperature=0."""
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
@@ -360,9 +346,7 @@ def test_generate_chat_pins_temperature_zero_in_greedy_mode(
     provider.close()
 
 
-def test_generate_chat_handles_missing_usage_block(
-    tmp_path: Any, fake_subprocess: Any
-) -> None:
+def test_generate_chat_handles_missing_usage_block(tmp_path: Any, fake_subprocess: Any) -> None:
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
 
@@ -423,9 +407,7 @@ def test_close_is_idempotent() -> None:
     provider.close()
 
 
-def test_close_kills_after_terminate_timeout(
-    tmp_path: Any, fake_ready_probe: Any
-) -> None:
+def test_close_kills_after_terminate_timeout(tmp_path: Any, fake_ready_probe: Any) -> None:
     """If terminate() doesn't exit cleanly within timeout, kill() is called."""
     binary = tmp_path / "fake.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
