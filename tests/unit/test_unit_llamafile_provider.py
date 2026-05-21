@@ -310,6 +310,56 @@ def test_generate_chat_forwards_temperature_when_sampling(
     provider.close()
 
 
+def test_generate_chat_omits_temperature_when_sampling_without_explicit_value(
+    tmp_path: Any, fake_subprocess: Any
+) -> None:
+    """Sampling without an explicit temperature must not collapse to greedy (temperature=0)."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    with patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.side_effect = [
+            _stub_response({"status": "ok"}),
+            _stub_response({"choices": [{"message": {"content": "x"}}]}),
+        ]
+        provider = LlamafileProvider(binary_path=str(binary), port=23471)
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        provider.generate_chat(
+            messages=[{"role": "user", "content": "x"}],
+            max_new_tokens=10,
+            do_sample=True,
+        )
+
+    body = json.loads(mock_urlopen.call_args_list[1].args[0].data)
+    # No temperature in body means the llamafile server uses its own default.
+    assert "temperature" not in body
+    provider.close()
+
+
+def test_generate_chat_pins_temperature_zero_in_greedy_mode(
+    tmp_path: Any, fake_subprocess: Any
+) -> None:
+    """Greedy decoding (do_sample=False, the default) must pin temperature=0."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    with patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.side_effect = [
+            _stub_response({"status": "ok"}),
+            _stub_response({"choices": [{"message": {"content": "x"}}]}),
+        ]
+        provider = LlamafileProvider(binary_path=str(binary), port=23472)
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        provider.generate_chat(
+            messages=[{"role": "user", "content": "x"}],
+            max_new_tokens=10,
+        )
+
+    body = json.loads(mock_urlopen.call_args_list[1].args[0].data)
+    assert body["temperature"] == 0
+    provider.close()
+
+
 def test_generate_chat_handles_missing_usage_block(
     tmp_path: Any, fake_subprocess: Any
 ) -> None:

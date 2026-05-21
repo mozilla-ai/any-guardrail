@@ -301,9 +301,17 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         body: AnyDict = {
             "messages": messages,
             "max_tokens": max_new_tokens,
-            "temperature": temperature if (do_sample and temperature is not None) else 0,
             "stream": False,
         }
+        if do_sample:
+            # Sampling: only forward an explicit temperature; otherwise let the
+            # llamafile server use its own default (don't silently collapse to
+            # greedy by sending temperature=0).
+            if temperature is not None:
+                body["temperature"] = temperature
+        else:
+            # Greedy: pin temperature to 0 so the server doesn't sample.
+            body["temperature"] = 0
         if chat_template_kwargs:
             body["chat_template_kwargs"] = chat_template_kwargs
         if generation_kwargs:
