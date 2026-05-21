@@ -1,8 +1,6 @@
 import re
 from typing import Any, ClassVar
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
@@ -164,6 +162,12 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         if provider is not None:
             self.provider = provider
         else:
+            # Lazy-import transformers so users on `any-guardrail[llamafile]`
+            # (without the huggingface extra) can construct GraniteGuardian
+            # with a non-HF provider without paying the import cost or
+            # hitting ImportError at module load time.
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
             self.provider = HuggingFaceProvider(
                 model_class=AutoModelForCausalLM,
                 tokenizer_class=AutoTokenizer,

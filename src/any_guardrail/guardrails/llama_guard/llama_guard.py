@@ -1,7 +1,5 @@
 from typing import Any, ClassVar
 
-from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Llama4ForConditionalGeneration
-
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
@@ -35,27 +33,45 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     ) -> None:
         """Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3."""
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
+
+        # Determine per-variant chat-template behavior up-front so this is the only
+        # place that knows the v3-vs-v4 quirk, regardless of which provider is used.
         if self._is_version_4:
             # v4 wants the standard "add the assistant prefix" template behavior;
             # provider.generate_chat already defaults to that, so no override.
             self._chat_template_kwargs: AnyDict = {}
-            default_provider = HuggingFaceProvider(
-                model_class=Llama4ForConditionalGeneration,
-                tokenizer_class=AutoProcessor,
-            )
         elif self.model_id in self.SUPPORTED_MODELS:
             # Llama Guard 3 expects to evaluate the conversation as-is, without an
             # appended assistant prefix.
             self._chat_template_kwargs = {"add_generation_prompt": False}
-            default_provider = HuggingFaceProvider(
-                model_class=AutoModelForCausalLM,
-                tokenizer_class=AutoTokenizer,
-            )
         else:
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
 
-        self.provider = provider or default_provider
+        if provider is not None:
+            self.provider = provider
+        else:
+            # Lazy-import transformers so users on `any-guardrail[llamafile]`
+            # (without the huggingface extra) can construct LlamaGuard with
+            # a non-HF provider without paying the import cost or hitting
+            # ImportError at module load time.
+            from transformers import (
+                AutoModelForCausalLM,
+                AutoProcessor,
+                AutoTokenizer,
+                Llama4ForConditionalGeneration,
+            )
+
+            if self._is_version_4:
+                self.provider = HuggingFaceProvider(
+                    model_class=Llama4ForConditionalGeneration,
+                    tokenizer_class=AutoProcessor,
+                )
+            else:
+                self.provider = HuggingFaceProvider(
+                    model_class=AutoModelForCausalLM,
+                    tokenizer_class=AutoTokenizer,
+                )
         self.provider.load_model(self.model_id)
 
     def _build_conversation(self, input_text: str, output_text: str | None) -> list[AnyDict]:
