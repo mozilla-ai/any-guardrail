@@ -1,8 +1,11 @@
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+import torch
 
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.types import GuardrailPreprocessOutput
 
 
 @pytest.fixture
@@ -263,3 +266,64 @@ def test_load_model_uses_to_device_with_real_signature() -> None:
         provider.load_model("dummy")
 
     assert provider.model is moved_model
+
+
+def _provider_with_model_output(logits: torch.Tensor, id2label: dict[int, str] | None = None) -> HuggingFaceProvider:
+    """Build a provider whose mocked model returns the given logits tensor."""
+    provider = HuggingFaceProvider()
+    model = MagicMock()
+    model.return_value = SimpleNamespace(logits=logits)
+    if id2label is not None:
+        model.config = SimpleNamespace(id2label=id2label)
+    provider.model = model
+    return provider
+
+
+def test_infer_classification_logits_produce_uniform_shape() -> None:
+    """2D logits go through softmax/argmax/label-resolution and produce the uniform shape."""
+    logits = torch.tensor([[2.0, 0.5], [0.1, 3.0]])
+    provider = _provider_with_model_output(logits, id2label={0: "SAFE", 1: "UNSAFE"})
+
+    result = provider.infer(GuardrailPreprocessOutput(data={"input_ids": torch.tensor([[1, 2, 3]])}))
+
+    assert result.data["logits"].shape == (2, 2)
+    assert result.data["scores"].shape == (2, 2)
+    assert result.data["predicted_indices"] == [0, 1]
+    assert result.data["predicted_labels"] == ["SAFE", "UNSAFE"]
+
+
+def test_infer_causal_lm_3d_logits_skip_label_resolution() -> None:
+    """3D logits (causal-LM-shaped) used to crash label-resolution; now they return raw tensor + None fields.
+
+    Regression test for the ShieldGemma integration-test failure: ShieldGemma uses
+    AutoModelForCausalLM and reads ``logits[0, -1, [vocab["Yes"], vocab["No"]]]``
+    directly, so it needs a torch tensor it can index into.
+    """
+    # Shape: (batch=1, seq=4, vocab=8) — typical causal-LM forward-pass output.
+    logits = torch.randn(1, 4, 8)
+    provider = _provider_with_model_output(logits)  # no id2label needed
+
+    result = provider.infer(GuardrailPreprocessOutput(data={"input_ids": torch.tensor([[1, 2, 3, 4]])}))
+
+    # Raw torch tensor so callers can do tensor ops (torch.nn.functional.softmax, slicing).
+    assert isinstance(result.data["logits"], torch.Tensor)
+    assert result.data["logits"].shape == (1, 4, 8)
+    # The classification-only fields don't apply for this shape.
+    assert result.data["scores"] is None
+    assert result.data["predicted_indices"] is None
+    assert result.data["predicted_labels"] is None
+
+
+def test_infer_multi_label_uses_sigmoid_not_softmax() -> None:
+    """multi_label=True picks sigmoid so each class probability is independent."""
+    logits = torch.tensor([[2.0, 1.0]])
+    provider = _provider_with_model_output(logits, id2label={0: "A", 1: "B"})
+    provider.multi_label = True
+
+    result = provider.infer(GuardrailPreprocessOutput(data={"input_ids": torch.tensor([[1]])}))
+
+    # sigmoid(2)≈0.881, sigmoid(1)≈0.731 — sum > 1, which softmax can never produce.
+    score_sum = float(result.data["scores"][0][0] + result.data["scores"][0][1])
+    assert score_sum > 1.4, f"expected sigmoid (sum > 1.4), got sum={score_sum}"
+    assert abs(result.data["scores"][0][0] - 0.881) < 0.01
+    assert abs(result.data["scores"][0][1] - 0.731) < 0.01

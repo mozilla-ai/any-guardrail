@@ -182,29 +182,49 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
     def infer(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:
         """Run model inference on preprocessed inputs.
 
-        Returns a uniform shape shared with other providers:
+        For sequence-classification models (2D logits, shape ``(batch, num_classes)``)
+        returns the uniform shape shared with other providers:
 
-        - ``logits``: numpy array of raw model logits, shape ``(batch, num_classes)``.
-        - ``scores``: softmax of logits, same shape.
+        - ``logits``: numpy array of raw model logits.
+        - ``scores``: softmax (or sigmoid for multi-label) of logits.
         - ``predicted_indices``: list of argmax indices, one per row.
-        - ``predicted_labels``: list of labels resolved via ``model.config.id2label``.
+        - ``predicted_labels``: labels resolved via ``model.config.id2label``.
 
-        Pushing label-resolution into the provider lets downstream guardrails read
-        ``predicted_labels`` directly, so they work against any provider (including
-        EncoderfileProvider whose binary returns labels natively).
+        For models that emit higher-rank logits (e.g. causal LMs returning
+        ``(batch, seq, vocab)``) the classification fields don't apply — there
+        is no single "predicted class" per input. In that case ``logits`` is
+        the raw torch tensor (so callers like ShieldGemma can index into it
+        and run their own torch ops) and ``scores`` / ``predicted_indices`` /
+        ``predicted_labels`` are ``None``.
 
         Args:
             model_inputs: The wrapped preprocessing output.
 
         Returns:
-            GuardrailInferenceOutput wrapping the uniform inference output.
+            GuardrailInferenceOutput wrapping the inference output. Always
+            contains a ``logits`` key; ``scores`` / ``predicted_indices`` /
+            ``predicted_labels`` may be ``None`` depending on the model shape.
 
         """
         with torch.no_grad():
             output = self.model(**model_inputs.data)
-        # ``.float()`` is a no-op for float32 but is required for bf16/fp16 logits,
-        # which numpy doesn't accept directly.
-        logits = output.logits.detach().float().cpu().numpy()
+        raw_logits = output.logits.detach()
+        if raw_logits.dim() != 2:
+            # Causal-LM-style output, e.g. ShieldGemma where logits are
+            # (batch, seq, vocab). Label resolution doesn't apply; return the
+            # raw tensor so callers can slice it and run their own torch ops.
+            return GuardrailInferenceOutput(
+                data={
+                    "logits": raw_logits,
+                    "scores": None,
+                    "predicted_indices": None,
+                    "predicted_labels": None,
+                }
+            )
+
+        # ``.float()`` is a no-op for float32 but is required for bf16/fp16
+        # logits, which numpy doesn't accept directly.
+        logits = raw_logits.float().cpu().numpy()
         scores = _sigmoid(logits) if self.multi_label else _softmax(logits)
         predicted_indices = scores.argmax(axis=-1).tolist()
         id2label = self.model.config.id2label
