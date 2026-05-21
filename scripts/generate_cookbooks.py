@@ -21,10 +21,36 @@ COOKBOOKS_SRC = REPO_ROOT / "docs" / "cookbook"
 GITHUB_COLAB_BASE = "https://colab.research.google.com/github/mozilla-ai/any-guardrail/blob/main/docs/cookbook"
 
 
-def _is_install_only_cell(source: str) -> bool:
-    """Return True for cells that contain only pip installs or magic commands."""
-    lines = [ln.strip() for ln in source.strip().splitlines() if ln.strip()]
-    return bool(lines) and all(ln.startswith(("%", "!", "#")) for ln in lines)
+def _render_install_only_cell(source: str) -> str | None:
+    """Convert notebook-only install cells into shell commands for Markdown.
+
+    Returns ``None`` when the cell contains anything other than install commands,
+    shell commands, comments, or blank lines.
+    """
+    rendered_lines: list[str] = []
+    saw_command = False
+
+    for raw_line in source.splitlines():
+        line = raw_line.strip()
+        if not line:
+            rendered_lines.append("")
+            continue
+        if line.startswith("#"):
+            rendered_lines.append(line)
+            continue
+        if line.startswith("!"):
+            rendered_lines.append(line[1:])
+            saw_command = True
+            continue
+        if line.startswith(("%pip ", "%conda ", "%mamba ")):
+            rendered_lines.append(line[1:])
+            saw_command = True
+            continue
+        return None
+
+    if not saw_command:
+        return None
+    return "\n".join(rendered_lines).strip()
 
 
 def _strip_magic_lines(source: str) -> str:
@@ -78,7 +104,12 @@ def notebook_to_md(notebook_path: Path) -> str:
             lines.append("")
 
         elif cell_type == "code":
-            if _is_install_only_cell(source):
+            install_block = _render_install_only_cell(source)
+            if install_block is not None:
+                lines.append("```bash")
+                lines.append(install_block)
+                lines.append("```")
+                lines.append("")
                 continue
             cleaned = _strip_magic_lines(source)
             if not cleaned:
