@@ -20,9 +20,12 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from typing import Self
 
 from any_guardrail.providers._encoderfile_artifacts import resolve_artifact_path
 from any_guardrail.providers.base import Provider
@@ -338,7 +341,7 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         self.process = None
         self.base_url = None
 
-    def __enter__(self) -> EncoderfileProvider:
+    def __enter__(self) -> Self:
         """Enter the context manager. Returns ``self`` so the binding works as expected.
 
         ``load_model()`` is *not* called here on purpose: providers are usually

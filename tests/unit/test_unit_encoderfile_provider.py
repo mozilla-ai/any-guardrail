@@ -237,10 +237,16 @@ def test_context_manager_calls_close_even_when_block_raises(
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
     _, proc = fake_subprocess
 
+    err_msg = "boom"
     provider = EncoderfileProvider(binary_path=str(binary), port=12352)
-    with pytest.raises(RuntimeError, match="boom"), provider:
-        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
-        raise RuntimeError("boom")
+
+    def _block_that_raises() -> None:
+        with provider:
+            provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+            raise RuntimeError(err_msg)
+
+    with pytest.raises(RuntimeError, match=err_msg):
+        _block_that_raises()
 
     proc.terminate.assert_called_once()
     assert provider.process is None
