@@ -426,3 +426,48 @@ def test_close_kills_after_terminate_timeout(tmp_path: Any, fake_ready_probe: An
 
     proc.terminate.assert_called_once()
     proc.kill.assert_called_once()
+
+
+def test_context_manager_returns_self_from_enter() -> None:
+    """`with LlamafileProvider() as p:` should bind `p` to the provider instance."""
+    provider = LlamafileProvider(binary_path="/fake")
+    with provider as p:
+        assert p is provider
+
+
+def test_context_manager_calls_close_on_exit(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
+    """Exiting the `with` block should terminate the subprocess."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    with LlamafileProvider(binary_path=str(binary), port=23473) as provider:
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        assert provider.process is not None  # spawned
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None
+    assert provider.base_url is None
+
+
+def test_context_manager_calls_close_even_when_block_raises(
+    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+) -> None:
+    """Exceptions inside the `with` block must still terminate the subprocess."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    err_msg = "boom"
+    provider = LlamafileProvider(binary_path=str(binary), port=23474)
+
+    def _block_that_raises() -> None:
+        with provider:
+            provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+            raise RuntimeError(err_msg)
+
+    with pytest.raises(RuntimeError, match=err_msg):
+        _block_that_raises()
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None

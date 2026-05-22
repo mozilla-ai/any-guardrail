@@ -25,10 +25,13 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from any_guardrail.providers._llamafile_artifacts import resolve_artifact
 from any_guardrail.providers.base import Provider
+
+if TYPE_CHECKING:
+    from typing import Self
 from any_guardrail.types import (
     AnyDict,
     GuardrailInferenceOutput,
@@ -62,6 +65,20 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
     for readiness and issues ``POST /v1/chat/completions`` calls. Output is
     normalized to the same shape :meth:`HuggingFaceProvider.generate_chat`
     returns so guardrails are provider-agnostic.
+
+    The provider implements the context manager protocol for deterministic
+    cleanup of the spawned subprocess::
+
+        with LlamafileProvider() as provider:
+            guardrail = GraniteGuardian(
+                criteria=GraniteGuardianRisk.HARM, provider=provider
+            )
+            result = guardrail.validate("hello")
+        # subprocess is terminated here, even if validate() raised.
+
+    Outside a ``with`` block the provider still cleans up via ``atexit`` on
+    interpreter exit, so notebook and REPL usage works without explicit
+    teardown. Call ``provider.close()`` directly to release the port early.
 
     Args:
         binary_path: Path to a pre-downloaded ``.llamafile``. If omitted, the
@@ -354,6 +371,20 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
                 self.process.wait()
         self.process = None
         self.base_url = None
+
+    def __enter__(self) -> Self:
+        """Enter the context manager. Returns ``self`` so the binding works as expected.
+
+        ``load_model()`` is *not* called here on purpose: providers are usually
+        constructed before the caller knows which ``model_id`` to load, and
+        guardrail classes call ``load_model`` themselves in their ``__init__``.
+        """
+        return self
+
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+        """Exit the context manager. Terminates the subprocess via ``close()``."""
+        del exc_type, exc_val, exc_tb  # standard context-manager signature; we don't suppress.
+        self.close()
 
     def __del__(self) -> None:
         """Best-effort cleanup on GC. ``atexit`` also covers process exit."""
