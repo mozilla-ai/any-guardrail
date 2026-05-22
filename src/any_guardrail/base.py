@@ -42,6 +42,7 @@ class GuardrailName(StrEnum):
     LLAMA_GUARD = "llama_guard"
     AZURE_CONTENT_SAFETY = "azure_content_safety"
     ALINIA = "alinia"
+    LAKERA_GUARD = "lakera_guard"
 
 
 class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):

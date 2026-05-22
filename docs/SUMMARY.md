@@ -27,6 +27,7 @@
   * [HarmGuard](api/guardrails/harm-guard.md)
   * [InjecGuard](api/guardrails/injec-guard.md)
   * [Jasper](api/guardrails/jasper.md)
+  * [Lakera Guard](api/guardrails/lakera-guard.md)
   * [LlamaGuard](api/guardrails/llama-guard.md)
   * [OffTopic](api/guardrails/off-topic.md)
   * [Pangolin](api/guardrails/pangolin.md)
