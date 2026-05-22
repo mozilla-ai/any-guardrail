@@ -117,6 +117,10 @@ disallow_untyped_decorators = false # mypy gets confused by pytest decorators
 module = ["pytest", "mktestdocs", "pytest_lazy_fixtures"]
 ignore_missing_imports = true # pytest related modules are not found
 
+[[tool.mypy.overrides]]
+module = ["generate_cookbooks"]
+ignore_missing_imports = true # script imported via sys.path.insert in tests/unit/test_generate_cookbooks.py
+
 [tool.pytest.ini_options]
 timeout = 120
 

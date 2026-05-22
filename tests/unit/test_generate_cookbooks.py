@@ -5,7 +5,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-import generate_cookbooks
+# `scripts/generate_cookbooks.py` isn't a package, so it can only be imported after
+# the `sys.path.insert` above. Ruff gets `# noqa: E402` here; mypy's
+# `import-not-found` is suppressed via the `generate_cookbooks` override in
+# pyproject.toml (inline `# type: ignore` isn't honored under strict +
+# follow_untyped_imports).
+import generate_cookbooks  # noqa: E402
 
 
 def test_encoderfile_cookbook_keeps_install_step() -> None:
