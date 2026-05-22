@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Two orthogonal layers:
 
 - **Guardrails** (`src/any_guardrail/guardrails/<name>/<name>.py`) — domain logic. Each one defines what to check (harm, prompt-injection, off-topic, etc.) and how to interpret model output. Every guardrail exposes a `validate(input_text, ...)` method returning a `GuardrailOutput`.
-- **Providers** (`src/any_guardrail/providers/<name>.py`) — execution backends. They load models, tokenize, and run inference. Guardrails accept a `provider=` kwarg, so the same guardrail can run against different backends (e.g. local HuggingFace transformers, hosted APIs).
+- **Providers** (`src/any_guardrail/providers/<name>.py`) — execution backends. They load models, tokenize, and run inference. Guardrails accept a `provider=` kwarg, so the same guardrail can run against different backends (e.g. local HuggingFace transformers via `HuggingFaceProvider`, Mozilla single-binary classifiers via `EncoderfileProvider`).
 
 ## Common Commands
 
@@ -57,6 +57,7 @@ Providers are an execution layer that guardrails compose with, not inherit from.
 
 - **`base.py`** — `Provider` (ABC) with abstract `load_model()`, `pre_process()`, `infer()` methods. `StandardProvider` is the type alias `Provider[AnyDict, AnyDict]`.
 - **`huggingface.py`** — `HuggingFaceProvider` is the default for most guardrails. Loads via `transformers.from_pretrained`, tokenizes per-call, runs `model(**inputs)` under `torch.no_grad()`. Surfaces `device`, `torch_dtype`, `cache_dir`, `revision`, `model_kwargs`, `tokenizer_kwargs`, `multi_label` as constructor args.
+- **`encoderfile.py`** — `EncoderfileProvider` runs Mozilla AI's [`encoderfile`](https://github.com/mozilla-ai/encoderfile) single-binary format (encoder + classification head packaged as one executable). On `load_model()` it auto-downloads the platform-specific artifact from `mozilla-ai/encoderfile` on HuggingFace, spawns the binary as a subprocess HTTP server, polls `/predict` for readiness, then proxies inference calls over `127.0.0.1`. Drop-in for `HuggingFaceProvider` on supported encoder classifiers — no `torch`/`transformers` install required. Curated artifact map lives at `providers/_encoderfile_artifacts.py`. macOS + Linux only.
 
 A guardrail's `__init__` typically builds a default `HuggingFaceProvider` if none is supplied:
 
@@ -69,6 +70,17 @@ class MyGuardrail(StandardGuardrail):
 ```
 
 For decoder-LLM-backed guardrails (e.g. `GraniteGuardian`, `LlamaGuard`, `ShieldGemma`), the default provider passes the right `model_class`/`tokenizer_class` for the model. If you construct a `HuggingFaceProvider()` yourself and pass it to those guardrails, you must pass the same — otherwise `from_pretrained` will reject the config.
+
+#### Uniform `infer()` shape
+
+Both providers return the same dict shape from `infer()` so guardrails are provider-agnostic at the post-processing stage:
+
+- `logits`: per-input logits (numpy array, shape `(batch, num_classes)`).
+- `scores`: softmax or sigmoid (when `multi_label=True`) of logits.
+- `predicted_indices`: list of argmax indices, one per row.
+- `predicted_labels`: list of labels resolved via `id2label` (HF) or returned natively by the binary (encoderfile).
+
+Exception: causal-LM-backed guardrails using `HuggingFaceProvider` (`ShieldGemma`) produce 3D logits `(batch, seq, vocab)`. In that case `infer()` returns `logits` as a raw torch tensor and sets `scores`/`predicted_indices`/`predicted_labels` to `None`; the guardrail does its own selection (e.g. `logits[0, -1, [vocab["Yes"], vocab["No"]]]`) and softmax. This is checked in unit tests — when adding a new guardrail that runs a causal LM through `provider.infer()`, expect the raw-tensor path.
 
 ### Guardrail implementations (`src/any_guardrail/guardrails/`)
 
@@ -106,6 +118,7 @@ The factory auto-discovers via the naming convention: snake_case directory name 
 Core deps are minimal: `any-llm-sdk` and `pydantic`. Heavy backends are optional extras:
 
 - `huggingface` — `transformers`, `torch`, `huggingface-hub`, `hf-xet` (used by most guardrails).
+- `encoderfile` — `huggingface-hub`, `hf-xet`, `numpy` (no torch/transformers; just enough to download the binary and parse JSON over HTTP).
 - `azure-content-safety` — `azure-ai-contentsafety`, `pathvalidate`.
 - `flowjudge` — `flow-judge[hf]`.
 - `all` — the aggregate extra that pulls them all in.

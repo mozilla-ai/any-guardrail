@@ -2,23 +2,20 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-import torch
 
 from any_guardrail import GuardrailOutput
-from any_guardrail.guardrails.deepset.deepset import DEEPSET_INJECTION_LABEL, Deepset
+from any_guardrail.guardrails.deepset.deepset import Deepset
 from any_guardrail.guardrails.protectai.protectai import PROTECTAI_INJECTION_LABEL, Protectai
 from any_guardrail.guardrails.utils import match_injection_label, match_injection_label_batch
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import GuardrailInferenceOutput
+from any_guardrail.types import AnyDict, GuardrailInferenceOutput
 
 
 @pytest.fixture
 def protectai_instance() -> Protectai:
     """Build a Protectai instance with a mocked provider."""
     instance = object.__new__(Protectai)
-    provider = MagicMock()
-    provider.model.config.id2label = {0: "SAFE", 1: PROTECTAI_INJECTION_LABEL}
-    instance.provider = provider
+    instance.provider = MagicMock()
     return instance
 
 
@@ -26,15 +23,25 @@ def protectai_instance() -> Protectai:
 def deepset_instance() -> Deepset:
     """Build a Deepset instance with a mocked provider."""
     instance = object.__new__(Deepset)
-    provider = MagicMock()
-    provider.model.config.id2label = {0: "SAFE", 1: DEEPSET_INJECTION_LABEL}
-    instance.provider = provider
+    instance.provider = MagicMock()
     return instance
+
+
+def _uniform_output(predicted_labels: list[str], scores: np.ndarray) -> GuardrailInferenceOutput[AnyDict]:
+    """Build an inference output in the uniform shape the providers return."""
+    return GuardrailInferenceOutput(
+        data={
+            "logits": scores,  # logits aren't used downstream for these guardrails
+            "scores": scores,
+            "predicted_indices": [int(np.argmax(row)) for row in scores],
+            "predicted_labels": predicted_labels,
+        }
+    )
 
 
 def test_pre_process_list_adds_padding() -> None:
     """When given a list of texts, pre_process passes padding=True to the tokenizer."""
-    tokenizer = MagicMock(return_value={"input_ids": torch.tensor([[1, 2], [3, 4]])})
+    tokenizer = MagicMock(return_value={"input_ids": [[1, 2], [3, 4]]})
 
     provider = HuggingFaceProvider()
     provider.tokenizer = tokenizer
@@ -48,7 +55,7 @@ def test_pre_process_list_adds_padding() -> None:
 
 def test_pre_process_list_respects_existing_padding_kwarg() -> None:
     """When caller specifies padding, pre_process does not override it for lists."""
-    tokenizer = MagicMock(return_value={"input_ids": torch.tensor([[1, 2], [3, 4]])})
+    tokenizer = MagicMock(return_value={"input_ids": [[1, 2], [3, 4]]})
 
     provider = HuggingFaceProvider()
     provider.tokenizer = tokenizer
@@ -61,7 +68,7 @@ def test_pre_process_list_respects_existing_padding_kwarg() -> None:
 
 def test_pre_process_str_does_not_add_padding() -> None:
     """A single string input is not auto-padded."""
-    tokenizer = MagicMock(return_value={"input_ids": torch.tensor([[1, 2, 3]])})
+    tokenizer = MagicMock(return_value={"input_ids": [[1, 2, 3]]})
 
     provider = HuggingFaceProvider()
     provider.tokenizer = tokenizer
@@ -73,13 +80,12 @@ def test_pre_process_str_does_not_add_padding() -> None:
 
 
 def test_match_injection_label_batch_returns_list() -> None:
-    """The batch helper returns one GuardrailOutput per row of logits."""
-    # 2 inputs, 2 classes. Row 0 -> class 0 (SAFE), Row 1 -> class 1 (INJECTION).
-    logits = torch.tensor([[5.0, 0.0], [0.0, 5.0]])
+    """The batch helper returns one GuardrailOutput per row of scores."""
+    # 2 inputs, 2 classes. Row 0 -> SAFE, Row 1 -> INJECTION.
+    scores = np.array([[0.99, 0.01], [0.01, 0.99]])
     outputs = match_injection_label_batch(
-        GuardrailInferenceOutput(data={"logits": logits}),
+        _uniform_output(["SAFE", "INJECTION"], scores),
         injection_label="INJECTION",
-        id2label={0: "SAFE", 1: "INJECTION"},
     )
 
     assert len(outputs) == 2
@@ -87,17 +93,16 @@ def test_match_injection_label_batch_returns_list() -> None:
     assert outputs[1].valid is False
     assert outputs[0].score is not None
     assert outputs[1].score is not None
-    assert outputs[0].score > 0.99
-    assert outputs[1].score > 0.99
+    assert outputs[0].score > 0.98
+    assert outputs[1].score > 0.98
 
 
 def test_match_injection_label_single_unchanged() -> None:
-    """The single-input helper still returns a single GuardrailOutput from a 1-row batch."""
-    logits = torch.tensor([[5.0, 0.0]])
+    """The single-input helper returns a single GuardrailOutput from a 1-row batch."""
+    scores = np.array([[0.99, 0.01]])
     result = match_injection_label(
-        GuardrailInferenceOutput(data={"logits": logits}),
+        _uniform_output(["SAFE"], scores),
         injection_label="INJECTION",
-        id2label={0: "SAFE", 1: "INJECTION"},
     )
 
     assert isinstance(result, GuardrailOutput)
@@ -106,8 +111,8 @@ def test_match_injection_label_single_unchanged() -> None:
 
 def test_validate_batch_protectai_uses_batch_path(protectai_instance: Protectai) -> None:
     """Calling validate with a list dispatches to _validate_batch on a standard guardrail."""
-    logits = torch.tensor([[5.0, 0.0], [0.0, 5.0]])
-    inference_output = GuardrailInferenceOutput(data={"logits": logits})
+    scores = np.array([[0.99, 0.01], [0.01, 0.99]])
+    inference_output = _uniform_output(["SAFE", PROTECTAI_INJECTION_LABEL], scores)
 
     pre_output = MagicMock()
     protectai_instance.provider.pre_process.return_value = pre_output  # type: ignore[attr-defined]
@@ -127,8 +132,8 @@ def test_validate_batch_protectai_uses_batch_path(protectai_instance: Protectai)
 
 def test_validate_single_string_returns_single_output(protectai_instance: Protectai) -> None:
     """Single-string validate keeps its existing single-output behavior."""
-    logits = torch.tensor([[5.0, 0.0]])
-    inference_output = GuardrailInferenceOutput(data={"logits": logits})
+    scores = np.array([[0.99, 0.01]])
+    inference_output = _uniform_output(["SAFE"], scores)
 
     pre_output = MagicMock()
     protectai_instance.provider.pre_process.return_value = pre_output  # type: ignore[attr-defined]
@@ -168,17 +173,13 @@ def test_validate_batch_default_iterates() -> None:
     assert guardrail.calls == ["a", "b", "c"]
 
 
-def test_match_injection_label_batch_uses_softmax_per_row() -> None:
-    """Softmax is applied independently per row so scores are well-formed probabilities."""
-    # Each row's max softmax score should be close to 1 / (1 + exp(-diff)).
-    logits = torch.tensor([[2.0, 1.0], [1.0, 3.0]])
+def test_match_injection_label_batch_reads_score_per_row() -> None:
+    """Scores are read per-row from the uniform output shape."""
+    scores = np.array([[0.73, 0.27], [0.12, 0.88]])
     outputs = match_injection_label_batch(
-        GuardrailInferenceOutput(data={"logits": logits}),
+        _uniform_output(["SAFE", "INJECTION"], scores),
         injection_label="INJECTION",
-        id2label={0: "SAFE", 1: "INJECTION"},
     )
 
-    expected_row0 = float(np.exp(2.0) / (np.exp(2.0) + np.exp(1.0)))
-    expected_row1 = float(np.exp(3.0) / (np.exp(1.0) + np.exp(3.0)))
-    assert outputs[0].score == pytest.approx(expected_row0)
-    assert outputs[1].score == pytest.approx(expected_row1)
+    assert outputs[0].score == pytest.approx(0.73)
+    assert outputs[1].score == pytest.approx(0.88)

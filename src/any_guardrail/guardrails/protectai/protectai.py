@@ -37,13 +37,9 @@ class Protectai(StandardGuardrail):
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
-        return match_injection_label(model_outputs, PROTECTAI_INJECTION_LABEL, self.provider.model.config.id2label)  # type: ignore[attr-defined]
+        return match_injection_label(model_outputs, PROTECTAI_INJECTION_LABEL)
 
     def _validate_batch(self, input_texts: list[str], **kwargs: Any) -> list[BinaryScoreOutput]:
         model_inputs = self.provider.pre_process(input_texts, **kwargs)
         model_outputs = self.provider.infer(model_inputs)
-        return match_injection_label_batch(
-            model_outputs,
-            PROTECTAI_INJECTION_LABEL,
-            self.provider.model.config.id2label,  # type: ignore[attr-defined]
-        )
+        return match_injection_label_batch(model_outputs, PROTECTAI_INJECTION_LABEL)

@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from any_guardrail.base import GuardrailOutput, StandardGuardrail
-from any_guardrail.guardrails.utils import _softmax, default
+from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import (
@@ -75,7 +75,5 @@ class HarmGuard(StandardGuardrail):
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
-        logits = model_outputs.data["logits"][0].cpu().numpy()
-        scores = _softmax(logits)  # type: ignore[no-untyped-call]
-        final_score = float(scores[1])  # scores[1] is the unsafe probability
+        final_score = float(model_outputs.data["scores"][0][1])  # scores[0][1] is the unsafe probability
         return GuardrailOutput(valid=final_score < self.threshold, score=final_score)
