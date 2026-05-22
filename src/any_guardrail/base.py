@@ -26,6 +26,7 @@ class GuardrailName(StrEnum):
     """String enum for supported guardrails."""
 
     ANYLLM = "any_llm"
+    BEDROCK_GUARDRAILS = "bedrock_guardrails"
     DEEPSET = "deepset"
     DUOGUARD = "duo_guard"
     FLOWJUDGE = "flowjudge"

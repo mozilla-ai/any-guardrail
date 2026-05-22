@@ -15,7 +15,11 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock]"
+]
+
+bedrock = [
+    "boto3>=1.34.0"
 ]
 
 flowjudge = [
