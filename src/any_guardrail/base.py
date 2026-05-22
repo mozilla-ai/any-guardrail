@@ -41,6 +41,7 @@ class GuardrailName(StrEnum):
     SHIELD_GEMMA = "shield_gemma"
     LLAMA_GUARD = "llama_guard"
     AZURE_CONTENT_SAFETY = "azure_content_safety"
+    AZURE_PROMPT_SHIELDS = "azure_prompt_shields"
     ALINIA = "alinia"
 
 
