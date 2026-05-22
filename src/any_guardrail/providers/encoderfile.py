@@ -206,8 +206,25 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         )
         raise TimeoutError(msg)
 
+    _BIND_RACE_RETRIES = 3
+    """Number of attempts to spawn the subprocess when we auto-pick the port.
+
+    `_free_port()` returns a port that was free a moment ago, but another
+    process can grab it before the encoderfile binary binds — a TOCTOU race
+    @javiermtorres saw in lumigator. Retrying with a fresh port closes the
+    window. When the user pins the port (``self.port is not None``) we don't
+    retry: a bind failure is a config problem to surface, not a race.
+    """
+
     def load_model(self, model_id: str, **kwargs: Any) -> None:
         """Load the encoderfile binary for ``model_id`` and start its HTTP server.
+
+        If we auto-pick the port and the subprocess fails to come up (e.g.
+        another process grabbed the port between our `_free_port()` probe and
+        the binary's `bind()`), retry up to :attr:`_BIND_RACE_RETRIES` times
+        with a fresh port. When the caller pinned a port via the
+        ``port=`` constructor argument, no retry: surface the failure
+        immediately.
 
         Args:
             model_id: any-guardrail model identifier. Used to look up the right
@@ -229,6 +246,22 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
             raise FileNotFoundError(msg)
         self._ensure_executable(binary)
 
+        user_picked_port = self.port is not None
+        max_attempts = 1 if user_picked_port else self._BIND_RACE_RETRIES
+        for attempt in range(max_attempts):
+            self._spawn_subprocess(binary, model_id)
+            try:
+                self._wait_ready()
+            except (RuntimeError, TimeoutError):
+                self.close()
+                if user_picked_port or attempt == max_attempts - 1:
+                    raise
+                # Bind race (likely): loop back, draw a fresh port, try again.
+                continue
+            return
+
+    def _spawn_subprocess(self, binary: Path, model_id: str) -> None:
+        """Pick a port, spawn the encoderfile subprocess, and update provider state."""
         port = self.port or _free_port()
         cmd = [
             str(binary),
@@ -246,12 +279,6 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         self.base_url = f"http://{self.host}:{port}"
         self.model_id = model_id
         self.model = {"binary_path": str(binary), "model_id": model_id}
-
-        try:
-            self._wait_ready()
-        except Exception:
-            self.close()
-            raise
 
     def pre_process(self, input_text: str | list[str], **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Wrap raw text into the encoderfile request body.
