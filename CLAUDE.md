@@ -108,6 +108,7 @@ The factory auto-discovers via the naming convention: snake_case directory name 
 ## Code quality
 
 - **Ruff** — line length 120, `extend-select = ["ALL"]` with targeted ignores in `pyproject.toml`. Lazy imports are intentional (`PLC0415` is ignored). The pre-commit config pins a specific ruff version (currently 0.15.12); CI runs that pinned version, so always run `pre-commit run --all-files` before pushing.
+  - **Watch out:** `pre-commit run` reuses a cached virtualenv per hook revision. When `.pre-commit-config.yaml` bumps the ruff `rev`, your local cache can stay on the old version until you clean it. If CI's linter fails with ruff rules that your local pre-commit didn't flag, run `pre-commit clean && pre-commit run --all-files` to force a fresh install of the pinned version, then re-test. Cached venvs live under `~/.cache/pre-commit/repo*/py_env-*/bin/ruff` — confirm versions with `find ~/.cache/pre-commit -name ruff -type f -exec {} --version \;`.
 - **mypy** — strict mode globally (`disallow_untyped_defs`, `disallow_untyped_calls`). Tests are slightly relaxed (`disallow_untyped_decorators=false`) so pytest fixtures don't fight the type checker.
 - **codespell, nbstripout, standard hooks** — run via pre-commit.
 - **Pytest** — 120s timeout per test (`pyproject.toml`). Integration tests use `pytest-xdist` for parallelism (`-n auto`). Use `RUNNING_IN_CI = os.environ.get("CI") == "true"` to gate model-heavy tests.
