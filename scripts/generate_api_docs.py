@@ -329,6 +329,7 @@ GUARDRAILS = [
         "AzureContentSafety",
         "azure-content-safety.md",
     ),
+    ("any_guardrail.guardrails.cleanlab_tlm.cleanlab_tlm", "CleanlabTlm", "cleanlab-tlm.md"),
     ("any_guardrail.guardrails.deepset.deepset", "Deepset", "deepset.md"),
     ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),
     ("any_guardrail.guardrails.flowjudge.flowjudge", "Flowjudge", "flowjudge.md"),

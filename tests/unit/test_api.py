@@ -9,6 +9,7 @@ from any_guardrail.base import Guardrail, ThreeStageGuardrail
 from any_guardrail.guardrails.alinia import Alinia
 from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
+from any_guardrail.guardrails.cleanlab_tlm import CleanlabTlm
 from any_guardrail.guardrails.glider.glider import Glider
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.off_topic.off_topic import OffTopic
@@ -96,6 +97,7 @@ def test_model_load() -> None:
             or guardrail_class is LlamaGuard
             or guardrail_class is AzureContentSafety
             or guardrail_class is Alinia
+            or guardrail_class is CleanlabTlm  # API-key based, no provider
             or guardrail_class is Glider  # Loads model directly, no provider
             or guardrail_class is OffTopic  # Loads model directly, no provider
         ):

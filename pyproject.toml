@@ -15,7 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,cleanlab-tlm]"
 ]
 
 flowjudge = [
@@ -38,6 +38,10 @@ encoderfile = [
     "huggingface-hub>=0.33.4",
     "hf-xet>=1.1.5",
     "numpy>=1.26",
+]
+
+cleanlab-tlm = [
+    "cleanlab-tlm>=1.0.0"
 ]
 
 [project.urls]
