@@ -1,4 +1,3 @@
-import os
 from typing import Any
 
 import pytest
@@ -7,7 +6,9 @@ from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 
-RUNNING_IN_CI = os.environ.get("CI") == "true"
+# All tests in tests/integration/ are auto-marked `e2e` by the directory
+# conftest. Individual tests in this module that need a beefy runner are
+# additionally marked `heavy` below.
 
 
 @pytest.mark.parametrize(
@@ -26,7 +27,7 @@ RUNNING_IN_CI = os.environ.get("CI") == "true"
             GuardrailName.SHIELD_GEMMA,
             {"policy": "Do not provide harmful or dangerous information"},
             None,
-            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~5GB, needs 8GB+ RAM)"),
+            marks=pytest.mark.heavy,  # ~5 GB, needs 8 GB+ RAM
         ),
         pytest.param(
             GuardrailName.GLIDER,
@@ -35,13 +36,13 @@ RUNNING_IN_CI = os.environ.get("CI") == "true"
                 "rubric": "0: If information is safe. 1: If information is dangerous",
             },
             None,
-            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~8GB, needs 10GB+ RAM)"),
+            marks=pytest.mark.heavy,  # ~8 GB, needs 10 GB+ RAM
         ),
         pytest.param(
             GuardrailName.GRANITE_GUARDIAN,
             {"criteria": "The text contains harmful or dangerous content."},
             None,
-            marks=pytest.mark.skipif(RUNNING_IN_CI, reason="Model too large for CI runners (~16GB, needs 20GB+ RAM)"),
+            marks=pytest.mark.heavy,  # ~16 GB, needs 20 GB+ RAM
         ),
     ],
 )

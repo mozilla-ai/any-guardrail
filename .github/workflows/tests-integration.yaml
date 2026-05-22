@@ -7,6 +7,11 @@ on:
       - 'src/**'
       - 'tests/**'
   workflow_dispatch:
+    inputs:
+      include_heavy:
+        description: "Also run heavy e2e tests (ShieldGemma, Glider, Granite Guardian — need >5 GB RAM / a GPU)"
+        type: boolean
+        default: false
 
 jobs:
   run-integration-tests:
@@ -35,4 +40,12 @@ jobs:
           ALINIA_API_KEY: ${{ secrets.ALINIA_API_KEY }}
           HF_HUB_DOWNLOAD_TIMEOUT: "300"
           HF_HUB_ETAG_TIMEOUT: "30"
-        run: pytest -v tests/integration --reruns 3 --reruns-delay 10 --timeout 600
+        # `e2e` is auto-applied to every test under tests/integration/ by the
+        # directory conftest. `heavy` opt-in flips on the >5 GB models that
+        # don't fit on a vanilla GitHub runner.
+        run: |
+          if [ "${{ github.event.inputs.include_heavy }}" = "true" ]; then
+            pytest -v -m e2e tests/integration --reruns 3 --reruns-delay 10 --timeout 1800
+          else
+            pytest -v -m "e2e and not heavy" tests/integration --reruns 3 --reruns-delay 10 --timeout 600
+          fi
