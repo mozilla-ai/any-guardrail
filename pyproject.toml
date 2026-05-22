@@ -123,6 +123,11 @@ ignore_missing_imports = true # script imported via sys.path.insert in tests/uni
 
 [tool.pytest.ini_options]
 timeout = 120
+addopts = "--strict-markers"
+markers = [
+    "e2e: tests that exercise real binaries / downloaded models / external APIs. Selected explicitly via -m e2e; not run by default in CI's unit-test job. Run locally with `pytest -m e2e tests/integration`.",
+    "heavy: e2e subset that needs >5 GB RAM/disk or a GPU to be realistic (currently: Granite Guardian, ShieldGemma, Glider). Run with `-m \"e2e and heavy\"` only on machines that can host the model weights.",
+]
 
 [dependency-groups]
 dev = [
