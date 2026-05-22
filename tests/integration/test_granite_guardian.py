@@ -2,24 +2,23 @@
 
 Reproduces worked examples from the
 [ibm-granite/granite-guardian-4.1-8b model card](https://huggingface.co/ibm-granite/granite-guardian-4.1-8b)
-and asserts the expected scores. Skipped in CI (the 8B model needs ~16 GB RAM
-and a GPU to be practical); run locally on a GPU box whenever the wrapper or
-its underlying transformers version changes.
+and asserts the expected scores. The 8B model needs ~16 GB RAM and a GPU to be
+practical; run with ``pytest -m "e2e and heavy"`` on a machine that can host
+the weights whenever the wrapper or its underlying transformers version
+changes.
 """
 
 import json
-import os
 
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.guardrails.granite_guardian import GraniteGuardianRisk
 
-RUNNING_IN_CI = os.environ.get("CI") == "true"
-
-pytestmark = pytest.mark.skipif(
-    RUNNING_IN_CI, reason="Model too large for CI runners (~16GB, needs 20GB+ RAM and a GPU)"
-)
+# `e2e` is applied automatically by tests/integration/conftest.py. The 8B
+# Granite Guardian model also needs ~16 GB RAM and a GPU to be practical,
+# so mark the whole module `heavy` too.
+pytestmark = pytest.mark.heavy
 
 
 def test_safety_harm() -> None:

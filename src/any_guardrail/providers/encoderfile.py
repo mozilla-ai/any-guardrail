@@ -20,9 +20,12 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from typing import Self
 
 from any_guardrail.providers._encoderfile_artifacts import resolve_artifact_path
 from any_guardrail.providers.base import Provider
@@ -84,6 +87,18 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
     The provider spawns the binary as a subprocess, polls for readiness, then
     issues ``POST /predict`` calls. Output is normalized to the same shape
     HuggingFaceProvider returns so downstream guardrails are provider-agnostic.
+
+    The provider implements the context manager protocol for deterministic
+    cleanup of the spawned subprocess::
+
+        with EncoderfileProvider() as provider:
+            guardrail = Protectai(provider=provider)
+            result = guardrail.validate("hello")
+        # subprocess is terminated here, even if validate() raised.
+
+    Outside a ``with`` block the provider still cleans up via ``atexit`` on
+    interpreter exit, so notebook and REPL usage works without explicit
+    teardown. Call ``provider.close()`` directly to release the port early.
 
     Args:
         binary_path: Path to a pre-built ``.encoderfile``. If omitted, the
@@ -194,8 +209,25 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         )
         raise TimeoutError(msg)
 
+    _BIND_RACE_RETRIES = 3
+    """Number of attempts to spawn the subprocess when we auto-pick the port.
+
+    `_free_port()` returns a port that was free a moment ago, but another
+    process can grab it before the encoderfile binary binds — a TOCTOU race
+    @javiermtorres saw in lumigator. Retrying with a fresh port closes the
+    window. When the user pins the port (``self.port is not None``) we don't
+    retry: a bind failure is a config problem to surface, not a race.
+    """
+
     def load_model(self, model_id: str, **kwargs: Any) -> None:
         """Load the encoderfile binary for ``model_id`` and start its HTTP server.
+
+        If we auto-pick the port and the subprocess fails to come up (e.g.
+        another process grabbed the port between our `_free_port()` probe and
+        the binary's `bind()`), retry up to :attr:`_BIND_RACE_RETRIES` times
+        with a fresh port. When the caller pinned a port via the
+        ``port=`` constructor argument, no retry: surface the failure
+        immediately.
 
         Args:
             model_id: any-guardrail model identifier. Used to look up the right
@@ -217,6 +249,22 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
             raise FileNotFoundError(msg)
         self._ensure_executable(binary)
 
+        user_picked_port = self.port is not None
+        max_attempts = 1 if user_picked_port else self._BIND_RACE_RETRIES
+        for attempt in range(max_attempts):
+            self._spawn_subprocess(binary, model_id)
+            try:
+                self._wait_ready()
+            except (RuntimeError, TimeoutError):
+                self.close()
+                if user_picked_port or attempt == max_attempts - 1:
+                    raise
+                # Bind race (likely): loop back, draw a fresh port, try again.
+                continue
+            return
+
+    def _spawn_subprocess(self, binary: Path, model_id: str) -> None:
+        """Pick a port, spawn the encoderfile subprocess, and update provider state."""
         port = self.port or _free_port()
         cmd = [
             str(binary),
@@ -234,12 +282,6 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         self.base_url = f"http://{self.host}:{port}"
         self.model_id = model_id
         self.model = {"binary_path": str(binary), "model_id": model_id}
-
-        try:
-            self._wait_ready()
-        except Exception:
-            self.close()
-            raise
 
     def pre_process(self, input_text: str | list[str], **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Wrap raw text into the encoderfile request body.
@@ -298,6 +340,20 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
                 self.process.wait()
         self.process = None
         self.base_url = None
+
+    def __enter__(self) -> Self:
+        """Enter the context manager. Returns ``self`` so the binding works as expected.
+
+        ``load_model()`` is *not* called here on purpose: providers are usually
+        constructed before the caller knows which ``model_id`` to load, and
+        guardrail classes call ``load_model`` themselves in their ``__init__``.
+        """
+        return self
+
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+        """Exit the context manager. Terminates the subprocess via ``close()``."""
+        del exc_type, exc_val, exc_tb  # standard context-manager signature; we don't suppress.
+        self.close()
 
     def __del__(self) -> None:
         """Best-effort cleanup on GC. ``atexit`` also covers process exit."""

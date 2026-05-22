@@ -205,3 +205,130 @@ def test_load_model_makes_binary_executable(tmp_path: Any, fake_subprocess: Any,
     provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
 
     assert binary.stat().st_mode & 0o111, "expected at least one execute bit set after load_model"
+
+
+def test_context_manager_returns_self_from_enter() -> None:
+    """`with EncoderfileProvider() as p:` should bind `p` to the provider instance."""
+    provider = EncoderfileProvider(binary_path="/fake")
+    with provider as p:
+        assert p is provider
+
+
+def test_context_manager_calls_close_on_exit(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
+    """Exiting the `with` block should terminate the subprocess."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    with EncoderfileProvider(binary_path=str(binary), port=12351) as provider:
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        assert provider.process is not None  # spawned
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None
+    assert provider.base_url is None
+
+
+def test_context_manager_calls_close_even_when_block_raises(
+    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+) -> None:
+    """Exceptions inside the `with` block must still terminate the subprocess."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    err_msg = "boom"
+    provider = EncoderfileProvider(binary_path=str(binary), port=12352)
+
+    def _block_that_raises() -> None:
+        with provider:
+            provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+            raise RuntimeError(err_msg)
+
+    with pytest.raises(RuntimeError, match=err_msg):
+        _block_that_raises()
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None
+
+
+def test_load_model_retries_on_bind_race_when_port_auto_picked(tmp_path: Any) -> None:
+    """When we auto-pick the port and the subprocess exits prematurely, retry with a fresh port.
+
+    Simulates the TOCTOU race documented in the `_BIND_RACE_RETRIES` docstring:
+    the first spawned subprocess dies before becoming ready (returncode 1),
+    the second succeeds. `load_model` should retry transparently.
+    """
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    # First proc dies; second proc stays alive.
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1  # subprocess already exited
+    dead_proc.returncode = 1
+
+    live_proc = MagicMock()
+    live_proc.poll.return_value = None  # still running
+
+    with (
+        patch("any_guardrail.providers.encoderfile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.side_effect = [dead_proc, live_proc]
+        mock_urlopen.return_value = _stub_response({"results": [], "model_id": "stub"})
+
+        # No `port=` kwarg => auto-pick => retry path is active.
+        provider = EncoderfileProvider(binary_path=str(binary), startup_timeout=2.0)
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+
+    assert mock_popen.call_count == 2, "expected a second Popen after the first subprocess died"
+    assert provider.process is live_proc
+    # The first (dead) proc was terminated/closed as part of the retry path.
+    dead_proc.terminate.assert_not_called()  # `close()` skips terminate when poll()!=None
+    provider.close()
+
+
+def test_load_model_does_not_retry_when_port_pinned(tmp_path: Any) -> None:
+    """If the user pinned a port, a bind failure is their config problem — surface it, don't retry."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1
+    dead_proc.returncode = 1
+
+    with (
+        patch("any_guardrail.providers.encoderfile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.return_value = dead_proc
+        mock_urlopen.side_effect = ConnectionRefusedError("nothing listening")
+
+        provider = EncoderfileProvider(binary_path=str(binary), port=12353, startup_timeout=2.0)
+        with pytest.raises(RuntimeError, match="exited prematurely"):
+            provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+
+    assert mock_popen.call_count == 1, "expected exactly one Popen attempt when port is user-pinned"
+
+
+def test_load_model_gives_up_after_max_bind_race_retries(tmp_path: Any) -> None:
+    """If every retry attempt also dies, the final attempt's error is surfaced to the caller."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1
+    dead_proc.returncode = 1
+
+    with (
+        patch("any_guardrail.providers.encoderfile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.return_value = dead_proc
+        mock_urlopen.side_effect = ConnectionRefusedError("nothing listening")
+
+        provider = EncoderfileProvider(binary_path=str(binary), startup_timeout=2.0)
+        with pytest.raises(RuntimeError, match="exited prematurely"):
+            provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+
+    assert mock_popen.call_count == EncoderfileProvider._BIND_RACE_RETRIES
