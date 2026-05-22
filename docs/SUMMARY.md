@@ -29,6 +29,7 @@
   * [Jasper](api/guardrails/jasper.md)
   * [LlamaGuard](api/guardrails/llama-guard.md)
   * [OffTopic](api/guardrails/off-topic.md)
+  * [OpenAI Moderation](api/guardrails/openai-moderation.md)
   * [Pangolin](api/guardrails/pangolin.md)
   * [ProtectAI](api/guardrails/protectai.md)
   * [Sentinel](api/guardrails/sentinel.md)
