@@ -9,6 +9,7 @@
 * [Any LLM as a Guardrail](cookbook/any_llm_as_a_guardrail.md)
 * [Customer Service Policy Guardrail](cookbook/customer_service_policy_guardrail.md)
 * [Custom Blocklists with Azure Content Safety](cookbook/azure_blocklist_slang_filter.md)
+* [Running Guardrails with EncoderFile](cookbook/encoderfile_guardrail.md)
 
 ## API Reference
 
@@ -32,3 +33,5 @@
   * [ProtectAI](api/guardrails/protectai.md)
   * [Sentinel](api/guardrails/sentinel.md)
   * [ShieldGemma](api/guardrails/shield-gemma.md)
+* Providers
+  * [EncoderFile](api/providers/encoderfile.md)
