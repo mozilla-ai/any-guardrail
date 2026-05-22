@@ -471,3 +471,84 @@ def test_context_manager_calls_close_even_when_block_raises(
 
     proc.terminate.assert_called_once()
     assert provider.process is None
+
+
+def test_load_model_retries_on_bind_race_when_port_auto_picked(tmp_path: Any) -> None:
+    """When we auto-pick the port and the subprocess exits prematurely, retry with a fresh port.
+
+    Simulates the TOCTOU race documented on `_BIND_RACE_RETRIES`: the first
+    spawned subprocess dies before becoming ready (returncode 1), the second
+    succeeds. `load_model` should retry transparently.
+    """
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1  # subprocess already exited
+    dead_proc.returncode = 1
+
+    live_proc = MagicMock()
+    live_proc.poll.return_value = None  # still running
+
+    with (
+        patch("any_guardrail.providers.llamafile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.side_effect = [dead_proc, live_proc]
+        mock_urlopen.return_value = _stub_response({"status": "ok"})
+
+        # No `port=` kwarg => auto-pick => retry path is active.
+        provider = LlamafileProvider(binary_path=str(binary), startup_timeout=2.0)
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+
+    assert mock_popen.call_count == 2, "expected a second Popen after the first subprocess died"
+    assert provider.process is live_proc
+    # The first (dead) proc was closed but `terminate` is skipped when poll()!=None.
+    dead_proc.terminate.assert_not_called()
+    provider.close()
+
+
+def test_load_model_does_not_retry_when_port_pinned(tmp_path: Any) -> None:
+    """If the user pinned a port, a bind failure is their config problem — surface, don't retry."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1
+    dead_proc.returncode = 1
+
+    with (
+        patch("any_guardrail.providers.llamafile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.return_value = dead_proc
+        mock_urlopen.side_effect = ConnectionRefusedError("nothing listening")
+
+        provider = LlamafileProvider(binary_path=str(binary), port=23475, startup_timeout=2.0)
+        with pytest.raises(RuntimeError, match="exited prematurely"):
+            provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+
+    assert mock_popen.call_count == 1, "expected exactly one Popen attempt when port is user-pinned"
+
+
+def test_load_model_gives_up_after_max_bind_race_retries(tmp_path: Any) -> None:
+    """If every retry attempt also dies, the final attempt's error is surfaced to the caller."""
+    binary = tmp_path / "fake.llamafile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    dead_proc = MagicMock()
+    dead_proc.poll.return_value = 1
+    dead_proc.returncode = 1
+
+    with (
+        patch("any_guardrail.providers.llamafile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_popen.return_value = dead_proc
+        mock_urlopen.side_effect = ConnectionRefusedError("nothing listening")
+
+        provider = LlamafileProvider(binary_path=str(binary), startup_timeout=2.0)
+        with pytest.raises(RuntimeError, match="exited prematurely"):
+            provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+
+    assert mock_popen.call_count == LlamafileProvider._BIND_RACE_RETRIES
