@@ -205,3 +205,42 @@ def test_load_model_makes_binary_executable(tmp_path: Any, fake_subprocess: Any,
     provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
 
     assert binary.stat().st_mode & 0o111, "expected at least one execute bit set after load_model"
+
+
+def test_context_manager_returns_self_from_enter() -> None:
+    """`with EncoderfileProvider() as p:` should bind `p` to the provider instance."""
+    provider = EncoderfileProvider(binary_path="/fake")
+    with provider as p:
+        assert p is provider
+
+
+def test_context_manager_calls_close_on_exit(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
+    """Exiting the `with` block should terminate the subprocess."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    with EncoderfileProvider(binary_path=str(binary), port=12351) as provider:
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        assert provider.process is not None  # spawned
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None
+    assert provider.base_url is None
+
+
+def test_context_manager_calls_close_even_when_block_raises(
+    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+) -> None:
+    """Exceptions inside the `with` block must still terminate the subprocess."""
+    binary = tmp_path / "fake.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    _, proc = fake_subprocess
+
+    provider = EncoderfileProvider(binary_path=str(binary), port=12352)
+    with pytest.raises(RuntimeError, match="boom"), provider:
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        raise RuntimeError("boom")
+
+    proc.terminate.assert_called_once()
+    assert provider.process is None

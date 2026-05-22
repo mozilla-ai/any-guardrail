@@ -85,6 +85,18 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
     issues ``POST /predict`` calls. Output is normalized to the same shape
     HuggingFaceProvider returns so downstream guardrails are provider-agnostic.
 
+    The provider implements the context manager protocol for deterministic
+    cleanup of the spawned subprocess::
+
+        with EncoderfileProvider() as provider:
+            guardrail = Protectai(provider=provider)
+            result = guardrail.validate("hello")
+        # subprocess is terminated here, even if validate() raised.
+
+    Outside a ``with`` block the provider still cleans up via ``atexit`` on
+    interpreter exit, so notebook and REPL usage works without explicit
+    teardown. Call ``provider.close()`` directly to release the port early.
+
     Args:
         binary_path: Path to a pre-built ``.encoderfile``. If omitted, the
             platform-appropriate artifact is auto-downloaded from
@@ -298,6 +310,20 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
                 self.process.wait()
         self.process = None
         self.base_url = None
+
+    def __enter__(self) -> EncoderfileProvider:
+        """Enter the context manager. Returns ``self`` so the binding works as expected.
+
+        ``load_model()`` is *not* called here on purpose: providers are usually
+        constructed before the caller knows which ``model_id`` to load, and
+        guardrail classes call ``load_model`` themselves in their ``__init__``.
+        """
+        return self
+
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+        """Exit the context manager. Terminates the subprocess via ``close()``."""
+        del exc_type, exc_val, exc_tb  # standard context-manager signature; we don't suppress.
+        self.close()
 
     def __del__(self) -> None:
         """Best-effort cleanup on GC. ``atexit`` also covers process exit."""
