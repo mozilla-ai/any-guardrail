@@ -318,6 +318,7 @@ def _guardrails_index_page() -> str:
 
 PROVIDERS = [
     ("any_guardrail.providers.encoderfile", "EncoderfileProvider", "encoderfile.md"),
+    ("any_guardrail.providers.llamafile", "LlamafileProvider", "llamafile.md"),
 ]
 
 
