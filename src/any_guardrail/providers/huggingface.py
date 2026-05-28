@@ -237,3 +237,56 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                 "predicted_labels": predicted_labels,
             }
         )
+
+    def generate_chat(
+        self,
+        messages: list[AnyDict],
+        *,
+        max_new_tokens: int,
+        do_sample: bool = False,
+        temperature: float | None = None,
+        chat_template_kwargs: AnyDict | None = None,
+        generation_kwargs: AnyDict | None = None,
+    ) -> GuardrailInferenceOutput[AnyDict]:
+        """Apply the model's chat template and run ``model.generate`` under ``no_grad``.
+
+        Defaults match what decoder-LLM guardrails (GraniteGuardian, LlamaGuard)
+        previously wired inline: ``add_generation_prompt=True``, ``tokenize=True``,
+        ``return_dict=True``, ``return_tensors="pt"``. Callers can override any
+        of these via ``chat_template_kwargs`` (e.g. ``documents``,
+        ``available_tools``, or ``add_generation_prompt=False`` for models that
+        don't want an assistant prefix).
+        """
+        template_kwargs: AnyDict = {
+            "add_generation_prompt": True,
+            "tokenize": True,
+            "return_dict": True,
+            "return_tensors": "pt",
+            **(chat_template_kwargs or {}),
+        }
+        inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+        if self.device is not None and hasattr(inputs, "to"):
+            inputs = inputs.to(self.device)
+
+        prompt_len = int(inputs["input_ids"].shape[-1])
+
+        gen_kwargs: AnyDict = {"max_new_tokens": max_new_tokens, "do_sample": do_sample}
+        if do_sample and temperature is not None:
+            gen_kwargs["temperature"] = temperature
+        if generation_kwargs:
+            gen_kwargs.update(generation_kwargs)
+
+        with torch.no_grad():
+            output = self.model.generate(**inputs, **gen_kwargs)
+
+        generated = output[:, prompt_len:]
+        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=True)
+
+        return GuardrailInferenceOutput(
+            data={
+                "generated_text": text,
+                "prompt_token_count": prompt_len,
+                "completion_token_count": int(generated.shape[-1]),
+                "raw": output,
+            }
+        )
