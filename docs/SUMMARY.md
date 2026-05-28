@@ -10,6 +10,7 @@
 * [Customer Service Policy Guardrail](cookbook/customer_service_policy_guardrail.md)
 * [Custom Blocklists with Azure Content Safety](cookbook/azure_blocklist_slang_filter.md)
 * [Running Guardrails with EncoderFile](cookbook/encoderfile_guardrail.md)
+* [Granite Guardian with Llamafile vs HuggingFace](cookbook/llamafile_granite_guardian.md)
 
 ## API Reference
 
@@ -36,3 +37,4 @@
   * [ShieldGemma](api/guardrails/shield-gemma.md)
 * Providers
   * [EncoderFile](api/providers/encoderfile.md)
+  * [Llamafile](api/providers/llamafile.md)
