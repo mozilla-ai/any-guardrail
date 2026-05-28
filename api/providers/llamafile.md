@@ -29,26 +29,37 @@ Args:
         if both were supplied, otherwise by looking up the ``model_id``
         passed to ``load_model`` in the curated
         :data:`~any_guardrail.providers._llamafile_artifacts.LLAMAFILE_ARTIFACTS`
-        map.
+        map. Mutually exclusive with ``base_url``.
     repo_id: Power-user override for the HuggingFace repo containing the
-        llamafile. Used together with ``filename``.
+        llamafile. Used together with ``filename``. Mutually exclusive with
+        ``base_url``.
     filename: Power-user override for the artifact filename inside
-        ``repo_id``. Used together with ``repo_id``.
+        ``repo_id``. Used together with ``repo_id``. Mutually exclusive with
+        ``base_url``.
+    base_url: External-server mode. Point at a llamafile server you spun up
+        yourself (e.g. ``"http://localhost:9999"``). When set, the provider
+        skips download + subprocess spawn entirely; ``load_model`` only polls
+        the server for readiness, and ``close()`` is a no-op. Mutually
+        exclusive with ``binary_path``, ``repo_id``/``filename``, ``port``,
+        ``n_gpu_layers``, ``context_size``, and ``extra_args``. Must start
+        with ``http://`` or ``https://``.
     port: TCP port to bind the llamafile HTTP server. Defaults to a
-        kernel-chosen free port.
+        kernel-chosen free port. Mutually exclusive with ``base_url``.
     host: Bind address. Defaults to ``"127.0.0.1"``.
     startup_timeout: Seconds to wait for the server to become ready.
         Llamafiles can take ~30s to memory-map and warm up; the default
-        is generous.
+        is generous. Also applies to external-server readiness polling.
     request_timeout: Per-request timeout for ``/v1/chat/completions``.
     cache_dir: Directory passed to ``hf_hub_download`` for auto-downloaded
         binaries.
     n_gpu_layers: Optional number of model layers to offload to GPU. Passed
         as ``--n-gpu-layers``. ``None`` (default) lets llamafile decide.
+        Mutually exclusive with ``base_url``.
     context_size: Optional context window size. Passed as ``--ctx-size``.
+        Mutually exclusive with ``base_url``.
     extra_args: Optional list of additional command-line arguments appended
         after the standard server flags. Use this for advanced llamafile
-        flags not surfaced above.
+        flags not surfaced above. Mutually exclusive with ``base_url``.
 
 ## Constructor
 
@@ -57,6 +68,7 @@ Args:
 | `binary_path` | `str | None` | No | `None` |
 | `repo_id` | `str | None` | No | `None` |
 | `filename` | `str | None` | No | `None` |
+| `base_url` | `str | None` | No | `None` |
 | `port` | `int | None` | No | `None` |
 | `host` | `str` | No | `"127.0.0.1"` |
 | `startup_timeout` | `float` | No | `120.0` |
@@ -78,6 +90,10 @@ and the binary's `bind()`), retry up to :attr:`_BIND_RACE_RETRIES`
 times with a fresh port. When the caller pinned a port via the
 ``port=`` constructor argument, no retry: surface the failure
 immediately.
+
+In external-server mode (``base_url`` supplied to the constructor),
+the binary lookup and subprocess spawn are skipped — the provider
+only polls the user's server for readiness.
 
 **Parameters**
 
@@ -113,5 +129,8 @@ Use :meth:`generate_chat` instead.
 ## close
 
 Terminate the llamafile subprocess. Idempotent.
+
+In external-server mode there is no subprocess to terminate and
+``self.base_url`` is preserved so the provider stays reusable.
 
 **Returns:** `None`
