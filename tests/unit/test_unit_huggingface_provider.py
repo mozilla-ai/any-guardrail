@@ -327,3 +327,146 @@ def test_infer_multi_label_uses_sigmoid_not_softmax() -> None:
     assert score_sum > 1.4, f"expected sigmoid (sum > 1.4), got sum={score_sum}"
     assert abs(result.data["scores"][0][0] - 0.881) < 0.01
     assert abs(result.data["scores"][0][1] - 0.731) < 0.01
+
+
+def _make_chat_provider(
+    prompt_token_ids: list[int],
+    full_output_ids: list[int],
+    decoded_text: str = "<score>no</score>",
+) -> tuple[HuggingFaceProvider, MagicMock, MagicMock]:
+    """Build a HuggingFaceProvider with a tokenizer/model wired up for ``generate_chat`` tests."""
+    tokenizer = MagicMock()
+    tokenizer.apply_chat_template.return_value = {
+        "input_ids": torch.tensor([prompt_token_ids]),
+        "attention_mask": torch.tensor([[1] * len(prompt_token_ids)]),
+    }
+    tokenizer.decode.return_value = decoded_text
+
+    model = MagicMock()
+    model.generate.return_value = torch.tensor([full_output_ids])
+
+    provider = HuggingFaceProvider()
+    provider.tokenizer = tokenizer
+    provider.model = model
+    return provider, tokenizer, model
+
+
+def test_generate_chat_decodes_only_new_tokens() -> None:
+    """The provider slices off prompt tokens and decodes only the generated tail."""
+    provider, tokenizer, model = _make_chat_provider(
+        prompt_token_ids=[1, 2, 3, 4],
+        full_output_ids=[1, 2, 3, 4, 5, 6, 7],  # 3 newly generated tokens
+        decoded_text="<score>no</score>",
+    )
+
+    result = provider.generate_chat(
+        messages=[{"role": "user", "content": "ping"}],
+        max_new_tokens=10,
+    )
+
+    # apply_chat_template was given the default template kwargs.
+    _, template_kwargs = tokenizer.apply_chat_template.call_args
+    assert template_kwargs["add_generation_prompt"] is True
+    assert template_kwargs["tokenize"] is True
+    assert template_kwargs["return_dict"] is True
+    assert template_kwargs["return_tensors"] == "pt"
+
+    # generate was given the full inputs dict plus the explicit generation params.
+    _, gen_kwargs = model.generate.call_args
+    assert gen_kwargs["max_new_tokens"] == 10
+    assert gen_kwargs["do_sample"] is False
+    assert "input_ids" in gen_kwargs
+    assert "attention_mask" in gen_kwargs
+
+    # decode was passed only the suffix beyond the 4-token prompt.
+    decode_args = tokenizer.decode.call_args
+    sliced = decode_args.args[0]
+    assert sliced.tolist() == [5, 6, 7]
+    assert decode_args.kwargs["skip_special_tokens"] is True
+
+    assert result.data["generated_text"] == "<score>no</score>"
+    assert result.data["prompt_token_count"] == 4
+    assert result.data["completion_token_count"] == 3
+
+
+def test_generate_chat_forwards_chat_template_kwargs() -> None:
+    """Caller-supplied ``chat_template_kwargs`` override the defaults and pass through."""
+    provider, tokenizer, _ = _make_chat_provider(
+        prompt_token_ids=[1, 2],
+        full_output_ids=[1, 2, 3],
+    )
+
+    documents = [{"doc_id": "0", "text": "ctx"}]
+    provider.generate_chat(
+        messages=[{"role": "user", "content": "x"}],
+        max_new_tokens=5,
+        chat_template_kwargs={"add_generation_prompt": False, "documents": documents},
+    )
+
+    _, template_kwargs = tokenizer.apply_chat_template.call_args
+    # Override takes effect; documents passed through.
+    assert template_kwargs["add_generation_prompt"] is False
+    assert template_kwargs["documents"] == documents
+    # Other defaults still present.
+    assert template_kwargs["return_tensors"] == "pt"
+    assert template_kwargs["return_dict"] is True
+
+
+def test_generate_chat_forwards_generation_kwargs() -> None:
+    """``generation_kwargs`` (e.g. pad_token_id) reach ``model.generate``."""
+    provider, _, model = _make_chat_provider(
+        prompt_token_ids=[1, 2],
+        full_output_ids=[1, 2, 3],
+    )
+
+    provider.generate_chat(
+        messages=[{"role": "user", "content": "x"}],
+        max_new_tokens=5,
+        generation_kwargs={"pad_token_id": 0},
+    )
+
+    _, gen_kwargs = model.generate.call_args
+    assert gen_kwargs["pad_token_id"] == 0
+
+
+def test_generate_chat_forwards_temperature_when_sampling() -> None:
+    """``temperature`` is forwarded only when ``do_sample=True``."""
+    provider, _, model = _make_chat_provider(
+        prompt_token_ids=[1, 2],
+        full_output_ids=[1, 2, 3],
+    )
+
+    provider.generate_chat(
+        messages=[{"role": "user", "content": "x"}],
+        max_new_tokens=5,
+        do_sample=True,
+        temperature=0.7,
+    )
+
+    _, gen_kwargs = model.generate.call_args
+    assert gen_kwargs["temperature"] == 0.7
+
+    # Greedy path must not forward temperature.
+    model.generate.reset_mock()
+    provider.generate_chat(
+        messages=[{"role": "user", "content": "x"}],
+        max_new_tokens=5,
+        temperature=0.7,
+    )
+    _, gen_kwargs_greedy = model.generate.call_args
+    assert "temperature" not in gen_kwargs_greedy
+
+
+def test_generate_chat_returns_raw_output() -> None:
+    """``data['raw']`` exposes the unmodified generate() tensor for advanced use cases."""
+    provider, _, _ = _make_chat_provider(
+        prompt_token_ids=[1, 2],
+        full_output_ids=[1, 2, 9, 10],
+    )
+
+    result = provider.generate_chat(
+        messages=[{"role": "user", "content": "x"}],
+        max_new_tokens=5,
+    )
+
+    assert result.data["raw"].tolist() == [[1, 2, 9, 10]]
