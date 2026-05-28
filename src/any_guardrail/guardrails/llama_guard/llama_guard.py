@@ -48,13 +48,31 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
 
+        # Lazy-import transformers so users on `any-guardrail[llamafile]`
+        # (without the huggingface extra) can construct LlamaGuard with a
+        # non-HF provider (e.g. LlamafileProvider) without paying the import
+        # cost or hitting ImportError at module load time.
+        load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                # Llama Guard is a causal LM (or multimodal seq2seq for v4). A
+                # default-constructed HuggingFaceProvider targets
+                # AutoModelForSequenceClassification, which would silently load
+                # the wrong head. Enforce the right classes for this load
+                # (does not mutate provider state).
+                if self._is_version_4:
+                    from transformers import AutoProcessor, Llama4ForConditionalGeneration
+
+                    load_kwargs = {
+                        "model_class": Llama4ForConditionalGeneration,
+                        "tokenizer_class": AutoProcessor,
+                    }
+                else:
+                    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                    load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
         else:
-            # Lazy-import transformers so users on `any-guardrail[llamafile]`
-            # (without the huggingface extra) can construct LlamaGuard with
-            # a non-HF provider without paying the import cost or hitting
-            # ImportError at module load time.
             from transformers import (
                 AutoModelForCausalLM,
                 AutoProcessor,
@@ -72,7 +90,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
                     model_class=AutoModelForCausalLM,
                     tokenizer_class=AutoTokenizer,
                 )
-        self.provider.load_model(self.model_id)
+        self.provider.load_model(self.model_id, **load_kwargs)
 
     def _build_conversation(self, input_text: str, output_text: str | None) -> list[AnyDict]:
         """Shape the chat conversation per model variant."""
