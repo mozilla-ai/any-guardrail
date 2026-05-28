@@ -552,3 +552,88 @@ def test_load_model_gives_up_after_max_bind_race_retries(tmp_path: Any) -> None:
             provider.load_model("ibm-granite/granite-guardian-4.1-8b")
 
     assert mock_popen.call_count == LlamafileProvider._BIND_RACE_RETRIES
+
+
+# ----- external-server mode -----
+
+
+def test_external_mode_skips_subprocess() -> None:
+    """``base_url=`` short-circuits download + spawn; only readiness probe runs."""
+    with (
+        patch("any_guardrail.providers.llamafile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_urlopen.return_value = _stub_response({"status": "ok"})
+
+        provider = LlamafileProvider(base_url="http://localhost:9999")
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+
+        mock_popen.assert_not_called()
+        # Readiness was probed against the supplied URL.
+        probed_urls = [call.args[0].full_url for call in mock_urlopen.call_args_list]
+        assert "http://localhost:9999/health" in probed_urls
+        assert provider.base_url == "http://localhost:9999"
+        assert provider.process is None
+        assert provider.model_id == "ibm-granite/granite-guardian-4.1-8b"
+
+
+def test_external_mode_generate_chat_targets_supplied_url() -> None:
+    """``generate_chat`` POSTs to the user-supplied URL's chat-completions endpoint."""
+    with patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen:
+        # First call: readiness probe; subsequent: chat completion.
+        mock_urlopen.side_effect = [
+            _stub_response({"status": "ok"}),
+            _stub_response(
+                {
+                    "choices": [{"message": {"content": "hi"}}],
+                    "usage": {"prompt_tokens": 4, "completion_tokens": 1},
+                }
+            ),
+        ]
+
+        provider = LlamafileProvider(base_url="http://my-server:8080/")
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        result = provider.generate_chat([{"role": "user", "content": "hi"}], max_new_tokens=5)
+
+        # Trailing slash on base_url was stripped at __init__.
+        assert provider.base_url == "http://my-server:8080"
+        # The chat call hit the right URL on the external host.
+        chat_call = mock_urlopen.call_args_list[-1]
+        assert chat_call.args[0].full_url == "http://my-server:8080/v1/chat/completions"
+        assert result.data["generated_text"] == "hi"
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_in_message"),
+    [
+        ({"binary_path": "/tmp/x.llamafile"}, "binary_path"),  # noqa: S108 - path is never touched; constructor rejects before any I/O
+        ({"port": 8000}, "port"),
+        ({"n_gpu_layers": 8}, "n_gpu_layers"),
+        ({"context_size": 2048}, "context_size"),
+        ({"extra_args": ["--verbose"]}, "extra_args"),
+        ({"repo_id": "foo/bar", "filename": "x.llamafile"}, "repo_id"),
+    ],
+)
+def test_external_mode_rejects_mutually_exclusive_kwargs(kwargs: dict[str, Any], expected_in_message: str) -> None:
+    """Constructor-time validation: spawn-only knobs can't be combined with base_url."""
+    with pytest.raises(ValueError, match=expected_in_message):
+        LlamafileProvider(base_url="http://localhost:9999", **kwargs)
+
+
+def test_external_mode_rejects_invalid_url_scheme() -> None:
+    """``base_url`` must include an http(s) scheme to avoid surprising urlopen behavior."""
+    with pytest.raises(ValueError, match="http://"):
+        LlamafileProvider(base_url="localhost:9999")
+
+
+def test_external_mode_close_is_noop_and_preserves_base_url() -> None:
+    """``close()`` must not blank ``base_url`` in external mode — the provider should stay reusable."""
+    with patch("any_guardrail.providers.llamafile.urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.return_value = _stub_response({"status": "ok"})
+
+        provider = LlamafileProvider(base_url="http://localhost:9999")
+        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        provider.close()
+
+        assert provider.base_url == "http://localhost:9999"
+        assert provider.process is None

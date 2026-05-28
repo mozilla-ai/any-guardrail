@@ -86,26 +86,37 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
             if both were supplied, otherwise by looking up the ``model_id``
             passed to ``load_model`` in the curated
             :data:`~any_guardrail.providers._llamafile_artifacts.LLAMAFILE_ARTIFACTS`
-            map.
+            map. Mutually exclusive with ``base_url``.
         repo_id: Power-user override for the HuggingFace repo containing the
-            llamafile. Used together with ``filename``.
+            llamafile. Used together with ``filename``. Mutually exclusive with
+            ``base_url``.
         filename: Power-user override for the artifact filename inside
-            ``repo_id``. Used together with ``repo_id``.
+            ``repo_id``. Used together with ``repo_id``. Mutually exclusive with
+            ``base_url``.
+        base_url: External-server mode. Point at a llamafile server you spun up
+            yourself (e.g. ``"http://localhost:9999"``). When set, the provider
+            skips download + subprocess spawn entirely; ``load_model`` only polls
+            the server for readiness, and ``close()`` is a no-op. Mutually
+            exclusive with ``binary_path``, ``repo_id``/``filename``, ``port``,
+            ``n_gpu_layers``, ``context_size``, and ``extra_args``. Must start
+            with ``http://`` or ``https://``.
         port: TCP port to bind the llamafile HTTP server. Defaults to a
-            kernel-chosen free port.
+            kernel-chosen free port. Mutually exclusive with ``base_url``.
         host: Bind address. Defaults to ``"127.0.0.1"``.
         startup_timeout: Seconds to wait for the server to become ready.
             Llamafiles can take ~30s to memory-map and warm up; the default
-            is generous.
+            is generous. Also applies to external-server readiness polling.
         request_timeout: Per-request timeout for ``/v1/chat/completions``.
         cache_dir: Directory passed to ``hf_hub_download`` for auto-downloaded
             binaries.
         n_gpu_layers: Optional number of model layers to offload to GPU. Passed
             as ``--n-gpu-layers``. ``None`` (default) lets llamafile decide.
+            Mutually exclusive with ``base_url``.
         context_size: Optional context window size. Passed as ``--ctx-size``.
+            Mutually exclusive with ``base_url``.
         extra_args: Optional list of additional command-line arguments appended
             after the standard server flags. Use this for advanced llamafile
-            flags not surfaced above.
+            flags not surfaced above. Mutually exclusive with ``base_url``.
 
     """
 
@@ -114,6 +125,7 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         binary_path: str | None = None,
         repo_id: str | None = None,
         filename: str | None = None,
+        base_url: str | None = None,
         port: int | None = None,
         host: str = "127.0.0.1",
         startup_timeout: float = 120.0,
@@ -124,7 +136,9 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         extra_args: list[str] | None = None,
     ) -> None:
         """Initialize the llamafile provider."""
-        if binary_path is None and MISSING_PACKAGES_ERROR is not None:
+        self._external_mode = base_url is not None
+
+        if not self._external_mode and binary_path is None and MISSING_PACKAGES_ERROR is not None:
             msg = (
                 "Missing packages for LlamafileProvider auto-download. "
                 "You can try `pip install 'any-guardrail[llamafile]'`, or pass a local "
@@ -154,6 +168,26 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         # ``model`` is kept for parity with HuggingFaceProvider so callers that
         # introspect ``provider.model`` don't crash.
         self.model: AnyDict = {}
+
+        if self._external_mode:
+            assert base_url is not None  # for type narrowing; _external_mode == (base_url is not None)
+            if not base_url.startswith(("http://", "https://")):
+                msg = f"base_url must start with http:// or https://, got {base_url!r}"
+                raise ValueError(msg)
+            conflicts = {
+                "binary_path": binary_path,
+                "repo_id": repo_id,
+                "filename": filename,
+                "port": port,
+                "n_gpu_layers": n_gpu_layers,
+                "context_size": context_size,
+                "extra_args": extra_args,
+            }
+            bad = sorted(k for k, v in conflicts.items() if v is not None)
+            if bad:
+                msg = f"base_url is mutually exclusive with: {bad}"
+                raise ValueError(msg)
+            self.base_url = base_url.rstrip("/")
 
         atexit.register(self.close)
 
@@ -232,14 +266,25 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         ``port=`` constructor argument, no retry: surface the failure
         immediately.
 
+        In external-server mode (``base_url`` supplied to the constructor),
+        the binary lookup and subprocess spawn are skipped — the provider
+        only polls the user's server for readiness.
+
         Args:
             model_id: any-guardrail model identifier. Looked up in
                 :data:`LLAMAFILE_ARTIFACTS` when ``repo_id``/``filename``
-                overrides weren't supplied to the constructor.
+                overrides weren't supplied to the constructor. In
+                external-server mode this is recorded as metadata only.
             **kwargs: Ignored. Present to match the Provider signature.
 
         """
         del kwargs
+
+        if self._external_mode:
+            self.model_id = model_id
+            self.model = {"model_id": model_id, "base_url": self.base_url}
+            self._wait_ready()
+            return
 
         # If a previous binary is still running, tear it down first so we don't
         # leak the subprocess and its port.
@@ -386,7 +431,11 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         )
 
     def close(self) -> None:
-        """Terminate the llamafile subprocess. Idempotent."""
+        """Terminate the llamafile subprocess. Idempotent.
+
+        In external-server mode there is no subprocess to terminate and
+        ``self.base_url`` is preserved so the provider stays reusable.
+        """
         if self.process is None:
             return
         if self.process.poll() is None:
@@ -397,7 +446,8 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
                 self.process.kill()
                 self.process.wait()
         self.process = None
-        self.base_url = None
+        if not self._external_mode:
+            self.base_url = None
 
     def __enter__(self) -> Self:
         """Enter the context manager. Returns ``self`` so the binding works as expected.
