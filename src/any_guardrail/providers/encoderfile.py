@@ -104,22 +104,32 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         binary_path: Path to a pre-built ``.encoderfile``. If omitted, the
             platform-appropriate artifact is auto-downloaded from
             ``mozilla-ai/encoderfile`` using the model_id passed to
-            ``load_model``.
+            ``load_model``. Mutually exclusive with ``base_url``.
+        base_url: External-server mode. Point at an encoderfile server you spun
+            up yourself (e.g. ``"http://localhost:9999"``). When set, the
+            provider skips download + subprocess spawn entirely; ``load_model``
+            only polls the server for readiness, and ``close()`` is a no-op.
+            Mutually exclusive with ``binary_path``, ``port``, and a
+            non-default ``encoderfile_repo``. Must start with ``http://`` or
+            ``https://``.
         port: TCP port to bind the encoderfile HTTP server. Defaults to a
-            kernel-chosen free port.
+            kernel-chosen free port. Mutually exclusive with ``base_url``.
         host: Bind address. Defaults to ``"127.0.0.1"``.
-        startup_timeout: Seconds to wait for the server to become ready.
+        startup_timeout: Seconds to wait for the server to become ready. Also
+            applies to external-server readiness polling.
         request_timeout: Per-request timeout for ``/predict`` calls.
         cache_dir: Directory passed to ``hf_hub_download`` for auto-downloaded
             binaries.
         encoderfile_repo: Override the source HF repo. Defaults to
-            ``mozilla-ai/encoderfile``.
+            ``mozilla-ai/encoderfile``. Mutually exclusive with ``base_url``
+            when set to a non-default value.
 
     """
 
     def __init__(
         self,
         binary_path: str | None = None,
+        base_url: str | None = None,
         port: int | None = None,
         host: str = "127.0.0.1",
         startup_timeout: float = 60.0,
@@ -128,7 +138,9 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         encoderfile_repo: str = _DEFAULT_ENCODERFILE_REPO,
     ) -> None:
         """Initialize the encoderfile provider."""
-        if binary_path is None and MISSING_PACKAGES_ERROR is not None:
+        self._external_mode = base_url is not None
+
+        if not self._external_mode and binary_path is None and MISSING_PACKAGES_ERROR is not None:
             msg = (
                 "Missing packages for EncoderfileProvider auto-download. "
                 "You can try `pip install 'any-guardrail[encoderfile]'`, or pass a local "
@@ -151,6 +163,22 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         # access ``provider.model`` for compatibility). It carries the binary
         # path and a labels list when known.
         self.model: AnyDict = {}
+
+        if self._external_mode:
+            assert base_url is not None  # for type narrowing; _external_mode == (base_url is not None)
+            if not base_url.startswith(("http://", "https://")):
+                msg = f"base_url must start with http:// or https://, got {base_url!r}"
+                raise ValueError(msg)
+            conflicts: AnyDict = {"binary_path": binary_path, "port": port}
+            # ``encoderfile_repo`` has a non-None default, so only flag it when
+            # the user actively overrode it.
+            if encoderfile_repo != _DEFAULT_ENCODERFILE_REPO:
+                conflicts["encoderfile_repo"] = encoderfile_repo
+            bad = sorted(k for k, v in conflicts.items() if v is not None)
+            if bad:
+                msg = f"base_url is mutually exclusive with: {bad}"
+                raise ValueError(msg)
+            self.base_url = base_url.rstrip("/")
 
         atexit.register(self.close)
 
@@ -229,13 +257,24 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         ``port=`` constructor argument, no retry: surface the failure
         immediately.
 
+        In external-server mode (``base_url`` supplied to the constructor),
+        the binary lookup and subprocess spawn are skipped — the provider
+        only polls the user's server for readiness.
+
         Args:
             model_id: any-guardrail model identifier. Used to look up the right
-                encoderfile artifact when auto-downloading.
+                encoderfile artifact when auto-downloading. In external-server
+                mode this is recorded as metadata only.
             **kwargs: Ignored. Present to match the Provider signature.
 
         """
         del kwargs  # not used; the binary owns all model state.
+
+        if self._external_mode:
+            self.model_id = model_id
+            self.model = {"model_id": model_id, "base_url": self.base_url}
+            self._wait_ready()
+            return
 
         # If a previous binary is still running (e.g. caller is reusing the
         # provider with a new model_id), tear it down first so we don't leak
@@ -328,7 +367,11 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         )
 
     def close(self) -> None:
-        """Terminate the encoderfile subprocess. Idempotent."""
+        """Terminate the encoderfile subprocess. Idempotent.
+
+        In external-server mode there is no subprocess to terminate and
+        ``self.base_url`` is preserved so the provider stays reusable.
+        """
         if self.process is None:
             return
         if self.process.poll() is None:
@@ -339,7 +382,8 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
                 self.process.kill()
                 self.process.wait()
         self.process = None
-        self.base_url = None
+        if not self._external_mode:
+            self.base_url = None
 
     def __enter__(self) -> Self:
         """Enter the context manager. Returns ``self`` so the binding works as expected.
