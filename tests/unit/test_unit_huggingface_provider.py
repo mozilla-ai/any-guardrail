@@ -105,6 +105,51 @@ def test_load_model_kwargs_override_provider_defaults(mock_classes: tuple[MagicM
     assert model_kwargs["device_map"] == "cuda:0"
 
 
+def test_load_model_model_class_override_used_and_self_unchanged(mock_classes: tuple[MagicMock, MagicMock]) -> None:
+    """``model_class`` kwarg overrides the provider's default for this call only.
+
+    Lets decoder-LM guardrails (ShieldGemma, GraniteGuardian, LlamaGuard) enforce
+    the right loader even when handed a default-constructed (sequence-classification)
+    HuggingFaceProvider. The provider's stored ``model_class`` must not be mutated.
+    """
+    default_model_class, tokenizer_class = mock_classes
+    override_model_class = MagicMock()
+    override_model_class.from_pretrained.return_value = MagicMock()
+
+    provider = HuggingFaceProvider(model_class=default_model_class, tokenizer_class=tokenizer_class)
+    provider.load_model("dummy-id", model_class=override_model_class)
+
+    override_model_class.from_pretrained.assert_called_once()
+    default_model_class.from_pretrained.assert_not_called()
+    # ``model_class`` kwarg must not leak into from_pretrained as a regular kwarg.
+    _, model_kwargs = override_model_class.from_pretrained.call_args
+    assert "model_class" not in model_kwargs
+    # The provider's default is preserved for subsequent loads.
+    assert provider.model_class is default_model_class
+
+
+def test_load_model_tokenizer_class_override_used_for_this_call_only(
+    mock_classes: tuple[MagicMock, MagicMock],
+) -> None:
+    """``tokenizer_class`` kwarg overrides the provider's default for this call only.
+
+    Needed for Llama Guard 4, which uses ``AutoProcessor`` instead of
+    ``AutoTokenizer``. The provider's stored ``tokenizer_class`` must not be mutated.
+    """
+    model_class, default_tokenizer_class = mock_classes
+    override_tokenizer_class = MagicMock()
+    override_tokenizer_class.from_pretrained.return_value = MagicMock()
+
+    provider = HuggingFaceProvider(model_class=model_class, tokenizer_class=default_tokenizer_class)
+    provider.load_model("dummy-id", tokenizer_class=override_tokenizer_class)
+
+    override_tokenizer_class.from_pretrained.assert_called_once()
+    default_tokenizer_class.from_pretrained.assert_not_called()
+    _, tokenizer_kwargs = override_tokenizer_class.from_pretrained.call_args
+    assert "tokenizer_class" not in tokenizer_kwargs
+    assert provider.tokenizer_class is default_tokenizer_class
+
+
 def test_tokenizer_kwargs_applied_per_call() -> None:
     """``tokenizer_kwargs`` are applied to every ``pre_process`` invocation."""
     tokenizer = MagicMock(return_value={"input_ids": [[1, 2, 3]]})
