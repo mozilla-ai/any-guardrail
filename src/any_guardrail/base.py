@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from typing import Any, ClassVar, Generic, overload
@@ -8,6 +9,7 @@ from any_guardrail.types import (
     GuardrailInferenceOutput,
     GuardrailOutput,
     GuardrailPreprocessOutput,
+    GuardrailUsage,
     InferenceT,
     PreprocessT,
     ScoreT,
@@ -54,6 +56,20 @@ class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):
         """Abstract method for validating some input. Each subclass implements its own signature."""
         msg = "Each subclass will create their own method."
         raise NotImplementedError(msg)
+
+    def _stamp_usage(self, result: GuardrailOutput[Any, Any, Any], latency_ms: float) -> None:
+        """Fill provenance fields on ``result.usage`` that the guardrail left unset.
+
+        Merge semantics: only ``None`` fields are filled, so guardrails that
+        already record token counts or a custom model id keep their values.
+        """
+        usage = result.usage if result.usage is not None else GuardrailUsage()
+        if usage.model_id is None:
+            model_id = getattr(self, "model_id", None)
+            usage.model_id = model_id if isinstance(model_id, str) else None
+        if usage.latency_ms is None:
+            usage.latency_ms = latency_ms
+        result.usage = usage
 
 
 class ThreeStageGuardrail(
@@ -154,10 +170,27 @@ class ThreeStageGuardrail(
 
         """
         if isinstance(input_text, list):
-            return self._validate_batch(input_text, **kwargs)
-        model_inputs = self._pre_processing(input_text, **kwargs)
+            start = time.perf_counter()
+            results = self._validate_batch(input_text, **kwargs)
+            latency_ms = (time.perf_counter() - start) * 1000.0
+            for result in results:
+                self._stamp_usage(result, latency_ms)
+            return results
+        return self._execute(input_text, **kwargs)
+
+    def _execute(self, *args: Any, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+        """Run the three-stage pipeline and stamp provenance on the result.
+
+        Subclasses that override ``validate`` with a custom signature should
+        route their pipeline through this method so ``usage`` (model_id,
+        latency_ms) is populated uniformly.
+        """
+        start = time.perf_counter()
+        model_inputs = self._pre_processing(*args, **kwargs)
         model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
+        result = self._post_processing(model_outputs)
+        self._stamp_usage(result, (time.perf_counter() - start) * 1000.0)
+        return result
 
     def _validate_batch(
         self, input_texts: list[str], **kwargs: Any
