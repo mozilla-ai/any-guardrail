@@ -211,4 +211,4 @@ class ThreeStageGuardrail(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
 
 # Standard guardrail type alias
 StandardGuardrail = ThreeStageGuardrail[AnyDict, AnyDict]
-"""Type alias for standard guardrails using AnyDict and binary score output."""
+"""Type alias for guardrails whose preprocessing and inference stages exchange AnyDict payloads."""

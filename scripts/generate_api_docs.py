@@ -62,13 +62,21 @@ def _format_annotation(annotation: Any) -> str:
         return str(annotation)
 
 
+_MAX_DEFAULT_LENGTH = 60
+
+
 def _format_default(default: Any) -> str:
     if default is inspect.Parameter.empty:
         return ""
     if default is None:
         return "None"
     if isinstance(default, str):
-        return f'"{default}"'
+        # Defaults are rendered inside one Markdown table cell: collapse
+        # newlines/runs of whitespace, escape pipes, and truncate long prompts.
+        rendered = " ".join(default.split()).replace("|", "\\|")
+        if len(rendered) > _MAX_DEFAULT_LENGTH:
+            rendered = rendered[: _MAX_DEFAULT_LENGTH - 1] + "…"
+        return f'"{rendered}"'
     return repr(default)
 
 
