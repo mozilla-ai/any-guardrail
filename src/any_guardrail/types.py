@@ -47,7 +47,7 @@ class CategoryResult(BaseModel):
     """Whether the guardrail flagged this category. None when the backend reports no per-category verdict."""
 
     score: float | None = None
-    """Probability-like risk score in ~[0, 1], higher = more likely violating. None when not reported."""
+    """Probability-like score in ~[0, 1] for this category (for risk categories, higher = more likely violating)."""
 
     severity: int | None = None
     """Backend-native integer severity (e.g. Azure Content Safety 0-7). None when not reported."""

@@ -91,9 +91,10 @@ def test_match_injection_label_batch_returns_list() -> None:
     assert len(outputs) == 2
     assert outputs[0].valid is True
     assert outputs[1].valid is False
+    # score is canonically P(injection): low for the safe row, high for the unsafe row.
     assert outputs[0].score is not None
     assert outputs[1].score is not None
-    assert outputs[0].score > 0.98
+    assert outputs[0].score < 0.02
     assert outputs[1].score > 0.98
 
 
@@ -107,6 +108,7 @@ def test_match_injection_label_single_unchanged() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True
+    assert result.score == pytest.approx(0.01)
 
 
 def test_validate_batch_protectai_uses_batch_path(protectai_instance: Protectai) -> None:
@@ -174,12 +176,48 @@ def test_validate_batch_default_iterates() -> None:
 
 
 def test_match_injection_label_batch_reads_score_per_row() -> None:
-    """Scores are read per-row from the uniform output shape."""
+    """Scores are read per-row from the uniform output shape and report P(injection)."""
     scores = np.array([[0.73, 0.27], [0.12, 0.88]])
     outputs = match_injection_label_batch(
         _uniform_output(["SAFE", "INJECTION"], scores),
         injection_label="INJECTION",
     )
 
-    assert outputs[0].score == pytest.approx(0.73)
+    assert outputs[0].score == pytest.approx(0.27)
     assert outputs[1].score == pytest.approx(0.88)
+
+
+def test_match_injection_label_categories_with_full_label_list() -> None:
+    """When the provider surfaces `labels`, categories carry the full distribution."""
+    scores = np.array([[0.73, 0.27]])
+    inference_output = _uniform_output(["SAFE"], scores)
+    inference_output.data["labels"] = ["SAFE", "INJECTION"]
+
+    result = match_injection_label(inference_output, injection_label="INJECTION")
+
+    assert [category.name for category in result.categories] == ["SAFE", "INJECTION"]
+    assert result.categories[0].score == pytest.approx(0.73)
+    assert result.categories[1].score == pytest.approx(0.27)
+    # Only the injection category carries a verdict; it wasn't predicted here.
+    assert result.categories[0].triggered is None
+    assert result.categories[1].triggered is False
+
+
+def test_match_injection_label_categories_complement_fallback() -> None:
+    """Without `labels` (encoderfile), 2-class names are reconstructed via complement."""
+    # Safe prediction: the complement index must be the injection class.
+    safe_result = match_injection_label(
+        _uniform_output(["SAFE"], np.array([[0.9, 0.1]])),
+        injection_label="INJECTION",
+    )
+    assert [category.name for category in safe_result.categories] == ["SAFE", "INJECTION"]
+    assert safe_result.score == pytest.approx(0.1)
+
+    # Injection prediction: the complement label is unknown and gets a placeholder name.
+    unsafe_result = match_injection_label(
+        _uniform_output(["INJECTION"], np.array([[0.2, 0.8]])),
+        injection_label="INJECTION",
+    )
+    assert [category.name for category in unsafe_result.categories] == ["LABEL_0", "INJECTION"]
+    assert unsafe_result.score == pytest.approx(0.8)
+    assert unsafe_result.categories[1].triggered is True
