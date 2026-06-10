@@ -192,10 +192,7 @@ class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
 
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code // 100 != 2:
-            msg = (
-                f"Azure Prompt Shields request failed with status code "
-                f"{response.status_code}: {response.text}"
-            )
+            msg = f"Azure Prompt Shields request failed with status code {response.status_code}: {response.text}"
             raise RuntimeError(msg)
         parsed: dict[str, Any] = response.json()
         return parsed
