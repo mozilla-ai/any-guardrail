@@ -6,7 +6,7 @@ enabling runtime validation across all guardrail implementations.
 
 from typing import Any, Generic, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # Type variables for generic stages
 PreprocessT = TypeVar("PreprocessT")
@@ -23,6 +23,74 @@ ExplanationT = TypeVar("ExplanationT")
 
 ScoreT = TypeVar("ScoreT")
 """Type variable for guardrail output score field."""
+
+
+class CategoryResult(BaseModel):
+    """Result for one taxonomy category evaluated by a guardrail.
+
+    Categories give multi-label and taxonomy guardrails (DuoGuard, Llama Guard
+    S-codes, Azure severities, binary classifiers' label distributions) a
+    lossless, uniform home instead of overloading ``explanation``.
+
+    Example:
+        >>> CategoryResult(name="S1", description="Violent Crimes", triggered=True)
+
+    """
+
+    name: str
+    """Stable identifier for the category (e.g. ``"S1"``, ``"hate"``, ``"Jailbreak prompts"``)."""
+
+    description: str | None = None
+    """Human-readable elaboration (e.g. ``"Violent Crimes"`` for ``"S1"``)."""
+
+    triggered: bool | None = None
+    """Whether the guardrail flagged this category. None when the backend reports no per-category verdict."""
+
+    score: float | None = None
+    """Probability-like risk score in ~[0, 1], higher = more likely violating. None when not reported."""
+
+    severity: int | None = None
+    """Backend-native integer severity (e.g. Azure Content Safety 0-7). None when not reported."""
+
+
+class SpanResult(BaseModel):
+    """A character span flagged by a guardrail.
+
+    Reserved for span-producing guardrails (PII/NER detection, span-level
+    toxicity, token classification). Offsets are zero-based character indices
+    into the validated text.
+    """
+
+    start: int
+    """Zero-based start offset of the span in the validated text."""
+
+    end: int
+    """Zero-based end offset (exclusive) of the span in the validated text."""
+
+    text: str | None = None
+    """The flagged text, when the guardrail surfaces it."""
+
+    label: str | None = None
+    """Label attached to the span (e.g. an entity or category name)."""
+
+    score: float | None = None
+    """Probability-like risk score in ~[0, 1] for this span. None when not reported."""
+
+
+class GuardrailUsage(BaseModel):
+    """Provenance and cost envelope for one ``validate()`` call."""
+
+    model_id: str | None = None
+    """Identifier of the model or service that produced the result."""
+
+    latency_ms: float | None = None
+    """Wall-clock duration of the validation call in milliseconds."""
+
+    prompt_tokens: int | None = None
+    """Prompt token count, when the backend surfaces it."""
+
+    completion_tokens: int | None = None
+    """Completion token count, when the backend surfaces it."""
 
 
 class GuardrailOutput(BaseModel, Generic[ValidT, ExplanationT, ScoreT]):
@@ -54,6 +122,24 @@ class GuardrailOutput(BaseModel, Generic[ValidT, ExplanationT, ScoreT]):
 
     score: ScoreT | None = None
     """Represents the score assigned to the output by the guardrail."""
+
+    categories: list[CategoryResult] = Field(default_factory=list)
+    """Per-category results. Empty when the guardrail has no category taxonomy."""
+
+    spans: list[SpanResult] | None = None
+    """Character spans flagged by the guardrail. None when the guardrail does not produce spans."""
+
+    modified_text: str | None = None
+    """Sanitized/masked text when the guardrail rewrites input. None means no modification."""
+
+    usage: GuardrailUsage | None = None
+    """Provenance and cost information for this validation call."""
+
+    extra: dict[str, Any] | None = None
+    """Structured, guardrail-specific extras (e.g. rubric score, highlights, blocklist matches)."""
+
+    raw: Any | None = None
+    """Unmodified backend payload (API response JSON, model tensors) for escape-hatch access."""
 
 
 class GuardrailPreprocessOutput(BaseModel, Generic[PreprocessT]):
