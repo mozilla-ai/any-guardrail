@@ -6,7 +6,7 @@ try:
 except ImportError as e:
     msg = (
         "openai package is not installed. "
-        "Please install it with `pip install openai` to use the OpenaiModeration guardrail."
+        "Please install it with `pip install 'any-guardrail[openai]'` to use the OpenaiModeration guardrail."
     )
     raise ImportError(msg) from e
 
@@ -119,5 +119,5 @@ class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any, bool, dict[str, float],
         filtered_scores: dict[str, float] = {k: float(v) for k, v in scores_dict.items() if v is not None}
         max_score: float = max(filtered_scores.values()) if filtered_scores else 0.0
         flagged = bool(result.flagged)
-        valid = not flagged and max_score < self.threshold
+        valid = not flagged and max_score <= self.threshold
         return GuardrailOutput(valid=valid, explanation=filtered_scores, score=max_score)
