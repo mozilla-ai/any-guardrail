@@ -68,6 +68,19 @@ else:
     response = your_llm(user_input)
 ```
 
+Every guardrail returns the same `GuardrailOutput` shape, so you can swap models without changing application code:
+
+```python
+result.valid       # bool verdict — True means the content passed
+result.score       # risk score in ~[0, 1], higher = more likely violating (when available)
+result.categories  # per-category results: CategoryResult(name, description, triggered, score, severity)
+result.explanation # human-readable rationale (judge reasoning, raw generation)
+result.usage       # provenance: model_id, latency_ms, token counts
+result.extra       # guardrail-specific structured extras; result.raw holds the backend payload
+
+flagged = [c.name for c in result.categories if c.triggered]
+```
+
 ## Documentation
 Full guides at [docs link](https://mozilla-ai.github.io/any-guardrail/)
 

@@ -274,7 +274,14 @@ def _types_page() -> str:
         "Runtime-validated wrappers used throughout the pipeline and the output type returned by every guardrail.\n",
     ]
 
-    for cls_name in ("GuardrailOutput", "GuardrailPreprocessOutput", "GuardrailInferenceOutput"):
+    for cls_name in (
+        "GuardrailOutput",
+        "CategoryResult",
+        "SpanResult",
+        "GuardrailUsage",
+        "GuardrailPreprocessOutput",
+        "GuardrailInferenceOutput",
+    ):
         cls = getattr(types_mod, cls_name)
         lines.append(_section(cls_name))
         doc = _clean_docstring(inspect.getdoc(cls))

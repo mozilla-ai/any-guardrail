@@ -1,22 +1,14 @@
-# Jasper
+# InjecGuard
 
-Prompt injection detection encoder based models.
+Prompt injection detection encoder based model.
 
 For more information, please see the model card:
 
-- [Jasper Deberta](https://huggingface.co/JasperLS/deberta-v3-base-injection)
-- [Jasper Gelectra](https://huggingface.co/JasperLS/gelectra-base-injection).
-
-Args:
-    model_id: HuggingFace path to model.
-
-Raises:
-    ValueError: Can only use model paths for Jasper models from HuggingFace.
+- [InjecGuard](https://huggingface.co/leolee99/InjecGuard).
 
 ## Supported Models
 
-- `JasperLS/gelectra-base-injection`
-- `JasperLS/deberta-v3-base-injection`
+- `leolee99/InjecGuard`
 
 ## Constructor
 
@@ -25,7 +17,7 @@ Raises:
 | `model_id` | `str | None` | No | `None` |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` |
 
-Initialize the Jasper guardrail.
+Initialize the InjecGuard guardrail.
 
 ## validate
 

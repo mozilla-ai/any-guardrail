@@ -1,31 +1,27 @@
-# Jasper
+# ShieldGemma
 
-Prompt injection detection encoder based models.
+Wrapper class for Google ShieldGemma models.
 
-For more information, please see the model card:
+For more information, please visit the model cards: [Shield Gemma](https://huggingface.co/collections/google/shieldgemma-67d130ef8da6af884072a789).
 
-- [Jasper Deberta](https://huggingface.co/JasperLS/deberta-v3-base-injection)
-- [Jasper Gelectra](https://huggingface.co/JasperLS/gelectra-base-injection).
-
-Args:
-    model_id: HuggingFace path to model.
-
-Raises:
-    ValueError: Can only use model paths for Jasper models from HuggingFace.
+Note we do not support the image classifier.
 
 ## Supported Models
 
-- `JasperLS/gelectra-base-injection`
-- `JasperLS/deberta-v3-base-injection`
+- `google/shieldgemma-2b`
+- `google/shieldgemma-9b`
+- `google/shieldgemma-27b`
 
 ## Constructor
 
 | Parameter | Type | Required | Default |
 |-----------|------|----------|---------|
+| `policy` | `str` | Yes | — |
+| `threshold` | `float` | No | `0.5` |
 | `model_id` | `str | None` | No | `None` |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` |
 
-Initialize the Jasper guardrail.
+Initialize the ShieldGemma guardrail.
 
 ## validate
 
