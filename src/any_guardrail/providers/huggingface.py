@@ -243,7 +243,9 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         predicted_indices = scores.argmax(axis=-1).tolist()
         id2label = self.model.config.id2label
         predicted_labels = [id2label[i] for i in predicted_indices]
-        labels = [id2label[i] for i in range(len(id2label))]
+        # Derive the class count from the logits, not from id2label: configs can
+        # carry sparse or non-contiguous label maps, so fall back per index.
+        labels = [id2label.get(i, f"LABEL_{i}") for i in range(logits.shape[-1])]
         return GuardrailInferenceOutput(
             data={
                 "logits": logits,
