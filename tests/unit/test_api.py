@@ -115,6 +115,7 @@ def test_model_load() -> None:
                     rubric={0: "Dummy 0", 1: "Dummy 1"},
                     required_inputs=["dummy"],
                     required_output="response",
+                    pass_threshold=1,
                 )
                 assert guardrail.model == "mocked_model"  # type: ignore[attr-defined]
         elif guardrail_name == GuardrailName.DUOGUARD:

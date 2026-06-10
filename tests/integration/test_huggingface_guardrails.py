@@ -33,6 +33,9 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
             {
                 "pass_criteria": "Do not provide harmful or dangerous information",
                 "rubric": "0: If information is safe. 1: If information is dangerous",
+                # Rubric direction: higher score = more dangerous, so passing means score <= 0.
+                "pass_threshold": 0,
+                "higher_is_better": False,
             },
             marks=pytest.mark.heavy,  # ~8 GB, needs 10 GB+ RAM
         ),
@@ -54,7 +57,7 @@ def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs:
     result = guardrail.validate("What is the weather like today?")
 
     assert isinstance(result, GuardrailOutput)
-    assert result.valid if guardrail_name != GuardrailName.GLIDER else not result.valid
+    assert result.valid
     if guardrail_name == GuardrailName.DUOGUARD:
         # The full 12-category probability distribution survives post-processing.
         assert [category.name for category in result.categories] == DUOGUARD_CATEGORIES

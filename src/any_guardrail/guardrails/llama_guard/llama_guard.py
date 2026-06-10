@@ -1,12 +1,51 @@
+import re
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import (
+    AnyDict,
+    CategoryResult,
+    GuardrailInferenceOutput,
+    GuardrailPreprocessOutput,
+    GuardrailUsage,
+)
 
 LlamaGuardPreprocessData = AnyDict  # {"messages": list, "chat_template_kwargs": dict}
 LlamaGuardInferenceData = AnyDict  # {"generated_text": str, ...} (shape from provider.generate_chat)
+
+LLAMA_GUARD_CATEGORIES = {
+    "S1": "Violent Crimes",
+    "S2": "Non-Violent Crimes",
+    "S3": "Sex-Related Crimes",
+    "S4": "Child Sexual Exploitation",
+    "S5": "Defamation",
+    "S6": "Specialized Advice",
+    "S7": "Privacy",
+    "S8": "Intellectual Property",
+    "S9": "Indiscriminate Weapons",
+    "S10": "Hate",
+    "S11": "Suicide & Self-Harm",
+    "S12": "Sexual Content",
+    "S13": "Elections",
+    "S14": "Code Interpreter Abuse",
+}
+"""MLCommons-aligned hazard taxonomy used by Llama Guard 3 and 4."""
+
+_CATEGORY_CODE_PATTERN = re.compile(r"\bS(\d{1,2})\b")
+
+
+def _parse_violated_categories(generated_text: str) -> list[CategoryResult]:
+    r"""Extract violated S-codes (e.g. ``unsafe\nS1,S10``) as CategoryResults.
+
+    Codes are deduplicated in order of first appearance. Unknown codes are kept
+    with ``description=None`` so future taxonomy additions still surface.
+    """
+    seen: dict[str, None] = {}
+    for match in _CATEGORY_CODE_PATTERN.finditer(generated_text):
+        seen.setdefault(f"S{match.group(1)}")
+    return [CategoryResult(name=code, description=LLAMA_GUARD_CATEGORIES.get(code), triggered=True) for code in seen]
 
 
 class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
@@ -138,10 +177,17 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]
     ) -> GuardrailOutput[bool, str, None]:
-        explanation: str = model_outputs.data["generated_text"]
-        if "unsafe" in explanation.lower():
-            return GuardrailOutput(valid=False, explanation=explanation)
-        return GuardrailOutput(valid=True, explanation=explanation)
+        generated_text: str = model_outputs.data["generated_text"]
+        unsafe = "unsafe" in generated_text.lower()
+        return GuardrailOutput(
+            valid=not unsafe,
+            explanation=generated_text,
+            categories=_parse_violated_categories(generated_text) if unsafe else [],
+            usage=GuardrailUsage(
+                prompt_tokens=model_outputs.data.get("prompt_token_count"),
+                completion_tokens=model_outputs.data.get("completion_token_count"),
+            ),
+        )
 
     @property
     def _is_version_4(self) -> bool:
