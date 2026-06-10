@@ -137,19 +137,30 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         Args:
             model_id: The HuggingFace model identifier.
             **kwargs: Additional keyword arguments passed to the model's
-                ``from_pretrained`` (override provider-level defaults).
+                ``from_pretrained`` (override provider-level defaults). Two reserved
+                names are popped before forwarding:
+
+                - ``model_class``: override the model class used for this load.
+                  Lets a decoder-LM guardrail (e.g. ShieldGemma) enforce
+                  ``AutoModelForCausalLM`` even when the caller supplied a
+                  default-constructed ``HuggingFaceProvider`` configured for
+                  sequence classification. ``self.model_class`` is not mutated.
+                - ``tokenizer_class``: same idea for the tokenizer class (e.g.
+                  ``AutoProcessor`` for Llama Guard 4).
 
         """
+        model_class = kwargs.pop("model_class", None) or self.model_class
+        tokenizer_class = kwargs.pop("tokenizer_class", None) or self.tokenizer_class
         common_kwargs = self._build_from_pretrained_kwargs()
         model_load_kwargs: AnyDict = {**common_kwargs, **self.model_kwargs}
         if self.torch_dtype is not None:
             model_load_kwargs["torch_dtype"] = self.torch_dtype
         model_load_kwargs.update(kwargs)
-        self.model = self.model_class.from_pretrained(model_id, **model_load_kwargs)  # type: ignore[attr-defined]
+        self.model = model_class.from_pretrained(model_id, **model_load_kwargs)  # type: ignore[union-attr]
         if self.device is not None:
             self.model = self.model.to(self.device)
         tokenizer_id = self.tokenizer_id or model_id
-        self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **common_kwargs)  # type: ignore[attr-defined]
+        self.tokenizer = tokenizer_class.from_pretrained(tokenizer_id, **common_kwargs)  # type: ignore[union-attr]
 
     def pre_process(self, input_text: str | list[str], **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Tokenize input text for model consumption.
@@ -235,5 +246,58 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                 "scores": scores,
                 "predicted_indices": predicted_indices,
                 "predicted_labels": predicted_labels,
+            }
+        )
+
+    def generate_chat(
+        self,
+        messages: list[AnyDict],
+        *,
+        max_new_tokens: int,
+        do_sample: bool = False,
+        temperature: float | None = None,
+        chat_template_kwargs: AnyDict | None = None,
+        generation_kwargs: AnyDict | None = None,
+    ) -> GuardrailInferenceOutput[AnyDict]:
+        """Apply the model's chat template and run ``model.generate`` under ``no_grad``.
+
+        Defaults match what decoder-LLM guardrails (GraniteGuardian, LlamaGuard)
+        previously wired inline: ``add_generation_prompt=True``, ``tokenize=True``,
+        ``return_dict=True``, ``return_tensors="pt"``. Callers can override any
+        of these via ``chat_template_kwargs`` (e.g. ``documents``,
+        ``available_tools``, or ``add_generation_prompt=False`` for models that
+        don't want an assistant prefix).
+        """
+        template_kwargs: AnyDict = {
+            "add_generation_prompt": True,
+            "tokenize": True,
+            "return_dict": True,
+            "return_tensors": "pt",
+            **(chat_template_kwargs or {}),
+        }
+        inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+        if self.device is not None and hasattr(inputs, "to"):
+            inputs = inputs.to(self.device)
+
+        prompt_len = int(inputs["input_ids"].shape[-1])
+
+        gen_kwargs: AnyDict = {"max_new_tokens": max_new_tokens, "do_sample": do_sample}
+        if do_sample and temperature is not None:
+            gen_kwargs["temperature"] = temperature
+        if generation_kwargs:
+            gen_kwargs.update(generation_kwargs)
+
+        with torch.no_grad():
+            output = self.model.generate(**inputs, **gen_kwargs)
+
+        generated = output[:, prompt_len:]
+        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=True)
+
+        return GuardrailInferenceOutput(
+            data={
+                "generated_text": text,
+                "prompt_token_count": prompt_len,
+                "completion_token_count": int(generated.shape[-1]),
+                "raw": output,
             }
         )

@@ -1,14 +1,15 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-import torch
 
 from any_guardrail import GuardrailOutput
 from any_guardrail.guardrails.granite_guardian import GraniteGuardian, GraniteGuardianRisk
 from any_guardrail.guardrails.granite_guardian.granite_guardian import (
     GUARDIAN_JUDGE_NOTHINK,
     GUARDIAN_JUDGE_THINK,
+    MAX_NEW_TOKENS_NOTHINK,
+    MAX_NEW_TOKENS_THINK,
     _parse_generation,
 )
 from any_guardrail.types import GuardrailInferenceOutput
@@ -24,9 +25,17 @@ def guardian_instance() -> GraniteGuardian:
     return instance
 
 
-def _make_mock_provider(apply_chat_template_return: dict[str, Any]) -> MagicMock:
+def _make_mock_provider(generated_text: str = "<score>no</score>") -> MagicMock:
+    """Build a provider mock whose ``generate_chat`` returns a uniform inference output."""
     provider = MagicMock()
-    provider.tokenizer.apply_chat_template.return_value = apply_chat_template_return
+    provider.generate_chat.return_value = GuardrailInferenceOutput(
+        data={
+            "generated_text": generated_text,
+            "prompt_token_count": 32,
+            "completion_token_count": 7,
+            "raw": None,
+        }
+    )
     return provider
 
 
@@ -54,25 +63,24 @@ def test_parse_generation(model_outputs: str, expected_valid: bool | None, expec
     assert result.explanation == model_outputs
 
 
-def test_post_processing_decodes_generated_suffix(guardian_instance: GraniteGuardian) -> None:
-    """Post-processing slices off the prompt tokens and decodes only the generated tail."""
-    full_tokens = torch.tensor([[0] * 10 + [1, 2, 3]])
-
-    provider = MagicMock()
-    provider.tokenizer.decode.return_value = "<score>no</score>"
-    guardian_instance.provider = provider
+def test_post_processing_extracts_score_from_generated_text(guardian_instance: GraniteGuardian) -> None:
+    """Post-processing reads ``generated_text`` and parses the yes/no score."""
+    guardian_instance.provider = MagicMock()
 
     result = guardian_instance._post_processing(
-        GuardrailInferenceOutput(data={"output": full_tokens, "prompt_len": 10})
+        GuardrailInferenceOutput(
+            data={
+                "generated_text": "<score>no</score>",
+                "prompt_token_count": 10,
+                "completion_token_count": 3,
+                "raw": None,
+            }
+        )
     )
 
-    # Verify only the generated suffix was passed to the decoder.
-    call_args = provider.tokenizer.decode.call_args
-    passed_tokens = call_args.args[0]
-    assert passed_tokens.tolist() == [1, 2, 3]
-    assert call_args.kwargs["skip_special_tokens"] is True
     assert result.valid is True
     assert result.score == "no"
+    assert result.explanation == "<score>no</score>"
 
 
 def test_build_guardian_block_nothink(guardian_instance: GraniteGuardian) -> None:
@@ -119,87 +127,119 @@ def test_build_messages_with_output(guardian_instance: GraniteGuardian) -> None:
 
 
 def test_pre_processing_basic(guardian_instance: GraniteGuardian) -> None:
-    """Preprocessing invokes apply_chat_template with the expected template kwargs."""
-    fake_tokens = {"input_ids": torch.tensor([[1, 2, 3, 4]]), "attention_mask": torch.tensor([[1, 1, 1, 1]])}
-    guardian_instance.provider = _make_mock_provider(fake_tokens)
+    """Preprocessing returns the assembled messages and an empty chat_template_kwargs by default."""
+    guardian_instance.provider = _make_mock_provider()
 
     output = guardian_instance._pre_processing("hello")
 
-    tokenizer = guardian_instance.provider.tokenizer
-    tokenizer.apply_chat_template.assert_called_once()
-    _, kwargs = tokenizer.apply_chat_template.call_args
-    assert kwargs["add_generation_prompt"] is True
-    assert kwargs["tokenize"] is True
-    assert kwargs["return_dict"] is True
-    assert kwargs["return_tensors"] == "pt"
-    assert "documents" not in kwargs
-    assert "available_tools" not in kwargs
-    assert output.data == fake_tokens
+    assert "messages" in output.data
+    assert "chat_template_kwargs" in output.data
+    assert output.data["chat_template_kwargs"] == {}
+    # The first message is the user input, the last is the guardian block.
+    assert output.data["messages"][0] == {"role": "user", "content": "hello"}
+    assert output.data["messages"][-1]["content"].startswith("<guardian>")
 
 
 def test_pre_processing_forwards_documents(guardian_instance: GraniteGuardian) -> None:
-    """RAG mode forwards the documents list to apply_chat_template."""
-    fake_tokens = {"input_ids": torch.tensor([[1, 2, 3]]), "attention_mask": torch.tensor([[1, 1, 1]])}
-    guardian_instance.provider = _make_mock_provider(fake_tokens)
+    """RAG mode forwards the documents list via chat_template_kwargs."""
+    guardian_instance.provider = _make_mock_provider()
     docs = [{"doc_id": "0", "text": "some context"}]
 
-    guardian_instance._pre_processing("query", output_text="response", documents=docs)
+    output = guardian_instance._pre_processing("query", output_text="response", documents=docs)
 
-    _, kwargs = guardian_instance.provider.tokenizer.apply_chat_template.call_args
-    assert kwargs["documents"] == docs
-    assert "available_tools" not in kwargs
+    assert output.data["chat_template_kwargs"]["documents"] == docs
+    assert "available_tools" not in output.data["chat_template_kwargs"]
 
 
 def test_pre_processing_forwards_available_tools(guardian_instance: GraniteGuardian) -> None:
-    """Function-calling mode forwards the tools list to apply_chat_template."""
-    fake_tokens = {"input_ids": torch.tensor([[1, 2]]), "attention_mask": torch.tensor([[1, 1]])}
-    guardian_instance.provider = _make_mock_provider(fake_tokens)
+    """Function-calling mode forwards the tools list via chat_template_kwargs."""
+    guardian_instance.provider = _make_mock_provider()
     tools = [{"name": "search", "description": "search the web", "parameters": {}}]
 
-    guardian_instance._pre_processing("query", output_text="response", available_tools=tools)
+    output = guardian_instance._pre_processing("query", output_text="response", available_tools=tools)
 
-    _, kwargs = guardian_instance.provider.tokenizer.apply_chat_template.call_args
-    assert kwargs["available_tools"] == tools
-    assert "documents" not in kwargs
+    assert output.data["chat_template_kwargs"]["available_tools"] == tools
+    assert "documents" not in output.data["chat_template_kwargs"]
 
 
 def test_pre_processing_forwards_both_documents_and_tools(guardian_instance: GraniteGuardian) -> None:
     """Agentic RAG can combine documents and tools in a single call."""
-    fake_tokens = {"input_ids": torch.tensor([[1]]), "attention_mask": torch.tensor([[1]])}
-    guardian_instance.provider = _make_mock_provider(fake_tokens)
+    guardian_instance.provider = _make_mock_provider()
     docs = [{"doc_id": "0", "text": "ctx"}]
     tools = [{"name": "tool", "description": "d", "parameters": {}}]
 
-    guardian_instance._pre_processing("q", output_text="r", documents=docs, available_tools=tools)
+    output = guardian_instance._pre_processing("q", output_text="r", documents=docs, available_tools=tools)
 
-    _, kwargs = guardian_instance.provider.tokenizer.apply_chat_template.call_args
-    assert kwargs["documents"] == docs
-    assert kwargs["available_tools"] == tools
+    assert output.data["chat_template_kwargs"]["documents"] == docs
+    assert output.data["chat_template_kwargs"]["available_tools"] == tools
 
 
-def test_pre_processing_passes_messages_positionally(guardian_instance: GraniteGuardian) -> None:
-    """The messages list is the first positional argument to apply_chat_template."""
-    fake_tokens = {"input_ids": torch.tensor([[1, 2]]), "attention_mask": torch.tensor([[1, 1]])}
-    guardian_instance.provider = _make_mock_provider(fake_tokens)
+def test_pre_processing_assembles_messages_with_output(guardian_instance: GraniteGuardian) -> None:
+    """When ``output_text`` is provided, the assistant turn appears between user and guardian block."""
+    guardian_instance.provider = _make_mock_provider()
 
-    guardian_instance._pre_processing("user q", output_text="assistant a")
+    output = guardian_instance._pre_processing("user q", output_text="assistant a")
 
-    args, _ = guardian_instance.provider.tokenizer.apply_chat_template.call_args
-    messages = args[0]
+    messages = output.data["messages"]
     assert messages[0] == {"role": "user", "content": "user q"}
     assert messages[1] == {"role": "assistant", "content": "assistant a"}
     assert messages[2]["role"] == "user"
     assert "<guardian>" in messages[2]["content"]
 
 
-def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardian) -> None:
-    """The typed validate() override forwards documents and available_tools to the tokenizer."""
-    fake_tokens = {"input_ids": torch.tensor([[1, 2]]), "attention_mask": torch.tensor([[1, 1]])}
-    provider = _make_mock_provider(fake_tokens)
+def test_inference_passes_max_tokens_per_mode(guardian_instance: GraniteGuardian) -> None:
+    """Think mode passes the larger token budget; no-think passes the smaller one."""
+    from any_guardrail.types import AnyDict, GuardrailPreprocessOutput
 
-    # Mock model.generate and tokenizer.decode so the full validate pipeline runs end-to-end.
-    provider.model.generate.return_value = torch.tensor([[1, 2, 3]])
-    provider.tokenizer.decode.return_value = "<score>no</score>"
+    provider = _make_mock_provider()
+    guardian_instance.provider = provider
+    inputs: AnyDict = {"messages": [], "chat_template_kwargs": {}}
+
+    guardian_instance._inference(GuardrailPreprocessOutput(data=inputs))
+    _, kwargs = provider.generate_chat.call_args
+    assert kwargs["max_new_tokens"] == MAX_NEW_TOKENS_NOTHINK
+    assert kwargs["do_sample"] is False
+
+    guardian_instance.think = True
+    guardian_instance._inference(GuardrailPreprocessOutput(data=inputs))
+    _, kwargs = provider.generate_chat.call_args
+    assert kwargs["max_new_tokens"] == MAX_NEW_TOKENS_THINK
+
+
+def test_inference_forwards_chat_template_kwargs(guardian_instance: GraniteGuardian) -> None:
+    """``chat_template_kwargs`` from pre-processing reach ``generate_chat`` unchanged when non-empty."""
+    provider = _make_mock_provider()
+    guardian_instance.provider = provider
+    docs = [{"doc_id": "0", "text": "context"}]
+    from any_guardrail.types import GuardrailPreprocessOutput
+
+    guardian_instance._inference(
+        GuardrailPreprocessOutput(
+            data={"messages": [{"role": "user", "content": "x"}], "chat_template_kwargs": {"documents": docs}}
+        )
+    )
+
+    _, kwargs = provider.generate_chat.call_args
+    assert kwargs["chat_template_kwargs"] == {"documents": docs}
+
+
+def test_inference_passes_none_when_chat_template_kwargs_empty(guardian_instance: GraniteGuardian) -> None:
+    """Empty chat_template_kwargs is forwarded as None to keep the provider call shape clean."""
+    provider = _make_mock_provider()
+    guardian_instance.provider = provider
+    from any_guardrail.types import GuardrailPreprocessOutput
+
+    guardian_instance._inference(
+        GuardrailPreprocessOutput(data={"messages": [{"role": "user", "content": "x"}], "chat_template_kwargs": {}})
+    )
+
+    _, kwargs = provider.generate_chat.call_args
+    assert kwargs["chat_template_kwargs"] is None
+
+
+def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardian) -> None:
+    """End-to-end validate() forwards documents and tools to ``generate_chat`` via chat_template_kwargs."""
+    provider = _make_mock_provider(generated_text="<score>no</score>")
     guardian_instance.provider = provider
 
     docs = [{"doc_id": "0", "text": "context"}]
@@ -207,11 +247,75 @@ def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardia
 
     result = guardian_instance.validate("q", output_text="r", documents=docs, available_tools=tools)
 
-    _, kwargs = provider.tokenizer.apply_chat_template.call_args
-    assert kwargs["documents"] == docs
-    assert kwargs["available_tools"] == tools
+    _, kwargs = provider.generate_chat.call_args
+    assert kwargs["chat_template_kwargs"]["documents"] == docs
+    assert kwargs["chat_template_kwargs"]["available_tools"] == tools
     assert result.valid is True
     assert result.score == "no"
+
+
+def test_validate_raises_on_non_chat_capable_provider(guardian_instance: GraniteGuardian) -> None:
+    """A provider that doesn't implement ``generate_chat`` surfaces a clear NotImplementedError."""
+    from any_guardrail.providers.base import Provider
+
+    class DummyProvider(Provider[Any, Any]):
+        def load_model(self, model_id: str, **kwargs: Any) -> None:
+            del model_id, kwargs
+
+        def pre_process(self, *args: Any, **kwargs: Any) -> Any:  # pragma: no cover - never reached
+            raise NotImplementedError
+
+        def infer(self, model_inputs: Any) -> Any:  # pragma: no cover - never reached
+            raise NotImplementedError
+
+    guardian_instance.provider = DummyProvider()
+
+    with pytest.raises(NotImplementedError, match="generate_chat"):
+        guardian_instance.validate("test input")
+
+
+def test_user_supplied_default_hf_provider_loaded_with_causal_lm() -> None:
+    """Regression: a default-constructed HuggingFaceProvider must still load as a causal LM.
+
+    Granite Guardian is a causal LM. If a user passes ``HuggingFaceProvider()``
+    (whose default ``model_class`` is ``AutoModelForSequenceClassification``),
+    GraniteGuardian.__init__ must override the loader for this call so the
+    causal-LM head is loaded — not the missing classification head.
+    """
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from any_guardrail.providers.huggingface import HuggingFaceProvider
+
+    shared_provider = HuggingFaceProvider()
+    assert shared_provider.model_class is not AutoModelForCausalLM  # sanity: default is seq-classification
+
+    with patch.object(HuggingFaceProvider, "load_model") as mock_load:
+        GraniteGuardian(provider=shared_provider, criteria=GraniteGuardianRisk.HARM)
+
+    mock_load.assert_called_once()
+    _, load_kwargs = mock_load.call_args
+    assert load_kwargs["model_class"] is AutoModelForCausalLM
+    assert load_kwargs["tokenizer_class"] is AutoTokenizer
+    # The provider's stored defaults are not mutated.
+    assert shared_provider.model_class is not AutoModelForCausalLM
+
+
+def test_no_provider_path_constructs_provider_with_causal_lm() -> None:
+    """When no provider is supplied, GraniteGuardian builds an HF provider configured for causal LM.
+
+    This is the existing default behavior; it should not regress when the
+    user-supplied-provider path is hardened.
+    """
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from any_guardrail.providers.huggingface import HuggingFaceProvider
+
+    with patch.object(HuggingFaceProvider, "load_model"):
+        guardian = GraniteGuardian(criteria=GraniteGuardianRisk.HARM)
+
+    assert isinstance(guardian.provider, HuggingFaceProvider)
+    assert guardian.provider.model_class is AutoModelForCausalLM
+    assert guardian.provider.tokenizer_class is AutoTokenizer
 
 
 def test_risk_constants_are_nonempty_strings() -> None:

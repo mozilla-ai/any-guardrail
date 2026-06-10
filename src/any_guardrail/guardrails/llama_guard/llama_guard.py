@@ -1,16 +1,12 @@
 from typing import Any, ClassVar
 
-import torch
-from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer, Llama4ForConditionalGeneration
-
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
-# Type alias for LlamaGuard - preprocessing can return either a dict (v4) or tensor (v3)
-LlamaGuardPreprocessData = AnyDict | Any  # dict for v4, tensor for v3
-LlamaGuardInferenceData = Any  # Generated tensor output
+LlamaGuardPreprocessData = AnyDict  # {"messages": list, "chat_template_kwargs": dict}
+LlamaGuardInferenceData = AnyDict  # {"generated_text": str, ...} (shape from provider.generate_chat)
 
 
 class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
@@ -37,119 +33,112 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     ) -> None:
         """Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3."""
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
+
+        # Determine per-variant chat-template behavior up-front so this is the only
+        # place that knows the v3-vs-v4 quirk, regardless of which provider is used.
         if self._is_version_4:
-            self.tokenizer_params: AnyDict = {
-                "return_tensors": "pt",
-                "add_generation_prompt": True,
-                "tokenize": True,
-                "return_dict": True,
-            }
-            default_provider = HuggingFaceProvider(
-                model_class=Llama4ForConditionalGeneration,
-                tokenizer_class=AutoProcessor,
-            )
+            # v4 wants the standard "add the assistant prefix" template behavior;
+            # provider.generate_chat already defaults to that, so no override.
+            self._chat_template_kwargs: AnyDict = {}
         elif self.model_id in self.SUPPORTED_MODELS:
-            self.tokenizer_params = {
-                "return_tensors": "pt",
-            }
-            default_provider = HuggingFaceProvider(
-                model_class=AutoModelForCausalLM,
-                tokenizer_class=AutoTokenizer,
-            )
+            # Llama Guard 3 expects to evaluate the conversation as-is, without an
+            # appended assistant prefix.
+            self._chat_template_kwargs = {"add_generation_prompt": False}
         else:
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
 
-        self.provider = provider or default_provider
-        self.provider.load_model(self.model_id)
+        # Lazy-import transformers so users on `any-guardrail[llamafile]`
+        # (without the huggingface extra) can construct LlamaGuard with a
+        # non-HF provider (e.g. LlamafileProvider) without paying the import
+        # cost or hitting ImportError at module load time.
+        load_kwargs: AnyDict = {}
+        if provider is not None:
+            self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                # Llama Guard is a causal LM (or multimodal seq2seq for v4). A
+                # default-constructed HuggingFaceProvider targets
+                # AutoModelForSequenceClassification, which would silently load
+                # the wrong head. Enforce the right classes for this load
+                # (does not mutate provider state).
+                if self._is_version_4:
+                    from transformers import AutoProcessor, Llama4ForConditionalGeneration
+
+                    load_kwargs = {
+                        "model_class": Llama4ForConditionalGeneration,
+                        "tokenizer_class": AutoProcessor,
+                    }
+                else:
+                    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                    load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
+        else:
+            from transformers import (
+                AutoModelForCausalLM,
+                AutoProcessor,
+                AutoTokenizer,
+                Llama4ForConditionalGeneration,
+            )
+
+            if self._is_version_4:
+                self.provider = HuggingFaceProvider(
+                    model_class=Llama4ForConditionalGeneration,
+                    tokenizer_class=AutoProcessor,
+                )
+            else:
+                self.provider = HuggingFaceProvider(
+                    model_class=AutoModelForCausalLM,
+                    tokenizer_class=AutoTokenizer,
+                )
+        self.provider.load_model(self.model_id, **load_kwargs)
+
+    def _build_conversation(self, input_text: str, output_text: str | None) -> list[AnyDict]:
+        """Shape the chat conversation per model variant."""
+        uses_multimodal_content = self.model_id == self.SUPPORTED_MODELS[0] or self._is_version_4
+        if uses_multimodal_content:
+            user_turn: AnyDict = {"role": "user", "content": [{"type": "text", "text": input_text}]}
+        else:
+            user_turn = {"role": "user", "content": input_text}
+        conversation: list[AnyDict] = [user_turn]
+        if output_text:
+            if uses_multimodal_content:
+                conversation.append({"role": "assistant", "content": [{"type": "text", "text": output_text}]})
+            else:
+                conversation.append({"role": "assistant", "content": output_text})
+        return conversation
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailPreprocessOutput[LlamaGuardPreprocessData]:
-        if output_text:
-            if self.model_id == self.SUPPORTED_MODELS[0] or self._is_version_4:
-                conversation = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": input_text},
-                        ],
-                    },
-                    {
-                        "role": "assistant",
-                        "content": [
-                            {"type": "text", "text": output_text},
-                        ],
-                    },
-                ]
-            else:
-                conversation = [
-                    {
-                        "role": "user",
-                        "content": input_text,
-                    },
-                    {
-                        "role": "assistant",
-                        "content": output_text,
-                    },
-                ]
-        else:
-            if self.model_id == self.SUPPORTED_MODELS[0] or self._is_version_4:
-                conversation = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": input_text},
-                        ],
-                    },
-                ]
-            else:
-                conversation = [
-                    {
-                        "role": "user",
-                        "content": input_text,
-                    },
-                ]
-        self._cached_model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
-            conversation, **self.tokenizer_params, **kwargs
+        conversation = self._build_conversation(input_text, output_text)
+        chat_template_kwargs: AnyDict = {**self._chat_template_kwargs, **kwargs}
+        return GuardrailPreprocessOutput(
+            data={
+                "messages": conversation,
+                "chat_template_kwargs": chat_template_kwargs,
+            }
         )
-        device = getattr(self.provider, "device", None)
-        if device is not None and hasattr(self._cached_model_inputs, "to"):
-            self._cached_model_inputs = self._cached_model_inputs.to(device)
-        return GuardrailPreprocessOutput(data=self._cached_model_inputs)
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[LlamaGuardPreprocessData]
     ) -> GuardrailInferenceOutput[LlamaGuardInferenceData]:
-        """Run generate() for inference."""
-        with torch.no_grad():
-            if self._is_version_4:
-                output = self.provider.model.generate(**model_inputs.data, max_new_tokens=10, do_sample=False)  # type: ignore[attr-defined]
-            else:
-                output = self.provider.model.generate(  # type: ignore[attr-defined]
-                    model_inputs.data["input_ids"],
-                    max_new_tokens=20,
-                    pad_token_id=0,
-                )
-        return GuardrailInferenceOutput(data=output)
+        """Dispatch to ``provider.generate_chat`` with version-appropriate gen params."""
+        max_new_tokens = 10 if self._is_version_4 else 20
+        # Llama Guard 3 was historically generated with ``pad_token_id=0``; preserve
+        # that to keep generation behavior bit-identical with the pre-refactor path.
+        generation_kwargs: AnyDict | None = None if self._is_version_4 else {"pad_token_id": 0}
+        return self.provider.generate_chat(
+            messages=model_inputs.data["messages"],
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            chat_template_kwargs=model_inputs.data["chat_template_kwargs"] or None,
+            generation_kwargs=generation_kwargs,
+        )
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]
     ) -> GuardrailOutput[bool, str, None]:
-        if self._is_version_4:
-            explanation = self.provider.tokenizer.batch_decode(  # type: ignore[attr-defined]
-                model_outputs.data[:, self._cached_model_inputs["input_ids"].shape[-1] :],
-                skip_special_tokens=True,
-            )[0]
-
-            if "unsafe" in explanation.lower():
-                return GuardrailOutput(valid=False, explanation=explanation)
-            return GuardrailOutput(valid=True, explanation=explanation)
-
-        prompt_len = self._cached_model_inputs.get("input_ids").shape[1]
-        output = model_outputs.data[:, prompt_len:]
-        explanation = self.provider.tokenizer.decode(output[0])  # type: ignore[attr-defined]
-
+        explanation: str = model_outputs.data["generated_text"]
         if "unsafe" in explanation.lower():
             return GuardrailOutput(valid=False, explanation=explanation)
         return GuardrailOutput(valid=True, explanation=explanation)

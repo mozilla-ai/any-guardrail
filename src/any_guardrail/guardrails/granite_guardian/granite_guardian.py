@@ -1,17 +1,14 @@
 import re
 from typing import Any, ClassVar
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import AnyDict, ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
-GraniteGuardianPreprocessData = AnyDict
-GraniteGuardianInferenceData = AnyDict  # {"output": generated_tensor, "prompt_len": int}
+GraniteGuardianPreprocessData = AnyDict  # {"messages": list, "chat_template_kwargs": dict}
+GraniteGuardianInferenceData = AnyDict  # {"generated_text": str, ...} (shape from provider.generate_chat)
 
 GUARDIAN_JUDGE_THINK = (
     "<think>As a judge agent, carefully analyze whether the provided text meets the "
@@ -162,14 +159,29 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         self.criteria = criteria
         self.think = think
 
+        # Lazy-import transformers so users on `any-guardrail[llamafile]`
+        # (without the huggingface extra) can construct GraniteGuardian with
+        # a non-HF provider (e.g. LlamafileProvider) without paying the import
+        # cost or hitting ImportError at module load time.
+        load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                # Granite Guardian is a causal LM. A default-constructed
+                # HuggingFaceProvider targets AutoModelForSequenceClassification,
+                # which would silently load the wrong head. Enforce the right
+                # classes for this load (does not mutate provider state).
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
         else:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
             self.provider = HuggingFaceProvider(
                 model_class=AutoModelForCausalLM,
                 tokenizer_class=AutoTokenizer,
             )
-        self.provider.load_model(self.model_id)
+        self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
         self,
@@ -194,8 +206,8 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             available_tools: Optional tool definitions (dicts with ``name``,
                 ``description``, ``parameters``). Required for function-call
                 hallucination checks.
-            **kwargs: Additional keyword arguments forwarded to
-                ``tokenizer.apply_chat_template``.
+            **kwargs: Additional keyword arguments forwarded to the provider's
+                chat template via ``chat_template_kwargs``.
 
         Returns:
             A :class:`GuardrailOutput` where ``valid=True`` means the criterion is
@@ -244,7 +256,10 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         available_tools: list[AnyDict] | None = None,
         **kwargs: Any,
     ) -> GuardrailPreprocessOutput[GraniteGuardianPreprocessData]:
-        """Tokenize a chat-template prompt with optional RAG documents or tools.
+        """Assemble the messages list and any chat-template kwargs.
+
+        Tokenization and chat-template application now happen inside the provider
+        (``provider.generate_chat``), so this stage just shapes the inputs.
 
         Args:
             input_text: The user's input text.
@@ -257,52 +272,45 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             available_tools: Optional list of tool definitions (dicts with ``name``,
                 ``description``, ``parameters``). Required for function-calling
                 hallucination checks.
-            **kwargs: Additional keyword arguments forwarded to
-                ``tokenizer.apply_chat_template``.
+            **kwargs: Additional keyword arguments forwarded to the provider's
+                chat template via ``chat_template_kwargs``.
 
         Returns:
-            A :class:`GuardrailPreprocessOutput` wrapping the tokenized model inputs.
+            A :class:`GuardrailPreprocessOutput` containing the messages list and a
+            ``chat_template_kwargs`` dict to forward to ``generate_chat``.
 
         """
         messages = self._build_messages(input_text, output_text)
 
-        template_kwargs: AnyDict = {
-            "add_generation_prompt": True,
-            "tokenize": True,
-            "return_dict": True,
-            "return_tensors": "pt",
-        }
+        chat_template_kwargs: AnyDict = {**kwargs}
         if documents is not None:
-            template_kwargs["documents"] = documents
+            chat_template_kwargs["documents"] = documents
         if available_tools is not None:
-            template_kwargs["available_tools"] = available_tools
+            chat_template_kwargs["available_tools"] = available_tools
 
-        model_inputs = self.provider.tokenizer.apply_chat_template(  # type: ignore[attr-defined]
-            messages, **template_kwargs, **kwargs
+        return GuardrailPreprocessOutput(
+            data={
+                "messages": messages,
+                "chat_template_kwargs": chat_template_kwargs,
+            }
         )
-        device = getattr(self.provider, "device", None)
-        if device is not None and hasattr(model_inputs, "to"):
-            model_inputs = model_inputs.to(device)
-        return GuardrailPreprocessOutput(data=model_inputs)
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[GraniteGuardianPreprocessData]
     ) -> GuardrailInferenceOutput[GraniteGuardianInferenceData]:
-        """Run ``generate()`` with think-aware token budget."""
-        prompt_len = int(model_inputs.data["input_ids"].shape[-1])
+        """Dispatch to ``provider.generate_chat`` with the think-aware token budget."""
         max_new_tokens = MAX_NEW_TOKENS_THINK if self.think else MAX_NEW_TOKENS_NOTHINK
-        with torch.no_grad():
-            output = self.provider.model.generate(  # type: ignore[attr-defined]
-                **model_inputs.data,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,
-            )
-        return GuardrailInferenceOutput(data={"output": output, "prompt_len": prompt_len})
+        return self.provider.generate_chat(
+            messages=model_inputs.data["messages"],
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            chat_template_kwargs=model_inputs.data["chat_template_kwargs"] or None,
+        )
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[GraniteGuardianInferenceData]
     ) -> GuardrailOutput[bool, str, str]:
-        """Decode the generated tokens and extract the yes/no score.
+        """Extract the yes/no score from the provider's generated text.
 
         Returns a :class:`GuardrailOutput` where:
 
@@ -315,13 +323,7 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
           ``<think>...</think>`` reasoning block).
 
         """
-        output = model_outputs.data["output"]
-        prompt_len = model_outputs.data["prompt_len"]
-        generated = output[:, prompt_len:]
-        decoded: str = self.provider.tokenizer.decode(  # type: ignore[attr-defined]
-            generated[0], skip_special_tokens=True
-        )
-        return _parse_generation(decoded)
+        return _parse_generation(model_outputs.data["generated_text"])
 
 
 def _parse_generation(text: str) -> GuardrailOutput[bool, str, str]:
