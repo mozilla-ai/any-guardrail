@@ -332,3 +332,97 @@ def test_load_model_gives_up_after_max_bind_race_retries(tmp_path: Any) -> None:
             provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
 
     assert mock_popen.call_count == EncoderfileProvider._BIND_RACE_RETRIES
+
+
+# ----- external-server mode -----
+
+
+def test_external_mode_skips_subprocess() -> None:
+    """``base_url=`` short-circuits download + spawn; only readiness probe runs."""
+    with (
+        patch("any_guardrail.providers.encoderfile.subprocess.Popen") as mock_popen,
+        patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen,
+    ):
+        mock_urlopen.return_value = _stub_response({"results": [], "model_id": "stub"})
+
+        provider = EncoderfileProvider(base_url="http://localhost:9999")
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+
+        mock_popen.assert_not_called()
+        probed_urls = [call.args[0].full_url for call in mock_urlopen.call_args_list]
+        assert "http://localhost:9999/predict" in probed_urls
+        assert provider.base_url == "http://localhost:9999"
+        assert provider.process is None
+        assert provider.model_id == "ProtectAI/deberta-v3-base-prompt-injection-v2"
+
+
+def test_external_mode_infer_targets_supplied_url() -> None:
+    """``infer`` POSTs to the user-supplied URL's predict endpoint."""
+    inference_payload = {
+        "results": [
+            {
+                "logits": [0.1, 2.0],
+                "scores": [0.13, 0.87],
+                "predicted_index": 1,
+                "predicted_label": "INJECTION",
+            }
+        ],
+    }
+    with patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen:
+        # First call: readiness probe; subsequent: actual predict.
+        mock_urlopen.side_effect = [
+            _stub_response({"results": [], "model_id": "stub"}),
+            _stub_response(inference_payload),
+        ]
+
+        provider = EncoderfileProvider(base_url="http://my-server:8080/")
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        result = provider.infer(GuardrailPreprocessOutput(data={"inputs": ["test"]}))
+
+        assert provider.base_url == "http://my-server:8080"
+        infer_call = mock_urlopen.call_args_list[-1]
+        assert infer_call.args[0].full_url == "http://my-server:8080/predict"
+        assert isinstance(result, GuardrailInferenceOutput)
+        assert result.data["predicted_labels"] == ["INJECTION"]
+        # Logits are returned as a numpy array (same uniform shape as the spawn path).
+        assert isinstance(result.data["logits"], np.ndarray)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_in_message"),
+    [
+        ({"binary_path": "/tmp/x.encoderfile"}, "binary_path"),  # noqa: S108 - path is never touched; constructor rejects before any I/O
+        ({"port": 8000}, "port"),
+        ({"encoderfile_repo": "someone-else/encoderfile-fork"}, "encoderfile_repo"),
+    ],
+)
+def test_external_mode_rejects_mutually_exclusive_kwargs(kwargs: dict[str, Any], expected_in_message: str) -> None:
+    """Constructor-time validation: spawn-only knobs can't be combined with base_url."""
+    with pytest.raises(ValueError, match=expected_in_message):
+        EncoderfileProvider(base_url="http://localhost:9999", **kwargs)
+
+
+def test_external_mode_default_encoderfile_repo_is_not_a_conflict() -> None:
+    """The default value of ``encoderfile_repo`` is not flagged — only an active override is."""
+    # Should not raise.
+    provider = EncoderfileProvider(base_url="http://localhost:9999")
+    assert provider.base_url == "http://localhost:9999"
+
+
+def test_external_mode_rejects_invalid_url_scheme() -> None:
+    """``base_url`` must include an http(s) scheme to avoid surprising urlopen behavior."""
+    with pytest.raises(ValueError, match="http://"):
+        EncoderfileProvider(base_url="localhost:9999")
+
+
+def test_external_mode_close_is_noop_and_preserves_base_url() -> None:
+    """``close()`` must not blank ``base_url`` in external mode — the provider should stay reusable."""
+    with patch("any_guardrail.providers.encoderfile.urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.return_value = _stub_response({"results": [], "model_id": "stub"})
+
+        provider = EncoderfileProvider(base_url="http://localhost:9999")
+        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        provider.close()
+
+        assert provider.base_url == "http://localhost:9999"
+        assert provider.process is None
