@@ -64,7 +64,7 @@ INPUT_DATA_FORMAT = """
 """
 
 
-class Glider(ThreeStageGuardrail[ChatMessages, str, bool, str, None]):
+class Glider(ThreeStageGuardrail[ChatMessages, str]):
     """A prompt based guardrail from Patronus AI that utilizes pass criteria and a rubric to judge text.
 
     For more information, see the model card:[GLIDER](https://huggingface.co/PatronusAI/glider). It outputs its reasoning,
@@ -106,7 +106,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str, bool, str, None]):
         self.provider = provider  # Reserved for future extensibility
         self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
 
-    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput[bool, str, None]:  # type: ignore[override]
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
 
         Args:
@@ -138,7 +138,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str, bool, str, None]):
         generated_text: str = self.model(message.data)[0]["generated_text"]  # type: ignore[assignment]
         return GuardrailInferenceOutput(data=generated_text)
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput[bool, str, None]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput:
         generated_text = model_outputs.data
         score_match = SCORE_PATTERN.search(generated_text)
         if score_match is None:

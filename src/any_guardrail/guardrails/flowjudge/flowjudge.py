@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from flow_judge import EvalOutput as EvalOutputType
 
 
-class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", bool, str, None]):
+class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
     """Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric.
 
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
@@ -64,7 +64,7 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", bool, str
         self.metric_prompt = self._define_metric_prompt()
         self.model = self._load_model()
 
-    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput[bool, str, None]:  # type: ignore[override]
+    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:  # type: ignore[override]
         """Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:
@@ -130,9 +130,7 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", bool, str
         result = self.model.evaluate(eval_input.data, save_results=False)
         return GuardrailInferenceOutput(data=result)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput["EvalOutputType"]
-    ) -> GuardrailOutput[bool, str, None]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput["EvalOutputType"]) -> GuardrailOutput:
         rubric_score = model_outputs.data.score
         feedback = model_outputs.data.feedback
         if rubric_score is None:

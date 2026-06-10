@@ -7,7 +7,7 @@ from any_guardrail.base import Guardrail, GuardrailOutput
 from any_guardrail.types import AnyDict, CategoryResult, GuardrailUsage
 
 
-class Alinia(Guardrail[bool, str, float]):
+class Alinia(Guardrail):
     """Wraps the Alinia API for content moderation and safety detection.
 
     This wrapper allows you to send conversations or text inputs to the Alinia API. You must get an API key from Alinia
@@ -60,7 +60,7 @@ class Alinia(Guardrail[bool, str, float]):
         conversation: str | list[dict[str, str]],
         output: str | None = None,
         context_documents: list[str] | None = None,
-    ) -> GuardrailOutput[bool, str, float]:
+    ) -> GuardrailOutput:
         """Validate conversation or text input using the Alinia API.
 
         This can be used for validation using any of the API endpoints provided by Alinia.
@@ -136,7 +136,7 @@ class Alinia(Guardrail[bool, str, float]):
     def _post_processing(
         self,
         response: requests.Response,
-    ) -> GuardrailOutput[bool, str, float]:
+    ) -> GuardrailOutput:
         response_json = response.json()
         result = response_json.get("result") or {}
         valid = not result.get("flagged")

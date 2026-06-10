@@ -56,7 +56,7 @@ def error_message(message: str) -> Callable[[F], F]:
     return error_handler_decorator
 
 
-class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput, bool, None, float]):
+class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput]):
     """Guardrail implementation using Azure Content Safety service.
 
     Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
@@ -119,7 +119,7 @@ class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutp
                     raise ValueError(msg)
         self.blocklist_names = blocklist_names
 
-    def validate(self, content: str) -> GuardrailOutput[bool, None, float]:  # type: ignore[override]
+    def validate(self, content: str) -> GuardrailOutput:  # type: ignore[override]
         """Validate content using Azure Content Safety.
 
         Args:
@@ -281,9 +281,7 @@ class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutp
             response = self.client.analyze_image(model_inputs.data)  # type: ignore [assignment]
         return GuardrailInferenceOutput(data=response)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[AzureAnalyzeOutput]
-    ) -> GuardrailOutput[bool, None, float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[AzureAnalyzeOutput]) -> GuardrailOutput:
         results_dict = {
             "hate": next(item for item in model_outputs.data.categories_analysis if item.category == TextCategory.HATE),
             "self_harm": next(

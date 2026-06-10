@@ -18,7 +18,7 @@ JinaPreprocessData = tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tenso
 JinaInferenceData = Any  # Model output tensor
 
 
-class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData, bool, dict[str, float], float]):
+class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -74,7 +74,5 @@ class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData, bo
             )
         return GuardrailInferenceOutput(data=output)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[JinaInferenceData]
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[JinaInferenceData]) -> GuardrailOutput:
         return off_topic_output(model_outputs.data)

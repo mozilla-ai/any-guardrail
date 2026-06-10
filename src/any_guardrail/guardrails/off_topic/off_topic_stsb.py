@@ -18,7 +18,7 @@ StsbPreprocessData = tuple[torch.Tensor, torch.Tensor]
 StsbInferenceData = Any  # Model output tensor
 
 
-class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
+class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -70,7 +70,5 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bo
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)
         return GuardrailInferenceOutput(data=output)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[StsbInferenceData]
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[StsbInferenceData]) -> GuardrailOutput:
         return off_topic_output(model_outputs.data)

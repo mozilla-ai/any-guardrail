@@ -15,15 +15,6 @@ PreprocessT = TypeVar("PreprocessT")
 InferenceT = TypeVar("InferenceT")
 """Type variable for inference output data."""
 
-ValidT = TypeVar("ValidT")
-"""Type variable for guardrail output valid field."""
-
-ExplanationT = TypeVar("ExplanationT")
-"""Type variable for guardrail output explanation field."""
-
-ScoreT = TypeVar("ScoreT")
-"""Type variable for guardrail output score field."""
-
 
 class CategoryResult(BaseModel):
     """Result for one taxonomy category evaluated by a guardrail.
@@ -93,20 +84,14 @@ class GuardrailUsage(BaseModel):
     """Completion token count, when the backend surfaces it."""
 
 
-class GuardrailOutput(BaseModel, Generic[ValidT, ExplanationT, ScoreT]):
+class GuardrailOutput(BaseModel):
     """Represents the output of a guardrail evaluation with runtime validation.
 
-    This class wraps the final output of the guardrail evaluation, providing
-    a consistent interface and runtime validation across all guardrail
-    implementations.
-
-    Type Parameters:
-        ValidT: The type of the valid field (e.g., bool, str, custom enum).
-        ExplanationT: The type of the explanation field (e.g., str, dict, list).
-        ScoreT: The type of the score field (e.g., float, int, dict).
+    This is the single concrete result shape shared by every guardrail
+    implementation, so application code can swap guardrails without changes.
 
     Example:
-        >>> output = GuardrailOutput(valid=True, explanation="Content is safe", score=0.95)
+        >>> output = GuardrailOutput(valid=True, explanation="Content is safe", score=0.05)
         >>> output.valid
         True
 
@@ -114,14 +99,14 @@ class GuardrailOutput(BaseModel, Generic[ValidT, ExplanationT, ScoreT]):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    valid: ValidT | None = None
-    """Indicates if the output should be considered valid (safe/acceptable)."""
+    valid: bool
+    """Verdict: True when the content passed the guardrail. Every guardrail commits to a verdict."""
 
-    explanation: ExplanationT | None = None
-    """Provides an explanation for the guardrail evaluation result."""
+    explanation: str | None = None
+    """Human-readable rationale only (judge reasoning, raw generation). Structured data lives in categories/extra."""
 
-    score: ScoreT | None = None
-    """Represents the score assigned to the output by the guardrail."""
+    score: float | None = None
+    """Canonical risk score: ~[0, 1], higher = more likely violating. None when no meaningful risk score exists."""
 
     categories: list[CategoryResult] = Field(default_factory=list)
     """Per-category results. Empty when the guardrail has no category taxonomy."""
@@ -207,6 +192,3 @@ StandardPreprocessOutput = GuardrailPreprocessOutput[AnyDict]
 
 StandardInferenceOutput = GuardrailInferenceOutput[AnyDict]
 """Type alias for standard inference output with AnyDict data."""
-
-BinaryScoreOutput = GuardrailOutput[bool, None, float]
-"""Type alias for binary valid/invalid output with float score."""

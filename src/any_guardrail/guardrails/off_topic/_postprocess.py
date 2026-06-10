@@ -7,7 +7,7 @@ import torch
 from any_guardrail.types import CategoryResult, GuardrailOutput
 
 
-def off_topic_output(logits: Any) -> GuardrailOutput[bool, dict[str, float], float]:
+def off_topic_output(logits: Any) -> GuardrailOutput:
     """Map cross-encoder logits to the standard output shape.
 
     Args:

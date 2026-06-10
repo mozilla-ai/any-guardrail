@@ -1,11 +1,9 @@
-from typing import Any
-
 from any_guardrail import GuardrailOutput, GuardrailUsage
 from any_guardrail.base import ThreeStageGuardrail
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
-class FakeGuardrail(ThreeStageGuardrail[dict, dict, bool, None, float]):  # type: ignore[type-arg]
+class FakeGuardrail(ThreeStageGuardrail[dict, dict]):  # type: ignore[type-arg]
     """Minimal three-stage guardrail used to exercise the default pipeline."""
 
     def __init__(self, usage: GuardrailUsage | None = None) -> None:
@@ -23,8 +21,8 @@ class FakeGuardrail(ThreeStageGuardrail[dict, dict, bool, None, float]):  # type
 
 
 def _single(
-    result: GuardrailOutput[Any, Any, Any] | list[GuardrailOutput[Any, Any, Any]],
-) -> GuardrailOutput[Any, Any, Any]:
+    result: GuardrailOutput | list[GuardrailOutput],
+) -> GuardrailOutput:
     assert not isinstance(result, list)
     return result
 

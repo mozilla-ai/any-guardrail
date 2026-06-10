@@ -5,7 +5,6 @@ from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import (
-    BinaryScoreOutput,
     CategoryResult,
     GuardrailPreprocessOutput,
     StandardInferenceOutput,
@@ -40,7 +39,7 @@ class HarmGuard(StandardGuardrail):
         self.provider = provider or HuggingFaceProvider()
         self.provider.load_model(self.model_id)
 
-    def validate(self, input_text: str, output_text: str | None = None) -> BinaryScoreOutput:  # type: ignore[override]
+    def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:  # type: ignore[override]
         """Validate whether the input (and optionally output) text is safe.
 
         Args:
@@ -73,7 +72,7 @@ class HarmGuard(StandardGuardrail):
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:
         scores_row = model_outputs.data["scores"][0]
         safe_probability = float(scores_row[0])
         final_score = float(scores_row[1])  # scores[0][1] is the unsafe probability

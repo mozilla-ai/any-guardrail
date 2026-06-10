@@ -24,9 +24,7 @@ def default(model_id: str | None, supported_models: list[str]) -> str:
     return resolved_id
 
 
-def match_injection_label(
-    model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str
-) -> GuardrailOutput[bool, None, float]:
+def match_injection_label(model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str) -> GuardrailOutput:
     """Build a GuardrailOutput from a single-row classification result.
 
     Args:
@@ -52,7 +50,7 @@ def match_injection_label(
 
 def match_injection_label_batch(
     model_outputs: GuardrailInferenceOutput[AnyDict], injection_label: str
-) -> list[GuardrailOutput[bool, None, float]]:
+) -> list[GuardrailOutput]:
     """Build GuardrailOutputs for a batch of classification results.
 
     Args:
@@ -88,7 +86,7 @@ def _match_injection_row(
     predicted_index: int,
     labels: Sequence[str] | None,
     injection_label: str,
-) -> GuardrailOutput[bool, None, float]:
+) -> GuardrailOutput:
     """Map one row of class probabilities to the standard output shape.
 
     ``score`` is the probability of the injection class (canonical risk

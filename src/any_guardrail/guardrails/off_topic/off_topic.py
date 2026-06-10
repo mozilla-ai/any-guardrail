@@ -8,7 +8,7 @@ from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
-class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
+class OffTopic(ThreeStageGuardrail[Any, Any]):
     """Abstract base class for the Off Topic models.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -39,7 +39,7 @@ class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
 
     def validate(  # type: ignore[override]
         self, input_text: str, comparison_text: str | None = None
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
+    ) -> GuardrailOutput:
         """Compare two texts to see if they are relevant to each other.
 
         Args:
@@ -61,7 +61,5 @@ class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
     def _inference(self, model_inputs: GuardrailPreprocessOutput[Any]) -> GuardrailInferenceOutput[Any]:
         return self.implementation._inference(model_inputs)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[Any]
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[Any]) -> GuardrailOutput:
         return self.implementation._post_processing(model_outputs)

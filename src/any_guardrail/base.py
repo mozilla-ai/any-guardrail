@@ -5,15 +5,12 @@ from typing import Any, ClassVar, Generic, overload
 
 from any_guardrail.types import (
     AnyDict,
-    ExplanationT,
     GuardrailInferenceOutput,
     GuardrailOutput,
     GuardrailPreprocessOutput,
     GuardrailUsage,
     InferenceT,
     PreprocessT,
-    ScoreT,
-    ValidT,
 )
 
 __all__ = [
@@ -46,18 +43,18 @@ class GuardrailName(StrEnum):
     ALINIA = "alinia"
 
 
-class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):
+class Guardrail(ABC):
     """Base class for all guardrails."""
 
     SUPPORTED_MODELS: ClassVar[list[str]] = []
 
     @abstractmethod
-    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+    def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:
         """Abstract method for validating some input. Each subclass implements its own signature."""
         msg = "Each subclass will create their own method."
         raise NotImplementedError(msg)
 
-    def _stamp_usage(self, result: GuardrailOutput[Any, Any, Any], latency_ms: float) -> None:
+    def _stamp_usage(self, result: GuardrailOutput, latency_ms: float) -> None:
         """Fill provenance fields on ``result.usage`` that the guardrail left unset.
 
         Merge semantics: only ``None`` fields are filled, so guardrails that
@@ -72,9 +69,7 @@ class Guardrail(ABC, Generic[ValidT, ExplanationT, ScoreT]):
         result.usage = usage
 
 
-class ThreeStageGuardrail(
-    Guardrail[ValidT, ExplanationT, ScoreT], ABC, Generic[PreprocessT, InferenceT, ValidT, ExplanationT, ScoreT]
-):
+class ThreeStageGuardrail(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
     """Base class for guardrails using preprocess -> inference -> postprocess with runtime validation.
 
     This abstract class provides a structured pipeline for guardrail implementations
@@ -129,9 +124,7 @@ class ThreeStageGuardrail(
         ...
 
     @abstractmethod
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[InferenceT]
-    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[InferenceT]) -> GuardrailOutput:
         """Transform inference output to GuardrailOutput.
 
         Args:
@@ -144,14 +137,12 @@ class ThreeStageGuardrail(
         ...
 
     @overload
-    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]: ...
+    def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput: ...
 
     @overload
-    def validate(self, input_text: list[str], **kwargs: Any) -> list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]: ...
+    def validate(self, input_text: list[str], **kwargs: Any) -> list[GuardrailOutput]: ...
 
-    def validate(
-        self, input_text: str | list[str], **kwargs: Any
-    ) -> GuardrailOutput[ValidT, ExplanationT, ScoreT] | list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]:
+    def validate(self, input_text: str | list[str], **kwargs: Any) -> GuardrailOutput | list[GuardrailOutput]:
         """Default validation pipeline: preprocess -> inference -> postprocess.
 
         Args:
@@ -178,7 +169,7 @@ class ThreeStageGuardrail(
             return results
         return self._execute(input_text, **kwargs)
 
-    def _execute(self, *args: Any, **kwargs: Any) -> GuardrailOutput[ValidT, ExplanationT, ScoreT]:
+    def _execute(self, *args: Any, **kwargs: Any) -> GuardrailOutput:
         """Run the three-stage pipeline and stamp provenance on the result.
 
         Subclasses that override ``validate`` with a custom signature should
@@ -192,9 +183,7 @@ class ThreeStageGuardrail(
         self._stamp_usage(result, (time.perf_counter() - start) * 1000.0)
         return result
 
-    def _validate_batch(
-        self, input_texts: list[str], **kwargs: Any
-    ) -> list[GuardrailOutput[ValidT, ExplanationT, ScoreT]]:
+    def _validate_batch(self, input_texts: list[str], **kwargs: Any) -> list[GuardrailOutput]:
         """Validate a batch of inputs.
 
         Default implementation iterates over the list and validates each item
@@ -210,7 +199,7 @@ class ThreeStageGuardrail(
             A list of GuardrailOutputs, one per input, in the same order.
 
         """
-        results: list[GuardrailOutput[ValidT, ExplanationT, ScoreT]] = []
+        results: list[GuardrailOutput] = []
         for text in input_texts:
             result = self.validate(text, **kwargs)
             if isinstance(result, list):
@@ -221,5 +210,5 @@ class ThreeStageGuardrail(
 
 
 # Standard guardrail type alias
-StandardGuardrail = ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]
+StandardGuardrail = ThreeStageGuardrail[AnyDict, AnyDict]
 """Type alias for standard guardrails using AnyDict and binary score output."""

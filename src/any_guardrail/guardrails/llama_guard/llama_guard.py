@@ -48,7 +48,7 @@ def _parse_violated_categories(generated_text: str) -> list[CategoryResult]:
     return [CategoryResult(name=code, description=LLAMA_GUARD_CATEGORIES.get(code), triggered=True) for code in seen]
 
 
-class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData, bool, str, None]):
+class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData]):
     """Wrapper class for Llama Guard 3 & 4 implementations.
 
     For more information about the implementations about either off topic model, please see the below model cards:
@@ -174,9 +174,7 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
             generation_kwargs=generation_kwargs,
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]
-    ) -> GuardrailOutput[bool, str, None]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]) -> GuardrailOutput:
         generated_text: str = model_outputs.data["generated_text"]
         unsafe = "unsafe" in generated_text.lower()
         return GuardrailOutput(

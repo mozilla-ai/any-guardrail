@@ -6,7 +6,6 @@ from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import (
     AnyDict,
-    BinaryScoreOutput,
     GuardrailPreprocessOutput,
     StandardInferenceOutput,
     StandardPreprocessOutput,
@@ -91,7 +90,7 @@ class ShieldGemma(StandardGuardrail):
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:
         # Lazy-import torch so importing ShieldGemma does not require the
         # huggingface extra at module load. ShieldGemma still needs torch
         # at validate() time to slice the causal-LM logits, but a user who

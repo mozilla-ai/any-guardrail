@@ -109,9 +109,7 @@ class GraniteGuardianRisk:
     )
 
 
-class GraniteGuardian(
-    ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData, bool, str, None]
-):
+class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData]):
     """Wrapper class for IBM Granite Guardian 4.1 models.
 
     Granite Guardian is a hybrid-thinking safety/judge model that evaluates whether a
@@ -199,7 +197,7 @@ class GraniteGuardian(
         documents: list[AnyDict] | None = None,
         available_tools: list[AnyDict] | None = None,
         **kwargs: Any,
-    ) -> GuardrailOutput[bool, str, None]:
+    ) -> GuardrailOutput:
         """Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 
         Args:
@@ -321,7 +319,7 @@ class GraniteGuardian(
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[GraniteGuardianInferenceData]
-    ) -> GuardrailOutput[bool, str, None]:
+    ) -> GuardrailOutput:
         """Extract the yes/no score from the provider's generated text.
 
         Returns a :class:`GuardrailOutput` where:
@@ -345,7 +343,7 @@ class GraniteGuardian(
         return result
 
 
-def _parse_generation(text: str, criteria: str) -> GuardrailOutput[bool, str, None]:
+def _parse_generation(text: str, criteria: str) -> GuardrailOutput:
     """Parse a Granite Guardian generation into a GuardrailOutput.
 
     Strips any ``<think>...</think>`` block before searching for ``<score>yes|no</score>``.

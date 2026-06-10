@@ -152,7 +152,7 @@ def test_validate_batch_default_iterates() -> None:
     from any_guardrail.base import ThreeStageGuardrail
     from any_guardrail.types import GuardrailPreprocessOutput
 
-    class FakeGuardrail(ThreeStageGuardrail[dict, dict, bool, None, float]):  # type: ignore[type-arg]
+    class FakeGuardrail(ThreeStageGuardrail[dict, dict]):  # type: ignore[type-arg]
         def __init__(self) -> None:
             self.calls: list[str] = []
 

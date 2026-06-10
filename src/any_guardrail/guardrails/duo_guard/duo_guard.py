@@ -24,7 +24,7 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]):
+class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict]):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
     For more information, please see the model card:
@@ -70,7 +70,7 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]):
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput[bool, None, float]:
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:
         # Providers expose per-category probabilities in ``scores``:
         # HuggingFaceProvider applies sigmoid when ``multi_label=True``; the
         # encoderfile binary applies sigmoid internally for multi-label heads.

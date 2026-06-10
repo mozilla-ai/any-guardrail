@@ -5,17 +5,14 @@ from .types import (
     CategoryResult,
     ChatMessage,
     ChatMessages,
-    ExplanationT,
     GuardrailInferenceOutput,
     GuardrailOutput,
     GuardrailPreprocessOutput,
     GuardrailUsage,
     InferenceT,
     PreprocessT,
-    ScoreT,
     SpanResult,
     TokenizerDict,
-    ValidT,
 )
 
 __all__ = [
@@ -23,7 +20,6 @@ __all__ = [
     "CategoryResult",
     "ChatMessage",
     "ChatMessages",
-    "ExplanationT",
     "Guardrail",
     "GuardrailInferenceOutput",
     "GuardrailName",
@@ -34,9 +30,7 @@ __all__ = [
     "InferenceT",
     "PreprocessT",
     "Provider",
-    "ScoreT",
     "SpanResult",
     "ThreeStageGuardrail",
     "TokenizerDict",
-    "ValidT",
 ]
