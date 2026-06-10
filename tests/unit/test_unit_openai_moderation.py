@@ -29,9 +29,7 @@ def _mock_response(flagged: bool, category_scores: dict[str, float]) -> mock.Mag
 
 def test_openai_moderation_flagged_above_threshold() -> None:
     """Flagged input above default threshold returns valid=False with max score."""
-    with mock.patch(
-        "any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"
-    ) as mock_openai:
+    with mock.patch("any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI") as mock_openai:
         guardrail = OpenaiModeration(api_key="fake-key")
 
         scores = {
@@ -47,9 +45,7 @@ def test_openai_moderation_flagged_above_threshold() -> None:
             "violence": 0.85,
             "violence_graphic": 0.4,
         }
-        mock_openai.return_value.moderations.create.return_value = _mock_response(
-            flagged=True, category_scores=scores
-        )
+        mock_openai.return_value.moderations.create.return_value = _mock_response(flagged=True, category_scores=scores)
 
         result = guardrail.validate("some violent text")
 
@@ -61,9 +57,7 @@ def test_openai_moderation_flagged_above_threshold() -> None:
 
 def test_openai_moderation_safe_below_threshold() -> None:
     """Safe input below threshold returns valid=True."""
-    with mock.patch(
-        "any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"
-    ) as mock_openai:
+    with mock.patch("any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI") as mock_openai:
         guardrail = OpenaiModeration(api_key="fake-key")
 
         scores = {
@@ -73,9 +67,7 @@ def test_openai_moderation_safe_below_threshold() -> None:
             "sexual": 0.05,
             "violence": 0.04,
         }
-        mock_openai.return_value.moderations.create.return_value = _mock_response(
-            flagged=False, category_scores=scores
-        )
+        mock_openai.return_value.moderations.create.return_value = _mock_response(flagged=False, category_scores=scores)
 
         result = guardrail.validate("the weather is nice today")
 
@@ -87,9 +79,7 @@ def test_openai_moderation_safe_below_threshold() -> None:
 
 def test_openai_moderation_custom_threshold_respected() -> None:
     """A custom threshold can flip the verdict even when OpenAI did not flag."""
-    with mock.patch(
-        "any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"
-    ) as mock_openai:
+    with mock.patch("any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI") as mock_openai:
         guardrail = OpenaiModeration(api_key="fake-key", threshold=0.1)
 
         scores = {
@@ -97,9 +87,7 @@ def test_openai_moderation_custom_threshold_respected() -> None:
             "harassment": 0.05,
             "violence": 0.03,
         }
-        mock_openai.return_value.moderations.create.return_value = _mock_response(
-            flagged=False, category_scores=scores
-        )
+        mock_openai.return_value.moderations.create.return_value = _mock_response(flagged=False, category_scores=scores)
 
         result = guardrail.validate("mildly edgy text")
 
@@ -110,9 +98,7 @@ def test_openai_moderation_custom_threshold_respected() -> None:
 
 def test_openai_moderation_post_processing_directly() -> None:
     """Exercise _post_processing directly to cover the scores-dict translation."""
-    with mock.patch(
-        "any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"
-    ):
+    with mock.patch("any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"):
         guardrail = OpenaiModeration(api_key="fake-key", threshold=0.5)
 
         scores = {"hate": 0.9, "violence": 0.2}
@@ -135,8 +121,6 @@ def test_openai_moderation_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_openai_moderation_invalid_model_id_raises() -> None:
     """An unsupported model_id should be rejected via the default() helper."""
-    with mock.patch(
-        "any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"
-    ):
+    with mock.patch("any_guardrail.guardrails.openai_moderation.openai_moderation.OpenAI"):
         with pytest.raises(ValueError, match="Only supports"):
             OpenaiModeration(api_key="fake-key", model_id="not-a-real-model")
