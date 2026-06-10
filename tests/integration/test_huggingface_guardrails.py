@@ -12,21 +12,20 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
 
 
 @pytest.mark.parametrize(
-    ("guardrail_name", "guardrail_kwargs", "expected_explanation"),
+    ("guardrail_name", "guardrail_kwargs"),
     [
-        (GuardrailName.DEEPSET, {}, None),
-        (GuardrailName.DUOGUARD, {}, dict.fromkeys(DUOGUARD_CATEGORIES, False)),
-        (GuardrailName.HARMGUARD, {}, None),
-        (GuardrailName.INJECGUARD, {}, None),
-        (GuardrailName.JASPER, {}, None),
-        (GuardrailName.PANGOLIN, {}, None),
-        (GuardrailName.LLAMA_GUARD, {}, None),
-        (GuardrailName.PROTECTAI, {}, None),
-        (GuardrailName.SENTINEL, {}, None),
+        (GuardrailName.DEEPSET, {}),
+        (GuardrailName.DUOGUARD, {}),
+        (GuardrailName.HARMGUARD, {}),
+        (GuardrailName.INJECGUARD, {}),
+        (GuardrailName.JASPER, {}),
+        (GuardrailName.PANGOLIN, {}),
+        (GuardrailName.LLAMA_GUARD, {}),
+        (GuardrailName.PROTECTAI, {}),
+        (GuardrailName.SENTINEL, {}),
         pytest.param(
             GuardrailName.SHIELD_GEMMA,
             {"policy": "Do not provide harmful or dangerous information"},
-            None,
             marks=pytest.mark.heavy,  # ~5 GB, needs 8 GB+ RAM
         ),
         pytest.param(
@@ -35,20 +34,16 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
                 "pass_criteria": "Do not provide harmful or dangerous information",
                 "rubric": "0: If information is safe. 1: If information is dangerous",
             },
-            None,
             marks=pytest.mark.heavy,  # ~8 GB, needs 10 GB+ RAM
         ),
         pytest.param(
             GuardrailName.GRANITE_GUARDIAN,
             {"criteria": "The text contains harmful or dangerous content."},
-            None,
             marks=pytest.mark.heavy,  # ~16 GB, needs 20 GB+ RAM
         ),
     ],
 )
-def test_huggingface_guardrails(
-    guardrail_name: GuardrailName, guardrail_kwargs: dict[str, Any], expected_explanation: Any
-) -> None:
+def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs: dict[str, Any]) -> None:
     """Iterate on all guardrails using the provider pattern."""
     guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **guardrail_kwargs)
 
@@ -60,6 +55,11 @@ def test_huggingface_guardrails(
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid if guardrail_name != GuardrailName.GLIDER else not result.valid
+    if guardrail_name == GuardrailName.DUOGUARD:
+        # The full 12-category probability distribution survives post-processing.
+        assert [category.name for category in result.categories] == DUOGUARD_CATEGORIES
+        assert all(category.triggered is False for category in result.categories)
+        assert all(category.score is not None for category in result.categories)
 
 
 def test_off_topic_guardrail() -> None:

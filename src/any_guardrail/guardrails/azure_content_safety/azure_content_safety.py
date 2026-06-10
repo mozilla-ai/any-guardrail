@@ -25,11 +25,14 @@ except ImportError as e:
     raise ImportError(msg) from e
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import CategoryResult, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 # Type aliases for Azure Content Safety
 AzureAnalyzeInput = AnalyzeTextOptions | AnalyzeImageOptions
 AzureAnalyzeOutput = Any  # Azure API response type
+
+AZURE_MAX_SEVERITY = 7
+"""Azure Content Safety severity scale upper bound (0-7)."""
 
 # TypeVar for preserving function signatures in decorator
 F = TypeVar("F", bound=Callable[..., Any])
@@ -53,9 +56,7 @@ def error_message(message: str) -> Callable[[F], F]:
     return error_handler_decorator
 
 
-class AzureContentSafety(
-    ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput, bool, dict[str, int | list[str] | None], float]
-):
+class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput, bool, None, float]):
     """Guardrail implementation using Azure Content Safety service.
 
     Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
@@ -98,6 +99,7 @@ class AzureContentSafety(
                 msg = "CONTENT_SAFETY_ENDPOINT environment variable is not set. Either provide an endpoint or set the environment variable."
                 raise KeyError(msg) from e
 
+        self.model_id = self.SUPPORTED_MODELS[0]
         self.client = ContentSafetyClient(endpoint=endpoint, credential=credential)
         self.blocklist_client = BlocklistClient(endpoint=endpoint, credential=credential)
         self.threshold = threshold
@@ -117,7 +119,7 @@ class AzureContentSafety(
                     raise ValueError(msg)
         self.blocklist_names = blocklist_names
 
-    def validate(self, content: str) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:  # type: ignore[override]
+    def validate(self, content: str) -> GuardrailOutput[bool, None, float]:  # type: ignore[override]
         """Validate content using Azure Content Safety.
 
         Args:
@@ -127,9 +129,7 @@ class AzureContentSafety(
             GuardrailOutput: The result of the guardrail evaluation.
 
         """
-        model_inputs = self._pre_processing(content)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
+        return self._execute(content)
 
     @error_message("Was unable to create or update blocklist.")
     def create_or_update_blocklist(
@@ -283,7 +283,7 @@ class AzureContentSafety(
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[AzureAnalyzeOutput]
-    ) -> GuardrailOutput[bool, dict[str, int | list[str] | None], float]:
+    ) -> GuardrailOutput[bool, None, float]:
         results_dict = {
             "hate": next(item for item in model_outputs.data.categories_analysis if item.category == TextCategory.HATE),
             "self_harm": next(
@@ -297,24 +297,38 @@ class AzureContentSafety(
             ),
         }
 
-        explanation = {key: result.severity for key, result in results_dict.items() if result is not None}
+        categories = []
+        severity_values = []
+        for key, result in results_dict.items():
+            severity = result.severity
+            if severity is not None:
+                severity_values.append(severity)
+            categories.append(
+                CategoryResult(
+                    name=key,
+                    severity=severity,
+                    score=severity / AZURE_MAX_SEVERITY if severity is not None else None,
+                    triggered=severity >= self.threshold if severity is not None else None,
+                )
+            )
 
         if self.score_type == "max":
-            score = max(
-                explanation_score for explanation_score in explanation.values() if explanation_score is not None
-            )
+            aggregate_severity = float(max(severity_values))
         else:
-            score = sum(
-                explanation_score for explanation_score in explanation.values() if explanation_score is not None
-            ) / sum(1 for explanation_score in explanation.values() if explanation_score is not None)
+            aggregate_severity = sum(severity_values) / len(severity_values)
 
-        explanation["blocklist"] = model_outputs.data.blocklists_match if self.blocklist_names else None
+        blocklists_match = model_outputs.data.blocklists_match if self.blocklist_names else None
 
-        valid = score < self.threshold
-        if valid and explanation.get("blocklist"):
+        valid = aggregate_severity < self.threshold
+        if valid and blocklists_match:
             valid = False
 
-        return GuardrailOutput(valid=valid, explanation=explanation, score=score)
+        return GuardrailOutput(
+            valid=valid,
+            score=aggregate_severity / AZURE_MAX_SEVERITY,
+            categories=categories,
+            extra={"blocklists_match": blocklists_match} if self.blocklist_names else None,
+        )
 
     def _is_existing_path(self, text: str) -> bool:
         return os.path.exists(text)

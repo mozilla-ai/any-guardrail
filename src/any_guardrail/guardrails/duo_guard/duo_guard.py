@@ -4,7 +4,7 @@ from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import AnyDict, StandardInferenceOutput, StandardPreprocessOutput
+from any_guardrail.types import AnyDict, CategoryResult, StandardInferenceOutput, StandardPreprocessOutput
 
 DUOGUARD_CATEGORIES = [
     "Violent crimes",
@@ -24,7 +24,7 @@ DUOGUARD_CATEGORIES = [
 DUOGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the DuoGuard model card.
 
 
-class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], float]):
+class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]):
     """Guardrail that classifies text based on the categories in DUOGUARD_CATEGORIES.
 
     For more information, please see the model card:
@@ -70,16 +70,17 @@ class DuoGuard(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, bool], floa
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput[bool, dict[str, bool], float]:
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput[bool, None, float]:
         # Providers expose per-category probabilities in ``scores``:
         # HuggingFaceProvider applies sigmoid when ``multi_label=True``; the
         # encoderfile binary applies sigmoid internally for multi-label heads.
-        probabilities = list(model_outputs.data["scores"][0])
-        predicted_labels = {
-            category: prob > self.threshold for category, prob in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
-        }
+        probabilities = [float(probability) for probability in model_outputs.data["scores"][0]]
+        categories = [
+            CategoryResult(name=category, score=probability, triggered=probability > self.threshold)
+            for category, probability in zip(DUOGUARD_CATEGORIES, probabilities, strict=True)
+        ]
         return GuardrailOutput(
-            valid=not any(predicted_labels.values()),
-            explanation=predicted_labels,
-            score=float(max(probabilities)),
+            valid=not any(category.triggered for category in categories),
+            score=max(probabilities),
+            categories=categories,
         )
