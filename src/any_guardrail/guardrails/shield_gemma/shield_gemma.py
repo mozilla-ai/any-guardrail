@@ -1,13 +1,11 @@
 from typing import ClassVar
 
-from torch.nn.functional import softmax
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from any_guardrail.base import GuardrailOutput, StandardGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import (
+    AnyDict,
     BinaryScoreOutput,
     GuardrailPreprocessOutput,
     StandardInferenceOutput,
@@ -58,11 +56,29 @@ class ShieldGemma(StandardGuardrail):
         self.policy = policy
         self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
         self.threshold = threshold
+        # Lazy-import transformers so importing ShieldGemma does not require
+        # the huggingface extra. A caller could supply a non-HF provider that
+        # returns torch tensors from infer() — the transformers classes are
+        # only needed when the provider is a HuggingFaceProvider (or when we
+        # construct one ourselves).
+        load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                # ShieldGemma is a causal LM. A default-constructed
+                # HuggingFaceProvider targets AutoModelForSequenceClassification,
+                # which would load Gemma2ForSequenceClassification — the
+                # checkpoint has no classification head, so score.weight is
+                # randomly initialized and _post_processing later crashes on
+                # 2D logits. Enforce the right classes for this load.
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
         else:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
             self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
-        self.provider.load_model(self.model_id)
+        self.provider.load_model(self.model_id, **load_kwargs)
 
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
@@ -76,6 +92,12 @@ class ShieldGemma(StandardGuardrail):
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
+        # Lazy-import torch so importing ShieldGemma does not require the
+        # huggingface extra at module load. ShieldGemma still needs torch
+        # at validate() time to slice the causal-LM logits, but a user who
+        # never calls validate() can import the class freely.
+        from torch.nn.functional import softmax
+
         logits = model_outputs.data["logits"]
         vocab = self.provider.tokenizer.get_vocab()  # type: ignore[attr-defined]
         selected_logits = logits[0, -1, [vocab["Yes"], vocab["No"]]]

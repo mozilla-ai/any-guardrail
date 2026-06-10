@@ -137,19 +137,30 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         Args:
             model_id: The HuggingFace model identifier.
             **kwargs: Additional keyword arguments passed to the model's
-                ``from_pretrained`` (override provider-level defaults).
+                ``from_pretrained`` (override provider-level defaults). Two reserved
+                names are popped before forwarding:
+
+                - ``model_class``: override the model class used for this load.
+                  Lets a decoder-LM guardrail (e.g. ShieldGemma) enforce
+                  ``AutoModelForCausalLM`` even when the caller supplied a
+                  default-constructed ``HuggingFaceProvider`` configured for
+                  sequence classification. ``self.model_class`` is not mutated.
+                - ``tokenizer_class``: same idea for the tokenizer class (e.g.
+                  ``AutoProcessor`` for Llama Guard 4).
 
         """
+        model_class = kwargs.pop("model_class", None) or self.model_class
+        tokenizer_class = kwargs.pop("tokenizer_class", None) or self.tokenizer_class
         common_kwargs = self._build_from_pretrained_kwargs()
         model_load_kwargs: AnyDict = {**common_kwargs, **self.model_kwargs}
         if self.torch_dtype is not None:
             model_load_kwargs["torch_dtype"] = self.torch_dtype
         model_load_kwargs.update(kwargs)
-        self.model = self.model_class.from_pretrained(model_id, **model_load_kwargs)  # type: ignore[attr-defined]
+        self.model = model_class.from_pretrained(model_id, **model_load_kwargs)  # type: ignore[union-attr]
         if self.device is not None:
             self.model = self.model.to(self.device)
         tokenizer_id = self.tokenizer_id or model_id
-        self.tokenizer = self.tokenizer_class.from_pretrained(tokenizer_id, **common_kwargs)  # type: ignore[attr-defined]
+        self.tokenizer = tokenizer_class.from_pretrained(tokenizer_id, **common_kwargs)  # type: ignore[union-attr]
 
     def pre_process(self, input_text: str | list[str], **kwargs: Any) -> GuardrailPreprocessOutput[AnyDict]:
         """Tokenize input text for model consumption.

@@ -159,20 +159,29 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         self.criteria = criteria
         self.think = think
 
+        # Lazy-import transformers so users on `any-guardrail[llamafile]`
+        # (without the huggingface extra) can construct GraniteGuardian with
+        # a non-HF provider (e.g. LlamafileProvider) without paying the import
+        # cost or hitting ImportError at module load time.
+        load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                # Granite Guardian is a causal LM. A default-constructed
+                # HuggingFaceProvider targets AutoModelForSequenceClassification,
+                # which would silently load the wrong head. Enforce the right
+                # classes for this load (does not mutate provider state).
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
         else:
-            # Lazy-import transformers so users on `any-guardrail[llamafile]`
-            # (without the huggingface extra) can construct GraniteGuardian
-            # with a non-HF provider without paying the import cost or
-            # hitting ImportError at module load time.
             from transformers import AutoModelForCausalLM, AutoTokenizer
 
             self.provider = HuggingFaceProvider(
                 model_class=AutoModelForCausalLM,
                 tokenizer_class=AutoTokenizer,
             )
-        self.provider.load_model(self.model_id)
+        self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
         self,

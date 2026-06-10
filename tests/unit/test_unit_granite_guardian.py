@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -272,6 +272,50 @@ def test_validate_raises_on_non_chat_capable_provider(guardian_instance: Granite
 
     with pytest.raises(NotImplementedError, match="generate_chat"):
         guardian_instance.validate("test input")
+
+
+def test_user_supplied_default_hf_provider_loaded_with_causal_lm() -> None:
+    """Regression: a default-constructed HuggingFaceProvider must still load as a causal LM.
+
+    Granite Guardian is a causal LM. If a user passes ``HuggingFaceProvider()``
+    (whose default ``model_class`` is ``AutoModelForSequenceClassification``),
+    GraniteGuardian.__init__ must override the loader for this call so the
+    causal-LM head is loaded — not the missing classification head.
+    """
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from any_guardrail.providers.huggingface import HuggingFaceProvider
+
+    shared_provider = HuggingFaceProvider()
+    assert shared_provider.model_class is not AutoModelForCausalLM  # sanity: default is seq-classification
+
+    with patch.object(HuggingFaceProvider, "load_model") as mock_load:
+        GraniteGuardian(provider=shared_provider, criteria=GraniteGuardianRisk.HARM)
+
+    mock_load.assert_called_once()
+    _, load_kwargs = mock_load.call_args
+    assert load_kwargs["model_class"] is AutoModelForCausalLM
+    assert load_kwargs["tokenizer_class"] is AutoTokenizer
+    # The provider's stored defaults are not mutated.
+    assert shared_provider.model_class is not AutoModelForCausalLM
+
+
+def test_no_provider_path_constructs_provider_with_causal_lm() -> None:
+    """When no provider is supplied, GraniteGuardian builds an HF provider configured for causal LM.
+
+    This is the existing default behavior; it should not regress when the
+    user-supplied-provider path is hardened.
+    """
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    from any_guardrail.providers.huggingface import HuggingFaceProvider
+
+    with patch.object(HuggingFaceProvider, "load_model"):
+        guardian = GraniteGuardian(criteria=GraniteGuardianRisk.HARM)
+
+    assert isinstance(guardian.provider, HuggingFaceProvider)
+    assert guardian.provider.model_class is AutoModelForCausalLM
+    assert guardian.provider.tokenizer_class is AutoTokenizer
 
 
 def test_risk_constants_are_nonempty_strings() -> None:
