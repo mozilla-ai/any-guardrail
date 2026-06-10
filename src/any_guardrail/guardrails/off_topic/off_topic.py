@@ -53,9 +53,7 @@ class OffTopic(ThreeStageGuardrail[Any, Any, bool, dict[str, float], float]):
         msg = "Must provide a text to compare to."
         if not comparison_text:
             raise ValueError(msg)
-        model_inputs: Any = self.implementation._pre_processing(input_text, comparison_text)
-        model_outputs: Any = self.implementation._inference(model_inputs)
-        return self._post_processing(model_outputs)
+        return self._execute(input_text, comparison_text)
 
     def _pre_processing(self, *args: Any, **kwargs: Any) -> GuardrailPreprocessOutput[Any]:
         return self.implementation._pre_processing(*args, **kwargs)

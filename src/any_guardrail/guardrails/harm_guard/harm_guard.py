@@ -6,6 +6,7 @@ from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import (
     BinaryScoreOutput,
+    CategoryResult,
     GuardrailPreprocessOutput,
     StandardInferenceOutput,
     StandardPreprocessOutput,
@@ -52,9 +53,7 @@ class HarmGuard(StandardGuardrail):
             The score represents the unsafe probability (0.0 = safe, 1.0 = unsafe).
 
         """
-        model_inputs = self._pre_processing(input_text, output_text)
-        model_outputs = self._inference(model_inputs)
-        return self._post_processing(model_outputs)
+        return self._execute(input_text, output_text)
 
     def _pre_processing(self, input_text: str, output_text: str | None = None) -> StandardPreprocessOutput:
         """Tokenize input text and optionally output text.
@@ -75,5 +74,15 @@ class HarmGuard(StandardGuardrail):
         return self.provider.infer(model_inputs)
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
-        final_score = float(model_outputs.data["scores"][0][1])  # scores[0][1] is the unsafe probability
-        return GuardrailOutput(valid=final_score < self.threshold, score=final_score)
+        scores_row = model_outputs.data["scores"][0]
+        safe_probability = float(scores_row[0])
+        final_score = float(scores_row[1])  # scores[0][1] is the unsafe probability
+        triggered = final_score >= self.threshold
+        return GuardrailOutput(
+            valid=not triggered,
+            score=final_score,
+            categories=[
+                CategoryResult(name="safe", score=safe_probability),
+                CategoryResult(name="unsafe", score=final_score, triggered=triggered),
+            ],
+        )

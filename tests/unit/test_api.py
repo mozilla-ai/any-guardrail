@@ -26,7 +26,9 @@ def test_all_guardrails_in_enum() -> None:
                 if (
                     sub_item.is_file()
                     and sub_item.suffix == ".py"
-                    and sub_item.stem not in ("__init__", "off_topic_stsb", "off_topic_jina")
+                    # Underscore-prefixed modules are private helpers, not guardrails.
+                    and not sub_item.stem.startswith("_")
+                    and sub_item.stem not in ("off_topic_stsb", "off_topic_jina")
                 ):
                     guardrail_modules.append(sub_item.stem)
 
@@ -57,7 +59,9 @@ def test_guardrail_enum_values_match_module_names() -> None:
                 if (
                     sub_item.is_file()
                     and sub_item.suffix == ".py"
-                    and sub_item.stem not in ("__init__", "off_topic_stsb", "off_topic_jina")
+                    # Underscore-prefixed modules are private helpers, not guardrails.
+                    and not sub_item.stem.startswith("_")
+                    and sub_item.stem not in ("off_topic_stsb", "off_topic_jina")
                 ):
                     actual_modules.add(sub_item.stem)
 
