@@ -6,9 +6,9 @@ try:
     from azure.core.credentials import AzureKeyCredential
 except ImportError as e:
     msg = (
-        "azure-ai-contentsafety package is not installed. "
-        "Please install it with `pip install 'any-guardrail[azure-content-safety]'` "
-        "to use AzurePromptShields guardrail."
+        "Dependencies for AzurePromptShields are missing (`requests` and `azure-core`, "
+        "which ship with the `azure-content-safety` extra). "
+        "Please install them with `pip install 'any-guardrail[azure-content-safety]'`."
     )
     raise ImportError(msg) from e
 
