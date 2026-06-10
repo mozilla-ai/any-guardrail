@@ -80,6 +80,7 @@ Both providers return the same dict shape from `infer()` so guardrails are provi
 - `scores`: softmax or sigmoid (when `multi_label=True`) of logits.
 - `predicted_indices`: list of argmax indices, one per row.
 - `predicted_labels`: list of labels resolved via `id2label` (HF) or returned natively by the binary (encoderfile).
+- `labels`: full ordered label list aligning index-wise with `scores` columns (HF via `id2label`; `None` for encoderfile, whose `/predict` response only carries the predicted label — 2-class guardrails fall back to complement logic).
 
 Exception: causal-LM-backed guardrails using `HuggingFaceProvider` (`ShieldGemma`) produce 3D logits `(batch, seq, vocab)`. In that case `infer()` returns `logits` as a raw torch tensor and sets `scores`/`predicted_indices`/`predicted_labels` to `None`; the guardrail does its own selection (e.g. `logits[0, -1, [vocab["Yes"], vocab["No"]]]`) and softmax. This is checked in unit tests — when adding a new guardrail that runs a causal LM through `provider.infer()`, expect the raw-tensor path.
 

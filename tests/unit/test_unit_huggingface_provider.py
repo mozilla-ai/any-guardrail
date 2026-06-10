@@ -335,6 +335,7 @@ def test_infer_classification_logits_produce_uniform_shape() -> None:
     assert result.data["scores"].shape == (2, 2)
     assert result.data["predicted_indices"] == [0, 1]
     assert result.data["predicted_labels"] == ["SAFE", "UNSAFE"]
+    assert result.data["labels"] == ["SAFE", "UNSAFE"]
 
 
 def test_infer_causal_lm_3d_logits_skip_label_resolution() -> None:
@@ -357,6 +358,7 @@ def test_infer_causal_lm_3d_logits_skip_label_resolution() -> None:
     assert result.data["scores"] is None
     assert result.data["predicted_indices"] is None
     assert result.data["predicted_labels"] is None
+    assert result.data["labels"] is None
 
 
 def test_infer_multi_label_uses_sigmoid_not_softmax() -> None:

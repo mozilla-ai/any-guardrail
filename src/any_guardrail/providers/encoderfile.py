@@ -336,7 +336,9 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         """POST the preprocessed payload to the running encoderfile server.
 
         Returns the same uniform shape as HuggingFaceProvider: ``logits``,
-        ``scores``, ``predicted_indices``, ``predicted_labels``.
+        ``scores``, ``predicted_indices``, ``predicted_labels``, ``labels``.
+        ``labels`` is ``None`` because the encoderfile ``/predict`` response
+        only carries the predicted label, not the full ordered label list.
         """
         if self.base_url is None:
             msg = "load_model() must be called before infer()"
@@ -363,6 +365,7 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
                 "scores": scores,
                 "predicted_indices": predicted_indices,
                 "predicted_labels": predicted_labels,
+                "labels": None,
             }
         )
 
