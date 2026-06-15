@@ -21,7 +21,11 @@ def test_lakera_guard_guardrail_integration() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
+    assert result.score == 0.0
     assert result.explanation is not None
+    # breakdown is requested by default: the policy's detectors are listed, none detected.
+    assert isinstance(result.explanation["breakdown"], list)
+    assert result.explanation["detected_detector_types"] == []
 
 
 @pytest.mark.parametrize("attack", CANONICAL_INJECTIONS)
@@ -32,7 +36,12 @@ def test_lakera_guard_guardrail_integration_flagged(attack: str) -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid  # Lakera flagged the prompt as an attack.
+    assert result.score is not None
+    assert result.score > 0.0  # confidence level of the detected threat mapped to a float
     assert result.explanation is not None
-    # Lakera's /v2/guard returns only the boolean `flagged` verdict by default; the
-    # per-detector `results` / `category_scores` breakdown stays empty unless the
-    # request opts into it. So we assert on the verdict, not the breakdown.
+    breakdown = result.explanation["breakdown"]
+    assert breakdown, "breakdown should be populated when breakdown=True"
+    assert any(entry["detected"] for entry in breakdown)
+    assert result.explanation["detected_detector_types"]
+    # each breakdown entry carries the documented per-detector fields
+    assert {"detector_type", "detected", "result"} <= breakdown[0].keys()
