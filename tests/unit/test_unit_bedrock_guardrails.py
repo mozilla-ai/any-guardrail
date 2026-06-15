@@ -73,9 +73,7 @@ def test_bedrock_guardrails_post_processing_intervened() -> None:
                 ]
             },
             "sensitiveInformationPolicy": {
-                "piiEntities": [
-                    {"type": "EMAIL", "action": "ANONYMIZED", "match": "x@example.com"}
-                ],
+                "piiEntities": [{"type": "EMAIL", "action": "ANONYMIZED", "match": "x@example.com"}],
                 "regexes": [],
             },
         }

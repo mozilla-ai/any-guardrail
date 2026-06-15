@@ -129,9 +129,7 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, An
         """
         return GuardrailPreprocessOutput(data={"content": [{"text": {"text": text}}]})
 
-    def _inference(
-        self, model_inputs: GuardrailPreprocessOutput[AnyDict]
-    ) -> GuardrailInferenceOutput[AnyDict]:
+    def _inference(self, model_inputs: GuardrailPreprocessOutput[AnyDict]) -> GuardrailInferenceOutput[AnyDict]:
         """Call the Bedrock ``ApplyGuardrail`` API and return the raw response.
 
         Args:
