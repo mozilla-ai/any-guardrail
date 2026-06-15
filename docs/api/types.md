@@ -2,6 +2,8 @@
 
 Runtime-validated wrappers used throughout the pipeline and the output type returned by every guardrail.
 
+A machine-readable JSON Schema for `GuardrailOutput` (generated from these models) is published at <https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json>. Pin a release tag in the URL for a specific version.
+
 ## GuardrailOutput
 
 Represents the output of a guardrail evaluation with runtime validation.

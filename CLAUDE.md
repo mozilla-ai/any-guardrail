@@ -37,6 +37,10 @@ mkdocs serve
 
 # Generate API reference pages from docstrings (writes into docs/api/ or site/api/)
 python scripts/generate_api_docs.py
+
+# Regenerate the GuardrailOutput JSON schema after changing types.py
+# (pre-commit runs `--check`; it fails if schemas/guardrail_output.schema.json is stale)
+python scripts/generate_json_schema.py
 ```
 
 ## Architecture

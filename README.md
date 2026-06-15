@@ -81,6 +81,12 @@ result.extra       # guardrail-specific structured extras; result.raw holds the 
 flagged = [c.name for c in result.categories if c.triggered]
 ```
 
+A machine-readable [JSON Schema](schemas/guardrail_output.schema.json) for this output is published in the repo (generated from the Pydantic models). Reference it at the stable raw URL, pinning a release tag for a specific version:
+
+```
+https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json
+```
+
 ## Documentation
 Full guides at [docs link](https://mozilla-ai.github.io/any-guardrail/)
 

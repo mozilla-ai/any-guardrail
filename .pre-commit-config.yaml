@@ -38,6 +38,13 @@ repos:
         require_serial: true
         verbose: true
 
+      - id: guardrail-output-json-schema
+        name: check GuardrailOutput JSON schema is up to date
+        entry: "uv run python scripts/generate_json_schema.py --check"
+        language: system
+        pass_filenames: false
+        files: ^(src/any_guardrail/types\.py|scripts/generate_json_schema\.py|schemas/guardrail_output\.schema\.json)$
+
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.4.2"
     hooks:
