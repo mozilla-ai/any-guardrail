@@ -31,6 +31,8 @@ def test_lakera_guard_guardrail_integration_flagged(attack: str) -> None:
     result = guardrail.validate(attack)
 
     assert isinstance(result, GuardrailOutput)
-    assert not result.valid
+    assert not result.valid  # Lakera flagged the prompt as an attack.
     assert result.explanation is not None
-    assert result.explanation["results"]
+    # Lakera's /v2/guard returns only the boolean `flagged` verdict by default; the
+    # per-detector `results` / `category_scores` breakdown stays empty unless the
+    # request opts into it. So we assert on the verdict, not the breakdown.
