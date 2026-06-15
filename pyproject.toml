@@ -19,8 +19,8 @@ all = [
 ]
 
 bedrock = [
-    "boto3>=1.34.0"
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,llamafile]"
+    # >= 1.39.0 for native AWS_BEARER_TOKEN_BEDROCK (Bedrock API key) auth.
+    "boto3>=1.39.0"
 ]
 
 flowjudge = [
