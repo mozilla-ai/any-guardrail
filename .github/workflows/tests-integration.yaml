@@ -38,7 +38,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ALINIA_ENDPOINT: ${{ secrets.ALINIA_ENDPOINT }}
           ALINIA_API_KEY: ${{ secrets.ALINIA_API_KEY }}
-          LAKERA_API_KEY: ${{ secrets.SBX_LAKERA_API_KEY }}
+          LAKERA_API_KEY: ${{ secrets.LAKERA_API_KEY }}
           HF_HUB_DOWNLOAD_TIMEOUT: "300"
           HF_HUB_ETAG_TIMEOUT: "30"
         # `e2e` is auto-applied to every test under tests/integration/ by the
