@@ -35,7 +35,12 @@ class CategoryResult(BaseModel):
     """Human-readable elaboration (e.g. ``"Violent Crimes"`` for ``"S1"``)."""
 
     triggered: bool | None = None
-    """Whether the guardrail flagged this category. None when the backend reports no per-category verdict."""
+    """Whether the guardrail flagged this category.
+
+    Set to a concrete bool whenever the guardrail has a per-category verdict (a threshold or an
+    argmax decision), so ``if c.triggered`` / ``is False`` behave uniformly. Left None only when the
+    backend genuinely reports no verdict for the category (e.g. a raw score with no decision).
+    """
 
     score: float | None = None
     """Probability-like score in ~[0, 1] for this category (for risk categories, higher = more likely violating)."""

@@ -198,8 +198,8 @@ def test_match_injection_label_categories_with_full_label_list() -> None:
     assert [category.name for category in result.categories] == ["SAFE", "INJECTION"]
     assert result.categories[0].score == pytest.approx(0.73)
     assert result.categories[1].score == pytest.approx(0.27)
-    # Only the injection category carries a verdict; it wasn't predicted here.
-    assert result.categories[0].triggered is None
+    # Every class carries a concrete verdict: SAFE was predicted, INJECTION wasn't.
+    assert result.categories[0].triggered is True
     assert result.categories[1].triggered is False
 
 

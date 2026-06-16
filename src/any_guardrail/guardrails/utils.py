@@ -98,12 +98,10 @@ def _match_injection_row(
     probabilities = [float(probability) for probability in scores_row]
     names = _resolve_label_names(len(probabilities), labels, predicted_index, predicted_label, injection_label)
     injection_index = names.index(injection_label) if injection_label in names else None
+    # The argmax decides the verdict for the whole row, so every class has a
+    # known triggered state: the predicted class fired, the rest did not.
     categories = [
-        CategoryResult(
-            name=name,
-            score=probability,
-            triggered=(predicted_label == injection_label) if name == injection_label else None,
-        )
+        CategoryResult(name=name, score=probability, triggered=name == predicted_label)
         for name, probability in zip(names, probabilities, strict=True)
     ]
     return GuardrailOutput(
