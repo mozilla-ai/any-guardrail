@@ -33,10 +33,11 @@ def test_clean_user_prompt_no_documents_is_valid() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True
     assert result.score == 0.0
-    assert result.explanation == {
+    assert result.extra == {
         "user_prompt_attack_detected": False,
         "documents_attacks_detected": None,
     }
+    assert [(c.name, c.triggered) for c in result.categories] == [("user_prompt", False)]
 
 
 def test_attack_detected_in_user_prompt_is_invalid() -> None:
@@ -52,10 +53,11 @@ def test_attack_detected_in_user_prompt_is_invalid() -> None:
 
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation == {
+    assert result.extra == {
         "user_prompt_attack_detected": True,
         "documents_attacks_detected": None,
     }
+    assert [(c.name, c.triggered) for c in result.categories] == [("user_prompt", True)]
 
 
 def test_attack_detected_in_one_of_multiple_documents_is_invalid() -> None:
@@ -83,14 +85,20 @@ def test_attack_detected_in_one_of_multiple_documents_is_invalid() -> None:
 
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation == {
+    assert result.extra == {
         "user_prompt_attack_detected": False,
         "documents_attacks_detected": [False, True, False],
     }
+    assert [(c.name, c.triggered) for c in result.categories] == [
+        ("user_prompt", False),
+        ("document_0", False),
+        ("document_1", True),
+        ("document_2", False),
+    ]
 
 
 def test_attack_detected_in_both_user_prompt_and_document() -> None:
-    """When both surfaces flag attacks, explanation should reflect both flags."""
+    """When both surfaces flag attacks, extra should reflect both flags."""
     guardrail = AzurePromptShields(endpoint=FAKE_ENDPOINT, api_key=FAKE_KEY)
 
     fake = _mock_response(
@@ -107,10 +115,14 @@ def test_attack_detected_in_both_user_prompt_and_document() -> None:
 
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation == {
+    assert result.extra == {
         "user_prompt_attack_detected": True,
         "documents_attacks_detected": [True],
     }
+    assert [(c.name, c.triggered) for c in result.categories] == [
+        ("user_prompt", True),
+        ("document_0", True),
+    ]
 
 
 def test_no_inputs_raises_value_error() -> None:
@@ -139,10 +151,14 @@ def test_documents_only_clean_is_valid() -> None:
 
     assert result.valid is True
     assert result.score == 0.0
-    assert result.explanation == {
+    assert result.extra == {
         "user_prompt_attack_detected": None,
         "documents_attacks_detected": [False, False],
     }
+    assert [(c.name, c.triggered) for c in result.categories] == [
+        ("document_0", False),
+        ("document_1", False),
+    ]
 
 
 def test_non_2xx_response_raises_runtime_error() -> None:

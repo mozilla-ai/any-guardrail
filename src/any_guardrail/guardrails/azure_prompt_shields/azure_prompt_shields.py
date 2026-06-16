@@ -1,4 +1,5 @@
 import os
+import time
 from typing import Any, ClassVar
 
 try:
@@ -13,13 +14,14 @@ except ImportError as e:
     raise ImportError(msg) from e
 
 from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.types import CategoryResult, GuardrailUsage
 
 # Azure Prompt Shields REST API version (GA).
 # See https://learn.microsoft.com/en-us/rest/api/cognitiveservices/contentsafety/text-operations/shield-prompt
 _API_VERSION = "2024-09-01"
 
 
-class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
+class AzurePromptShields(Guardrail):
     """Guardrail wrapping Azure AI Content Safety's Prompt Shields feature.
 
     Prompt Shields is a service from Azure AI Content Safety that detects prompt-injection
@@ -109,7 +111,7 @@ class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
         self,
         user_prompt: str | None = None,
         documents: list[str] | None = None,
-    ) -> GuardrailOutput[bool, dict[str, Any], float]:
+    ) -> GuardrailOutput:
         """Detect direct and indirect prompt-injection attacks via Azure Prompt Shields.
 
         At least one of ``user_prompt`` or ``documents`` must be provided. The guardrail is
@@ -125,8 +127,9 @@ class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
 
         Returns:
             GuardrailOutput where ``valid`` is ``True`` iff no attack was detected anywhere,
-            ``explanation`` contains per-field detection booleans, and ``score`` is ``1.0``
-            when any attack is detected and ``0.0`` otherwise.
+            ``extra`` contains the per-field detection booleans, ``categories`` holds per-source
+            verdicts (user prompt and each document), and ``score`` is ``1.0`` when any attack is
+            detected and ``0.0`` otherwise.
 
         Raises:
             ValueError: If both ``user_prompt`` and ``documents`` are ``None``.
@@ -137,6 +140,7 @@ class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
             msg = "At least one of `user_prompt` or `documents` must be provided."
             raise ValueError(msg)
 
+        start = time.perf_counter()
         response = self._call_shield_prompt(user_prompt=user_prompt, documents=documents)
 
         user_prompt_analysis = response.get("userPromptAnalysis") or {}
@@ -154,12 +158,25 @@ class AzurePromptShields(Guardrail[bool, dict[str, Any], float]):
         any_user_attack = bool(user_prompt_attack)
         attack_detected = any_user_attack or any_doc_attack
 
-        explanation: dict[str, Any] = {
+        categories: list[CategoryResult] = []
+        if user_prompt_attack is not None:
+            categories.append(CategoryResult(name="user_prompt", triggered=user_prompt_attack))
+        for i, flag in enumerate(documents_attacks or []):
+            categories.append(CategoryResult(name=f"document_{i}", triggered=flag))
+
+        extra: dict[str, Any] = {
             "user_prompt_attack_detected": user_prompt_attack,
             "documents_attacks_detected": documents_attacks,
         }
         score = 1.0 if attack_detected else 0.0
-        return GuardrailOutput(valid=not attack_detected, explanation=explanation, score=score)
+        return GuardrailOutput(
+            valid=not attack_detected,
+            score=score,
+            categories=categories,
+            extra=extra,
+            raw=response,
+            usage=GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0),
+        )
 
     def _call_shield_prompt(
         self,

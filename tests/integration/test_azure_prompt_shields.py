@@ -8,8 +8,8 @@ def test_azure_prompt_shields_guardrail_integration() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
-    assert result.explanation is not None
-    assert result.explanation["user_prompt_attack_detected"] is False
+    assert result.extra is not None
+    assert result.extra["user_prompt_attack_detected"] is False
 
 
 def test_azure_prompt_shields_guardrail_integration_direct_attack() -> None:
@@ -23,8 +23,8 @@ def test_azure_prompt_shields_guardrail_integration_direct_attack() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
-    assert result.explanation is not None
-    assert result.explanation["user_prompt_attack_detected"] is True
+    assert result.extra is not None
+    assert result.extra["user_prompt_attack_detected"] is True
 
 
 def test_azure_prompt_shields_guardrail_integration_indirect_attack() -> None:
@@ -40,5 +40,5 @@ def test_azure_prompt_shields_guardrail_integration_indirect_attack() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
-    assert result.explanation is not None
-    assert result.explanation["documents_attacks_detected"] == [False, True]
+    assert result.extra is not None
+    assert result.extra["documents_attacks_detected"] == [False, True]
