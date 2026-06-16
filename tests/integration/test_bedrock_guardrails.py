@@ -42,13 +42,17 @@ def guardrail_identifier() -> Iterator[str]:
     )
     guardrail_id = created["guardrailId"]
 
-    # Wait until the guardrail reaches READY before applying it.
-    for _ in range(30):
-        if client.get_guardrail(guardrailIdentifier=guardrail_id)["status"] == "READY":
-            break
-        time.sleep(2)
-
     try:
+        # Wait until the guardrail reaches READY before applying it. Raise if it
+        # never does, so we don't hand the tests a not-ready identifier.
+        for _ in range(30):
+            if client.get_guardrail(guardrailIdentifier=guardrail_id)["status"] == "READY":
+                break
+            time.sleep(2)
+        else:
+            msg = f"Guardrail {guardrail_id} never reached READY status."
+            raise TimeoutError(msg)
+
         yield guardrail_id
     finally:
         client.delete_guardrail(guardrailIdentifier=guardrail_id)

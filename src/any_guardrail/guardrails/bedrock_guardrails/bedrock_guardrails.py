@@ -107,7 +107,7 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
 
         self.client: Any
         if boto3_session is not None:
-            self.client = boto3_session.client("bedrock-runtime", region_name=region_name)
+            self.client = boto3_session.client("bedrock-runtime")
         else:
             self.client = boto3.client(  # type: ignore[no-untyped-call]
                 "bedrock-runtime",

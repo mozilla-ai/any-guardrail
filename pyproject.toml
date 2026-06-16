@@ -109,8 +109,12 @@ ignore = [
 extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
-# S105/S106: hardcoded "credentials" in tests are fake fixtures, not real secrets.
-"tests/**" = ["D", "S105", "S106"]
+# D: docstrings aren't required in tests.
+# S105/S106 are scoped to the bedrock test only — its fake-cred fixtures hardcode
+# "credentials" that ruff flags, but they're fixtures, not real secrets. Ruff unions
+# per-file-ignores across matching patterns, so that file keeps D + S105 + S106.
+"tests/**" = ["D"]
+"tests/unit/test_unit_bedrock_guardrails.py" = ["S105", "S106"]
 "docs/cookbook/**" = ["T201", "TRY300"]
 "scripts/**" = ["T201"]
 
