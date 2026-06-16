@@ -156,11 +156,25 @@ class Alinia(Guardrail):
                     categories.append(CategoryResult(name=name, score=score))
                     numeric_scores.append(score)
 
+        # Alinia's recommendation is either a plain string or the richer
+        # ``{"action": "block", "output": "..."}`` form. Preserve it losslessly
+        # in ``extra`` and surface the action / message as first-class fields.
         recommendation = response_json.get("recommendation") or result.get("recommendation")
+        action: str | None = None
+        explanation: str | None = None
+        if isinstance(recommendation, str):
+            explanation = recommendation
+        elif isinstance(recommendation, dict):
+            action = recommendation.get("action")
+            output = recommendation.get("output")
+            explanation = output if isinstance(output, str) else None
+
         return GuardrailOutput(
             valid=valid,
-            explanation=recommendation if isinstance(recommendation, str) else None,
+            explanation=explanation,
             score=max(numeric_scores) if numeric_scores else None,
             categories=categories,
+            action=action,
+            extra={"recommendation": recommendation} if recommendation is not None else None,
             raw=response_json,
         )

@@ -75,6 +75,7 @@ result.valid       # bool verdict — True means the content passed
 result.score       # risk score in ~[0, 1], higher = more likely violating (when available)
 result.categories  # per-category results: CategoryResult(name, description, triggered, score, severity)
 result.explanation # human-readable rationale (judge reasoning, raw generation)
+result.action      # provider-recommended action (e.g. "block"), advisory; None if none
 result.usage       # provenance: model_id, latency_ms, token counts
 result.extra       # guardrail-specific structured extras; result.raw holds the backend payload
 

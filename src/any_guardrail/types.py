@@ -122,6 +122,13 @@ class GuardrailOutput(BaseModel):
     modified_text: str | None = None
     """Sanitized/masked text when the guardrail rewrites input. None means no modification."""
 
+    action: str | None = None
+    """Provider-recommended enforcement action (e.g. ``"block"``), when the backend returns one.
+
+    Free-form and provider-native (any-guardrail does not impose an action vocabulary). Advisory
+    only: enforcement is the caller's responsibility. None when the backend recommends no action.
+    """
+
     usage: GuardrailUsage | None = None
     """Provenance and cost information for this validation call."""
 

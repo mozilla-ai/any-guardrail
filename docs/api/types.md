@@ -24,6 +24,7 @@ Example:
 | `categories` | `list[CategoryResult]` |  |
 | `spans` | `list[SpanResult] | None` |  |
 | `modified_text` | `str | None` |  |
+| `action` | `str | None` |  |
 | `usage` | `GuardrailUsage | None` |  |
 | `extra` | `dict[str, Any] | None` |  |
 | `raw` | `Any | None` |  |

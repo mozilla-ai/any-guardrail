@@ -48,7 +48,7 @@ def test_boolean_category_details_become_triggered_flags() -> None:
     assert result.categories[0].triggered is False  # type: ignore[attr-defined]
 
 
-def test_recommendation_lands_in_explanation_and_raw_keeps_everything() -> None:
+def test_string_recommendation_lands_in_explanation_and_raw_keeps_everything() -> None:
     payload = {
         "result": {"flagged": True, "category_details": {}},
         "recommendation": "Mask the detected account number before proceeding.",
@@ -57,4 +57,21 @@ def test_recommendation_lands_in_explanation_and_raw_keeps_everything() -> None:
     result = _post_process(payload)
 
     assert result.explanation == "Mask the detected account number before proceeding."  # type: ignore[attr-defined]
+    assert result.action is None  # type: ignore[attr-defined]
+    assert result.extra == {"recommendation": payload["recommendation"]}  # type: ignore[attr-defined]
     assert result.raw == payload  # type: ignore[attr-defined]
+
+
+def test_dict_recommendation_surfaces_action_and_preserves_full_form() -> None:
+    payload = {
+        "result": {"flagged": True, "category_details": {"security": {"prompt_injection": 0.98}}},
+        "recommendation": {"action": "block", "output": "Sorry, I can't help with that."},
+    }
+
+    result = _post_process(payload)
+
+    assert result.action == "block"  # type: ignore[attr-defined]
+    assert result.explanation == "Sorry, I can't help with that."  # type: ignore[attr-defined]
+    # The full recommendation dict is preserved losslessly and stays JSON-serializable.
+    assert result.extra == {"recommendation": {"action": "block", "output": "Sorry, I can't help with that."}}  # type: ignore[attr-defined]
+    assert result.model_dump_json()  # type: ignore[attr-defined]
