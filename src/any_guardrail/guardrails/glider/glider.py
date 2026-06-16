@@ -4,7 +4,7 @@ from typing import ClassVar
 from transformers import pipeline
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.guardrails.utils import default
+from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.types import ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
@@ -79,6 +79,10 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         provider: Reserved for future extensibility. Currently unused.
         higher_is_better: Whether higher rubric scores mean better/passing text. Set to
             False for rubrics where higher scores mean worse text.
+        score_range: Optional ``(min, max)`` bounds of the rubric scale. GLIDER's rubric is
+            free text, so the bounds can't be inferred; supply them to get a normalized
+            canonical risk in ``score``. When omitted, ``score`` is None and the raw rubric
+            value is still available in ``extra["rubric_score"]``.
 
     Raise:
         ValueError: Can only use model path to GLIDER from HuggingFace.
@@ -95,6 +99,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         model_id: str | None = None,
         provider: StandardProvider | None = None,  # Reserved for future extensibility
         higher_is_better: bool = True,
+        score_range: tuple[int, int] | None = None,
     ) -> None:
         """Initialize the GLIDER guardrail."""
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
@@ -102,6 +107,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         self.rubric = rubric
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
+        self.score_range = score_range
         self.system_prompt = SYSTEM_PROMPT_GLIDER
         self.provider = provider  # Reserved for future extensibility
         self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
@@ -148,8 +154,18 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
         reasoning_match = REASONING_PATTERN.search(generated_text)
         highlight_match = HIGHLIGHT_PATTERN.search(generated_text)
+        # GLIDER's rubric is free text, so a canonical risk score is only
+        # available when the caller supplies the scale via ``score_range``.
+        score = (
+            normalize_rubric_to_risk(
+                rubric_score, self.score_range[0], self.score_range[1], higher_is_better=self.higher_is_better
+            )
+            if self.score_range is not None
+            else None
+        )
         return GuardrailOutput(
             valid=passed,
+            score=score,
             explanation=reasoning_match.group(1) if reasoning_match else generated_text,
             extra={
                 "rubric_score": rubric_score,

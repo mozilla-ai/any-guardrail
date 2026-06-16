@@ -3,6 +3,20 @@ from collections.abc import Sequence
 from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutput, GuardrailOutput
 
 
+def normalize_rubric_to_risk(raw: float, lo: int, hi: int, *, higher_is_better: bool) -> float | None:
+    """Map a rubric/likert score onto the canonical risk scale ~[0, 1] (higher = riskier).
+
+    ``q = (raw - lo) / (hi - lo)`` is the normalized quality in [0, 1]; risk is its complement
+    when higher rubric values are better, otherwise ``q`` directly. Returns None when the bounds
+    are degenerate (``hi == lo``), since no scale can be inferred.
+    """
+    if hi == lo:
+        return None
+    quality = (raw - lo) / (hi - lo)
+    quality = max(0.0, min(1.0, quality))  # clamp out-of-range rubric values
+    return (1.0 - quality) if higher_is_better else quality
+
+
 def default(model_id: str | None, supported_models: list[str]) -> str:
     """Resolve and validate model_id against supported models.
 

@@ -13,6 +13,7 @@ def flowjudge_instance() -> Flowjudge:
     instance = object.__new__(Flowjudge)
     instance.pass_threshold = 3
     instance.higher_is_better = True
+    instance.rubric = {score: f"level {score}" for score in range(6)}  # 0-5 scale
     return instance
 
 
@@ -54,3 +55,27 @@ def test_flowjudge_fails_closed_without_score(flowjudge_instance: Flowjudge) -> 
 
     assert result.valid is False
     assert result.extra == {"parse_failure": True}
+
+
+def test_flowjudge_normalizes_rubric_into_risk_score(flowjudge_instance: Flowjudge) -> None:
+    """The 0-5 rubric is normalized onto canonical risk: higher_is_better → 5 means lowest risk."""
+    # higher_is_better=True (default fixture): raw 5 → quality 1.0 → risk 0.0.
+    best = flowjudge_instance._post_processing(_eval_output(5))
+    assert best.score == pytest.approx(0.0)
+    assert best.extra is not None
+    assert best.extra["rubric_score"] == 5
+
+    # raw 0 → quality 0.0 → risk 1.0.
+    worst = flowjudge_instance._post_processing(_eval_output(0))
+    assert worst.score == pytest.approx(1.0)
+
+    # raw 4 on a 0-5 scale → quality 0.8 → risk 0.2.
+    mid = flowjudge_instance._post_processing(_eval_output(4))
+    assert mid.score == pytest.approx(0.2)
+
+
+def test_flowjudge_lower_is_better_inverts_direction(flowjudge_instance: Flowjudge) -> None:
+    flowjudge_instance.higher_is_better = False
+    # raw 5 with lower-is-better → quality 1.0 → risk = quality = 1.0.
+    result = flowjudge_instance._post_processing(_eval_output(5))
+    assert result.score == pytest.approx(1.0)

@@ -10,6 +10,7 @@ except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.guardrails.utils import normalize_rubric_to_risk
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 if TYPE_CHECKING:
@@ -73,8 +74,10 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
 
         Return:
             GuardrailOutput where ``valid`` maps the rubric score through
-            ``pass_threshold``, ``explanation`` is the judge's feedback, and
-            ``extra["rubric_score"]`` is the raw rubric integer.
+            ``pass_threshold``, ``score`` is the rubric normalized onto the
+            canonical risk axis (using the rubric's integer keys as bounds),
+            ``explanation`` is the judge's feedback, and ``extra["rubric_score"]``
+            is the raw rubric integer.
 
         """
         return self._execute(inputs, output)
@@ -136,4 +139,9 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
         if rubric_score is None:
             return GuardrailOutput(valid=False, explanation=feedback, extra={"parse_failure": True})
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
-        return GuardrailOutput(valid=passed, explanation=feedback, extra={"rubric_score": rubric_score})
+        # The rubric's integer keys give the scale, so normalize the likert score
+        # onto the canonical risk axis (higher = riskier) for a portable `score`.
+        score = normalize_rubric_to_risk(
+            rubric_score, min(self.rubric), max(self.rubric), higher_is_better=self.higher_is_better
+        )
+        return GuardrailOutput(valid=passed, score=score, explanation=feedback, extra={"rubric_score": rubric_score})

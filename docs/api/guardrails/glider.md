@@ -14,6 +14,10 @@ Args:
     provider: Reserved for future extensibility. Currently unused.
     higher_is_better: Whether higher rubric scores mean better/passing text. Set to
         False for rubrics where higher scores mean worse text.
+    score_range: Optional ``(min, max)`` bounds of the rubric scale. GLIDER's rubric is
+        free text, so the bounds can't be inferred; supply them to get a normalized
+        canonical risk in ``score``. When omitted, ``score`` is None and the raw rubric
+        value is still available in ``extra["rubric_score"]``.
 
 Raise:
     ValueError: Can only use model path to GLIDER from HuggingFace.
@@ -32,6 +36,7 @@ Raise:
 | `model_id` | `str | None` | No | `None` |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` |
 | `higher_is_better` | `bool` | No | `True` |
+| `score_range` | `tuple[int, int] | None` | No | `None` |
 
 Initialize the GLIDER guardrail.
 

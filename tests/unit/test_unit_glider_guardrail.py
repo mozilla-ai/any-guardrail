@@ -11,6 +11,7 @@ def glider_instance() -> Glider:
     instance = object.__new__(Glider)
     instance.pass_threshold = 5
     instance.higher_is_better = True
+    instance.score_range = None  # free-text rubric: no normalized score by default
     return instance
 
 
@@ -34,6 +35,19 @@ def test_glider_parses_reasoning_highlights_and_score(glider_instance: Glider) -
     assert result.extra is not None
     assert result.extra["rubric_score"] == 8
     assert result.extra["highlights"] == '["clear", "well structured"]'
+    # Without an explicit score_range, the free-text rubric yields no normalized score.
+    assert result.score is None
+
+
+def test_glider_normalizes_score_when_range_given(glider_instance: Glider) -> None:
+    glider_instance.score_range = (0, 10)  # higher_is_better=True
+
+    result = glider_instance._post_processing(GuardrailInferenceOutput(data=GENERATION))
+
+    # raw 8 on a 0-10 scale → quality 0.8 → risk 0.2.
+    assert result.score == pytest.approx(0.2)
+    assert result.extra is not None
+    assert result.extra["rubric_score"] == 8
 
 
 @pytest.mark.parametrize(
