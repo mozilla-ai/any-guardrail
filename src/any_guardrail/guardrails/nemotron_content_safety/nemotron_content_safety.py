@@ -81,6 +81,7 @@ class NemotronContentSafety(ThreeStageGuardrail[NemotronPreprocessData, Nemotron
         model_id: Optional HuggingFace model ID. Defaults to ``nvidia/Nemotron-Content-Safety-Reasoning-4B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["nvidia/Nemotron-Content-Safety-Reasoning-4B"]
@@ -130,20 +131,23 @@ class NemotronContentSafety(ThreeStageGuardrail[NemotronPreprocessData, Nemotron
         return GuardrailPreprocessOutput(data={"messages": messages, "has_response": output_text is not None})
 
     def _inference(
-        self, model_inputs: GuardrailPreprocessOutput[NemotronPreprocessData]
+        self, model_inputs: GuardrailPreprocessOutput[NemotronInferenceData]
     ) -> GuardrailInferenceOutput[NemotronInferenceData]:
-        return self.provider.generate_chat(
+        result = self.provider.generate_chat(
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
+        # Carry has_response through so _post_processing can fail closed on an unparsed response verdict.
+        result.data["has_response"] = model_inputs.data["has_response"]
+        return result
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[NemotronInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[NemotronInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
+        has_response = model_outputs.data.get("has_response", False)
         without_think = _THINK_PATTERN.sub("", text).strip()
         prompt_harm = _field(_PROMPT_HARM, without_think)
         response_harm = _field(_RESPONSE_HARM, without_think)
-        if prompt_harm is None and response_harm is None:
+        # Fail closed if the prompt verdict is missing, or a judged response's verdict didn't parse.
+        if prompt_harm is None or (has_response and response_harm is None):
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         return GuardrailOutput(
             valid=not (bool(prompt_harm) or bool(response_harm)),

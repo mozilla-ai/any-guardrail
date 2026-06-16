@@ -68,6 +68,7 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
         model_id: Optional HuggingFace model ID. Defaults to ``AtlaAI/Selene-1-Mini-Llama-3.1-8B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["AtlaAI/Selene-1-Mini-Llama-3.1-8B"]
@@ -127,17 +128,13 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[SeleneInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[SeleneInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
         match = _RESULT_PATTERN.search(text)
         if match is None:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         rubric_score = int(match.group(1))
-        passed = (
-            rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
-        )
+        passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
         return GuardrailOutput(
             valid=passed,
             score=normalize_rubric_to_risk(rubric_score, SCORE_MIN, SCORE_MAX, higher_is_better=self.higher_is_better),

@@ -34,6 +34,7 @@ class LettuceDetect(Guardrail):
 
     Raises:
         ImportError: When the ``lettucedetect`` extra is not installed.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -44,7 +45,9 @@ class LettuceDetect(Guardrail):
     def __init__(self, model_id: str | None = None, method: str = "transformer") -> None:
         """Initialize the LettuceDetect guardrail."""
         if MISSING_PACKAGES_ERROR is not None:
-            msg = "Missing packages for LettuceDetect guardrail. You can try `pip install 'any-guardrail[lettucedetect]'`"
+            msg = (
+                "Missing packages for LettuceDetect guardrail. You can try `pip install 'any-guardrail[lettucedetect]'`"
+            )
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.detector = HallucinationDetector(method=method, model_path=self.model_id)

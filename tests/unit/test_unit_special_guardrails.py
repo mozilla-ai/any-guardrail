@@ -13,7 +13,6 @@ from any_guardrail.guardrails.lettuce_detect.lettuce_detect import LettuceDetect
 from any_guardrail.guardrails.privacy_filter.privacy_filter import PrivacyFilter
 from any_guardrail.types import GuardrailInferenceOutput
 
-
 # --- HHEM ----------------------------------------------------------------------
 
 
@@ -169,9 +168,7 @@ def test_gli_guard_safe() -> None:
 
 # --- FlowJudge new init paths --------------------------------------------------
 
-flowjudge_available = pytest.mark.skipif(
-    MISSING_PACKAGES_ERROR is not None, reason="flow-judge not installed"
-)
+flowjudge_available = pytest.mark.skipif(MISSING_PACKAGES_ERROR is not None, reason="flow-judge not installed")
 
 
 @flowjudge_available

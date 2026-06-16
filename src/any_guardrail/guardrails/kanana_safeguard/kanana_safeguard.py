@@ -66,6 +66,7 @@ class KananaSafeguard(ThreeStageGuardrail[KananaPreprocessData, KananaInferenceD
         model_id: Optional HuggingFace model ID. Defaults to ``kakaocorp/kanana-safeguard-8b``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -122,9 +123,7 @@ class KananaSafeguard(ThreeStageGuardrail[KananaPreprocessData, KananaInferenceD
             skip_special_tokens=False,
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[KananaInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[KananaInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
         match = _TOKEN_PATTERN.search(text)
         if match is None:

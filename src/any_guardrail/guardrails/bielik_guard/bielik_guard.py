@@ -49,6 +49,7 @@ class BielikGuard(StandardGuardrail):
         threshold: Per-category probability above which a category is flagged. Defaults to 0.5.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             with ``multi_label=True``.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [

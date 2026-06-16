@@ -84,7 +84,8 @@ def test_polyguard_parse_with_categories() -> None:
     result = instance._post_processing(_gen(text))
     assert result.valid is False
     names = {c.name for c in result.categories if c.triggered}
-    assert "S1" in names and "S10" in names
+    assert "S1" in names
+    assert "S10" in names
 
 
 def test_polyguard_fails_closed() -> None:
@@ -116,6 +117,33 @@ def test_dynaguard_fails_closed() -> None:
     assert result.extra == {"parse_failure": True}
 
 
+def test_dynaguard_strips_explanation_and_takes_final_bare_verdict() -> None:
+    instance = object.__new__(DynaGuard)
+    # Reasoning inside <explanation> mentions FAIL; the actual verdict is PASS.
+    explained = (
+        "<explanation>This would be a FAIL if it leaked data, but it does not.</explanation>\n<answer>PASS</answer>"
+    )
+    assert instance._post_processing(_gen(explained)).valid is True
+    # Bare fallback (no <answer>): the LAST verdict wins over a mid-reasoning mention.
+    bare = "Rule 1 could be a FAIL in some readings. Overall the agent complied: PASS"
+    assert instance._post_processing(_gen(bare)).valid is True
+
+
+def test_wildguard_fails_closed_when_judged_response_verdict_missing() -> None:
+    instance = object.__new__(WildGuard)
+    # output_text was supplied (has_response) but the response-harm line didn't parse.
+    data = {"generated_text": "Harmful request: no\nResponse refusal: no", "has_response": True}
+    result = instance._post_processing(GuardrailInferenceOutput(data=data))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_wildguard_prompt_only_tolerates_missing_response_verdict() -> None:
+    instance = object.__new__(WildGuard)
+    data = {"generated_text": "Harmful request: no", "has_response": False}
+    assert instance._post_processing(GuardrailInferenceOutput(data=data)).valid is True
+
+
 @pytest.mark.parametrize(
     ("text", "expected_valid"),
     [
@@ -128,6 +156,14 @@ def test_nemotron_parse(text: str, expected_valid: bool) -> None:
     instance = object.__new__(NemotronContentSafety)
     result = instance._post_processing(_gen(text))
     assert result.valid is expected_valid
+
+
+def test_nemotron_fails_closed_when_judged_response_verdict_missing() -> None:
+    instance = object.__new__(NemotronContentSafety)
+    data = {"generated_text": "Prompt harm: unharmful", "has_response": True}
+    result = instance._post_processing(GuardrailInferenceOutput(data=data))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
 
 
 def test_kanana_safe_and_unsafe() -> None:
@@ -201,7 +237,8 @@ def test_prometheus_parse_and_score() -> None:
     passing = judge._post_processing(_gen("Feedback: solid answer [RESULT] 4"))
     failing = judge._post_processing(_gen("Feedback: weak [RESULT] 2"))
     assert passing.valid is True
-    assert passing.extra is not None and passing.extra["rubric_score"] == 4
+    assert passing.extra is not None
+    assert passing.extra["rubric_score"] == 4
     assert passing.score == pytest.approx(1.0 - (4 - 1) / 4)  # higher_is_better risk
     assert failing.valid is False
 
@@ -211,7 +248,8 @@ def test_prometheus_uses_final_result_not_inline_reference() -> None:
     judge = _judge(Prometheus, pass_threshold=3)
     text = "Feedback: a Score: 2 response would lack detail, but this one is solid. [RESULT] 4"
     result = judge._post_processing(_gen(text))
-    assert result.extra is not None and result.extra["rubric_score"] == 4
+    assert result.extra is not None
+    assert result.extra["rubric_score"] == 4
     assert result.valid is True
 
 
@@ -250,7 +288,8 @@ def test_compass_judger_uses_final_rating() -> None:
     """A bracketed number quoted mid-justification must not override the final rating."""
     judge = _judge(CompassJudger, pass_threshold=6)
     result = judge._post_processing(_gen("I considered scores [[3]] and [[8]]. Rating: [[7]]"))
-    assert result.extra is not None and result.extra["rubric_score"] == 7
+    assert result.extra is not None
+    assert result.extra["rubric_score"] == 7
     assert result.valid is True
 
 

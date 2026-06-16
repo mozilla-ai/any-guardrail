@@ -34,7 +34,7 @@ Answers: [/INST]
 <|assistant|>
 """
 
-MAX_NEW_TOKENS = 32
+MAX_NEW_TOKENS = 64
 
 _HARMFUL_REQUEST = re.compile(r"Harmful request:\s*(yes|no)", re.IGNORECASE)
 _RESPONSE_REFUSAL = re.compile(r"Response refusal:\s*(yes|no)", re.IGNORECASE)
@@ -63,6 +63,7 @@ class WildGuard(ThreeStageGuardrail[WildGuardPreprocessData, WildGuardInferenceD
         model_id: Optional HuggingFace model ID. Defaults to ``allenai/wildguard``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["allenai/wildguard"]
@@ -105,21 +106,26 @@ class WildGuard(ThreeStageGuardrail[WildGuardPreprocessData, WildGuardInferenceD
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[WildGuardPreprocessData]
     ) -> GuardrailInferenceOutput[WildGuardInferenceData]:
-        return self.provider.generate_chat(
+        result = self.provider.generate_chat(
             messages=model_inputs.data["messages"],
             max_new_tokens=MAX_NEW_TOKENS,
             do_sample=False,
             apply_chat_template=False,
         )
+        # Carry has_response through so _post_processing can fail closed on an
+        # unparsed response verdict (rather than treating it as safe).
+        result.data["has_response"] = model_inputs.data["has_response"]
+        return result
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[WildGuardInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[WildGuardInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
+        has_response = model_outputs.data.get("has_response", False)
         harmful_request = _field(_HARMFUL_REQUEST, text)
         response_refusal = _field(_RESPONSE_REFUSAL, text)
         harmful_response = _field(_HARMFUL_RESPONSE, text)
-        if harmful_request is None and harmful_response is None:
+        # Fail closed if the always-present request verdict is missing, or if a response was
+        # being judged but its harm verdict didn't parse (don't silently pass it as safe).
+        if harmful_request is None or (has_response and harmful_response is None):
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         categories = [
             CategoryResult(name="harmful_request", triggered=harmful_request),

@@ -76,6 +76,7 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
         model_id: Optional HuggingFace model ID. Defaults to ``ToxicityPrompts/PolyGuard-Ministral``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -128,9 +129,7 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[PolyGuardInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[PolyGuardInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
         harmful_request = _field(_HARMFUL_REQUEST, text)
         response_refusal = _field(_RESPONSE_REFUSAL, text)

@@ -13,9 +13,7 @@ from any_guardrail.types import CategoryResult, GuardrailOutput, StandardInferen
 MALICIOUS_INDEX = 1
 
 
-def _build_output(
-    scores_row: Sequence[float], predicted_index: int, labels: Sequence[str] | None
-) -> GuardrailOutput:
+def _build_output(scores_row: Sequence[float], predicted_index: int, labels: Sequence[str] | None) -> GuardrailOutput:
     probabilities = [float(probability) for probability in scores_row]
     names = list(labels) if labels is not None else [f"LABEL_{index}" for index in range(len(probabilities))]
     categories = [

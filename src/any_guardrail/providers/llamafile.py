@@ -388,11 +388,14 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         The ``skip_special_tokens`` and ``apply_chat_template`` flags exist for
         contract parity with :class:`HuggingFaceProvider`. The llamafile server
         renders its own chat template and controls special-token decoding, so
-        ``skip_special_tokens`` is ignored and ``apply_chat_template=False`` (raw
-        prompts) is unsupported — use ``HuggingFaceProvider`` for guardrails that
-        require either (e.g. WildGuard, Kanana).
+        non-default values for either flag are unsupported and raise
+        :class:`NotImplementedError` (rather than silently misbehaving) — use
+        ``HuggingFaceProvider`` for guardrails that require either, e.g. WildGuard
+        (raw prompt) or Kanana (special-token verdict).
         """
-        del skip_special_tokens  # server-side decoding; not controllable over HTTP chat completions.
+        if not skip_special_tokens:
+            msg = "LlamafileProvider does not support skip_special_tokens=False; use HuggingFaceProvider."
+            raise NotImplementedError(msg)
         if not apply_chat_template:
             msg = "LlamafileProvider does not support apply_chat_template=False; use HuggingFaceProvider."
             raise NotImplementedError(msg)

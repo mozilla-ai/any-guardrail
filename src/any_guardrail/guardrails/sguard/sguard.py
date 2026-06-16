@@ -52,6 +52,7 @@ class Sguard(ThreeStageGuardrail[SguardPreprocessData, SguardInferenceData]):
         model_id: Optional HuggingFace model ID. Defaults to the ContentFilter model.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [CONTENT_FILTER_MODEL, JAILBREAK_FILTER_MODEL]
@@ -99,9 +100,7 @@ class Sguard(ThreeStageGuardrail[SguardPreprocessData, SguardInferenceData]):
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[SguardInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[SguardInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
         usage = GuardrailUsage(
             prompt_tokens=model_outputs.data.get("prompt_token_count"),

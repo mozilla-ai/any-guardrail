@@ -73,6 +73,7 @@ class GliGuard(Guardrail):
 
     Raises:
         ImportError: When the ``gliner`` extra is not installed.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["fastino/gliguard-LLMGuardrails-300M"]
@@ -97,7 +98,9 @@ class GliGuard(Guardrail):
         jailbreak = [label for label in _as_label_list(result.get("jailbreak_detection")) if label != "benign"]
         refusal = result.get("response_refusal")
 
-        categories = [CategoryResult(name="prompt_safety", description=str(prompt_safety), triggered=prompt_safety == "unsafe")]
+        categories = [
+            CategoryResult(name="prompt_safety", description=str(prompt_safety), triggered=prompt_safety == "unsafe")
+        ]
         categories += [CategoryResult(name=label, triggered=True) for label in toxicity if label != "benign"]
         categories += [CategoryResult(name=label, triggered=True) for label in jailbreak]
 

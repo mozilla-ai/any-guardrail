@@ -49,6 +49,7 @@ class GptOssSafeguard(ThreeStageGuardrail[GptOssSafeguardPreprocessData, GptOssS
         model_id: Optional HuggingFace model ID. Defaults to ``openai/gpt-oss-safeguard-20b``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [

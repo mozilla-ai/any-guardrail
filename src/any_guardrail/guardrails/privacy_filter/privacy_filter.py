@@ -5,7 +5,7 @@ from any_guardrail.base import Guardrail
 from any_guardrail.guardrails.utils import default, spans_from_token_labels
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import CategoryResult, GuardrailOutput, GuardrailUsage, SpanResult
+from any_guardrail.types import CategoryResult, GuardrailOutput, GuardrailUsage
 
 MAX_LENGTH = 512
 
@@ -30,6 +30,7 @@ class PrivacyFilter(Guardrail):
         model_id: Optional HuggingFace model ID. Defaults to ``openai/privacy-filter``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading an ``AutoModelForTokenClassification`` with ``trust_remote_code=True``.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["openai/privacy-filter"]
@@ -80,13 +81,3 @@ class PrivacyFilter(Guardrail):
         )
         result.usage = GuardrailUsage(model_id=self.model_id, latency_ms=(time.perf_counter() - start) * 1000.0)
         return result
-
-    def _build_spans(self, input_text: str, data: dict[str, Any]) -> list[SpanResult]:
-        """Convenience hook re-exposing the span extraction for tests."""
-        return spans_from_token_labels(
-            data["token_label_ids"][0],
-            data["offsets"][0],
-            data["id2label"],
-            input_text,
-            data["token_scores"][0],
-        )

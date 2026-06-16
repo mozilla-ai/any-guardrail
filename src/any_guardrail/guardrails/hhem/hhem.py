@@ -25,6 +25,7 @@ class Hhem(Guardrail):
         threshold: Consistency at or above which the hypothesis is considered grounded.
         model_id: Optional HuggingFace model ID. Defaults to
             ``vectara/hallucination_evaluation_model``.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["vectara/hallucination_evaluation_model"]
@@ -61,7 +62,9 @@ class Hhem(Guardrail):
         result = GuardrailOutput(
             valid=consistency >= self.threshold,
             score=1.0 - consistency,
-            categories=[CategoryResult(name="hallucination", score=1.0 - consistency, triggered=consistency < self.threshold)],
+            categories=[
+                CategoryResult(name="hallucination", score=1.0 - consistency, triggered=consistency < self.threshold)
+            ],
             extra={"consistency_score": consistency},
         )
         result.usage = GuardrailUsage(model_id=self.model_id, latency_ms=(time.perf_counter() - start) * 1000.0)

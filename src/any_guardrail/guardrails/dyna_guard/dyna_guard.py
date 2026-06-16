@@ -39,6 +39,9 @@ MAX_NEW_TOKENS_THINK = 512
 
 _ANSWER_PATTERN = re.compile(r"<answer>\s*(PASS|FAIL)\s*</answer>", re.IGNORECASE)
 _THINK_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)
+# The system prompt allows reasoning in either a <think> or an <explanation> block; strip both
+# before the bare-verdict fallback so PASS/FAIL mentioned mid-reasoning can't be mistaken for the verdict.
+_EXPLANATION_PATTERN = re.compile(r"<explanation>.*?</explanation>", re.DOTALL)
 # Fallback: a bare PASS/FAIL token when the model omits the <answer> wrapper.
 _BARE_VERDICT = re.compile(r"\b(PASS|FAIL)\b")
 
@@ -64,6 +67,7 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         model_id: Optional HuggingFace model ID. Defaults to ``tomg-group-umd/DynaGuard-8B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -126,15 +130,20 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
             messages=model_inputs.data["messages"], max_new_tokens=max_new_tokens, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[DynaGuardInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[DynaGuardInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
-        without_think = _THINK_PATTERN.sub("", text).strip()
-        match = _ANSWER_PATTERN.search(without_think) or _BARE_VERDICT.search(without_think)
-        if match is None:
-            return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
-        verdict = match.group(1).strip().upper()
+        cleaned = _EXPLANATION_PATTERN.sub("", _THINK_PATTERN.sub("", text)).strip()
+        answer = _ANSWER_PATTERN.search(cleaned)
+        if answer is not None:
+            verdict = answer.group(1)
+        else:
+            # No <answer> wrapper: take the LAST bare PASS/FAIL so the final verdict wins
+            # over any PASS/FAIL the model mentioned earlier while reasoning.
+            bare = _BARE_VERDICT.findall(cleaned)
+            if not bare:
+                return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
+            verdict = bare[-1]
+        verdict = verdict.strip().upper()
         violated = verdict == "FAIL"
         return GuardrailOutput(
             valid=not violated,
