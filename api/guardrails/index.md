@@ -5,6 +5,7 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | Name | `GuardrailName` value |
 |------|-----------------------|
 | [Anyllm](any-llm.md) | `GuardrailName.ANYLLM` |
+| [Bedrock_guardrails](bedrock-guardrails.md) | `GuardrailName.BEDROCK_GUARDRAILS` |
 | [Deepset](deepset.md) | `GuardrailName.DEEPSET` |
 | [Duoguard](duo-guard.md) | `GuardrailName.DUOGUARD` |
 | [Flowjudge](flowjudge.md) | `GuardrailName.FLOWJUDGE` |
