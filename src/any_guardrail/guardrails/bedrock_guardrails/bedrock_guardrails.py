@@ -6,7 +6,7 @@ from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPrep
 _VALID_SOURCES = ("INPUT", "OUTPUT")
 
 
-class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, Any], float]):
+class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
     """Guardrail wrapping the AWS Bedrock ``ApplyGuardrail`` API.
 
     Provides a uniform interface to AWS Bedrock Guardrails — a unified, FM-agnostic
@@ -148,9 +148,7 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, An
         )
         return GuardrailInferenceOutput(data=response)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[AnyDict]
-    ) -> GuardrailOutput[bool, dict[str, Any], float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[AnyDict]) -> GuardrailOutput:
         """Translate the ApplyGuardrail response into a ``GuardrailOutput``.
 
         Args:
@@ -158,21 +156,27 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict, bool, dict[str, An
 
         Returns:
             ``valid=True`` when ``action == "NONE"``; otherwise ``valid=False``.
-            ``explanation`` contains the full ``assessments`` list (per-policy
-            breakdown: topic, content, word, sensitive-information, contextual
-            grounding, and Automated Reasoning), the modified ``outputs``, and
-            the raw ``action``. ``score`` is ``1.0`` when the guardrail
-            intervened and ``0.0`` when no intervention occurred — a simple
-            severity proxy for the binary action.
+            ``action`` carries Bedrock's native verdict (e.g. ``"NONE"`` or
+            ``"GUARDRAIL_INTERVENED"``). ``extra`` contains the full
+            ``assessments`` list (per-policy breakdown: topic, content, word,
+            sensitive-information, contextual grounding, and Automated
+            Reasoning) and the modified ``outputs``; the untouched boto3
+            response remains reachable via ``raw``. ``score`` is ``1.0`` when
+            the guardrail intervened and ``0.0`` when no intervention occurred —
+            a simple severity proxy for the binary action.
 
         """
         response = model_outputs.data
         action = response.get("action", "NONE")
         valid = action == "NONE"
         score = 0.0 if valid else 1.0
-        explanation: dict[str, Any] = {
-            "action": action,
-            "assessments": response.get("assessments", []),
-            "outputs": response.get("outputs", []),
-        }
-        return GuardrailOutput(valid=valid, explanation=explanation, score=score)
+        return GuardrailOutput(
+            valid=valid,
+            action=action,
+            score=score,
+            extra={
+                "assessments": response.get("assessments", []),
+                "outputs": response.get("outputs", []),
+            },
+            raw=response,
+        )

@@ -51,10 +51,10 @@ def test_bedrock_guardrails_post_processing_action_none() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True
     assert result.score == 0.0
-    assert result.explanation is not None
-    assert result.explanation["action"] == "NONE"
-    assert result.explanation["assessments"] == response["assessments"]
-    assert result.explanation["outputs"] == []
+    assert result.action == "NONE"
+    assert result.extra is not None
+    assert result.extra["assessments"] == response["assessments"]
+    assert result.extra["outputs"] == []
 
 
 def test_bedrock_guardrails_post_processing_intervened() -> None:
@@ -89,10 +89,10 @@ def test_bedrock_guardrails_post_processing_intervened() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation is not None
-    assert result.explanation["action"] == "GUARDRAIL_INTERVENED"
-    assert result.explanation["assessments"] == assessments
-    assert result.explanation["outputs"] == [{"text": "[redacted by guardrail]"}]
+    assert result.action == "GUARDRAIL_INTERVENED"
+    assert result.extra is not None
+    assert result.extra["assessments"] == assessments
+    assert result.extra["outputs"] == [{"text": "[redacted by guardrail]"}]
 
 
 def test_bedrock_guardrails_pre_processing_wraps_content() -> None:
@@ -136,5 +136,6 @@ def test_bedrock_guardrails_validate_end_to_end() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation is not None
-    assert result.explanation["assessments"] == response["assessments"]
+    assert result.action == "GUARDRAIL_INTERVENED"
+    assert result.extra is not None
+    assert result.extra["assessments"] == response["assessments"]

@@ -66,8 +66,7 @@ def test_bedrock_guardrails_benign_input_passes(guardrail_identifier: str) -> No
     assert isinstance(result, GuardrailOutput)
     assert result.valid
     assert result.score == 0.0
-    assert result.explanation is not None
-    assert result.explanation["action"] == "NONE"
+    assert result.action == "NONE"
 
 
 def test_bedrock_guardrails_harmful_input_blocked(guardrail_identifier: str) -> None:
@@ -84,5 +83,5 @@ def test_bedrock_guardrails_harmful_input_blocked(guardrail_identifier: str) -> 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
     assert result.score == 1.0
-    assert result.explanation is not None
-    assert result.explanation["action"] != "NONE"
+    assert result.action is not None
+    assert result.action != "NONE"
