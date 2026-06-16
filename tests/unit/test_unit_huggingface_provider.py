@@ -335,6 +335,17 @@ def test_infer_classification_logits_produce_uniform_shape() -> None:
     assert result.data["scores"].shape == (2, 2)
     assert result.data["predicted_indices"] == [0, 1]
     assert result.data["predicted_labels"] == ["SAFE", "UNSAFE"]
+    assert result.data["labels"] == ["SAFE", "UNSAFE"]
+
+
+def test_infer_labels_tolerate_sparse_id2label() -> None:
+    """The class count comes from the logits; missing id2label entries get placeholder names."""
+    logits = torch.tensor([[2.0, 0.5]])
+    provider = _provider_with_model_output(logits, id2label={0: "SAFE"})
+
+    result = provider.infer(GuardrailPreprocessOutput(data={"input_ids": torch.tensor([[1, 2]])}))
+
+    assert result.data["labels"] == ["SAFE", "LABEL_1"]
 
 
 def test_infer_causal_lm_3d_logits_skip_label_resolution() -> None:
@@ -357,6 +368,7 @@ def test_infer_causal_lm_3d_logits_skip_label_resolution() -> None:
     assert result.data["scores"] is None
     assert result.data["predicted_indices"] is None
     assert result.data["predicted_labels"] is None
+    assert result.data["labels"] is None
 
 
 def test_infer_multi_label_uses_sigmoid_not_softmax() -> None:

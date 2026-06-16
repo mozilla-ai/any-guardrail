@@ -4,7 +4,7 @@ from any_guardrail.base import StandardGuardrail
 from any_guardrail.guardrails.utils import default, match_injection_label, match_injection_label_batch
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import BinaryScoreOutput, StandardInferenceOutput, StandardPreprocessOutput
+from any_guardrail.types import GuardrailOutput, StandardInferenceOutput, StandardPreprocessOutput
 
 SENTINEL_INJECTION_LABEL = "jailbreak"
 
@@ -31,10 +31,10 @@ class Sentinel(StandardGuardrail):
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
-    def _post_processing(self, model_outputs: StandardInferenceOutput) -> BinaryScoreOutput:
+    def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:
         return match_injection_label(model_outputs, SENTINEL_INJECTION_LABEL)
 
-    def _validate_batch(self, input_texts: list[str], **kwargs: Any) -> list[BinaryScoreOutput]:
+    def _validate_batch(self, input_texts: list[str], **kwargs: Any) -> list[GuardrailOutput]:
         model_inputs = self.provider.pre_process(input_texts, **kwargs)
         model_outputs = self.provider.infer(model_inputs)
         return match_injection_label_batch(model_outputs, SENTINEL_INJECTION_LABEL)

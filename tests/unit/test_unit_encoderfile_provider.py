@@ -168,6 +168,8 @@ def test_infer_parses_response(tmp_path: Any, fake_subprocess: Any) -> None:
     np.testing.assert_array_almost_equal(result.data["scores"], np.array([[0.27, 0.73], [0.95, 0.05]]))
     assert result.data["predicted_indices"] == [1, 0]
     assert result.data["predicted_labels"] == ["INJECTION", "SAFE"]
+    # The encoderfile /predict response doesn't expose the full label list.
+    assert result.data["labels"] is None
 
 
 def test_infer_before_load_model_raises() -> None:

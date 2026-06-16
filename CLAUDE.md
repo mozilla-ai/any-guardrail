@@ -37,6 +37,10 @@ mkdocs serve
 
 # Generate API reference pages from docstrings (writes into docs/api/ or site/api/)
 python scripts/generate_api_docs.py
+
+# Regenerate the GuardrailOutput JSON schema after changing types.py
+# (pre-commit runs `--check`; it fails if schemas/guardrail_output.schema.json is stale)
+python scripts/generate_json_schema.py
 ```
 
 ## Architecture
@@ -44,11 +48,11 @@ python scripts/generate_api_docs.py
 ### Core abstractions (`src/any_guardrail/`)
 
 - **`base.py`** — class hierarchy:
-  - `Guardrail` (ABC) — base class; every guardrail implements `validate()` returning a `GuardrailOutput[ValidT, ExplanationT, ScoreT]`.
+  - `Guardrail` (ABC) — base class; every guardrail implements `validate()` returning a `GuardrailOutput`.
   - `ThreeStageGuardrail` (ABC) — opinionated pipeline subclass: `_pre_processing` → `_inference` → `_post_processing`. The default `validate()` chains these and supports list inputs (batched).
   - `GuardrailName` — string enum of all supported guardrail identifiers (used by the factory).
-  - `StandardGuardrail` — type alias for `ThreeStageGuardrail[AnyDict, AnyDict, bool, None, float]`, used by simple binary classifiers.
-- **`types.py`** — generic Pydantic models (`GuardrailOutput`, `GuardrailPreprocessOutput`, `GuardrailInferenceOutput`) plus shared aliases (`AnyDict`, `ChatMessages`, `BinaryScoreOutput`, etc.). All wrappers use `arbitrary_types_allowed=True` so numpy arrays / torch tensors pass through.
+  - `StandardGuardrail` — type alias for `ThreeStageGuardrail[AnyDict, AnyDict]`, used by simple binary classifiers.
+- **`types.py`** — the concrete `GuardrailOutput` model (the output standard: `valid: bool` required; canonical risk `score: float | None` where higher = riskier; `categories: list[CategoryResult]`; `spans`; `modified_text`; `usage: GuardrailUsage`; `explanation: str | None` for human-readable rationale only; `extra`/`raw` escape hatches), its building blocks (`CategoryResult`, `SpanResult`, `GuardrailUsage`), the generic stage wrappers (`GuardrailPreprocessOutput`, `GuardrailInferenceOutput`), and shared aliases (`AnyDict`, `ChatMessages`, etc.). `GuardrailOutput` uses `arbitrary_types_allowed=True` so `raw` can hold numpy arrays / torch tensors / SDK objects. Judges that can't parse a verdict fail closed: `valid=False` with `extra={"parse_failure": True}`.
 - **`api.py`** — `AnyGuardrail` factory. `AnyGuardrail.create(GuardrailName.PROTECTAI, ...)` does dynamic module import using the convention: snake_case enum value → `any_guardrail.guardrails.<name>.<name>` module → PascalCase class.
 
 ### Providers (`src/any_guardrail/providers/`)
@@ -80,6 +84,7 @@ Both providers return the same dict shape from `infer()` so guardrails are provi
 - `scores`: softmax or sigmoid (when `multi_label=True`) of logits.
 - `predicted_indices`: list of argmax indices, one per row.
 - `predicted_labels`: list of labels resolved via `id2label` (HF) or returned natively by the binary (encoderfile).
+- `labels`: full ordered label list aligning index-wise with `scores` columns (HF via `id2label`; `None` for encoderfile, whose `/predict` response only carries the predicted label — 2-class guardrails fall back to complement logic).
 
 Exception: causal-LM-backed guardrails using `HuggingFaceProvider` (`ShieldGemma`) produce 3D logits `(batch, seq, vocab)`. In that case `infer()` returns `logits` as a raw torch tensor and sets `scores`/`predicted_indices`/`predicted_labels` to `None`; the guardrail does its own selection (e.g. `logits[0, -1, [vocab["Yes"], vocab["No"]]]`) and softmax. This is checked in unit tests — when adding a new guardrail that runs a causal LM through `provider.infer()`, expect the raw-tensor path.
 

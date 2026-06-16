@@ -36,7 +36,9 @@ def test_granite_guardian_via_llamafile() -> None:
 
         assert unsafe.valid is False
         assert safe.valid is True
-        assert unsafe.score == "yes"
-        assert safe.score == "no"
+        assert unsafe.extra is not None
+        assert unsafe.extra["raw_answer"] == "yes"
+        assert safe.extra is not None
+        assert safe.extra["raw_answer"] == "no"
     finally:
         provider.close()
