@@ -371,6 +371,8 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         temperature: float | None = None,
         chat_template_kwargs: AnyDict | None = None,
         generation_kwargs: AnyDict | None = None,
+        skip_special_tokens: bool = True,
+        apply_chat_template: bool = True,
     ) -> GuardrailInferenceOutput[AnyDict]:
         """POST messages to ``/v1/chat/completions`` and return the generated text.
 
@@ -382,7 +384,18 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
 
         ``prompt_token_count`` and ``completion_token_count`` are populated from
         the response's ``usage`` block when present.
+
+        The ``skip_special_tokens`` and ``apply_chat_template`` flags exist for
+        contract parity with :class:`HuggingFaceProvider`. The llamafile server
+        renders its own chat template and controls special-token decoding, so
+        ``skip_special_tokens`` is ignored and ``apply_chat_template=False`` (raw
+        prompts) is unsupported — use ``HuggingFaceProvider`` for guardrails that
+        require either (e.g. WildGuard, Kanana).
         """
+        del skip_special_tokens  # server-side decoding; not controllable over HTTP chat completions.
+        if not apply_chat_template:
+            msg = "LlamafileProvider does not support apply_chat_template=False; use HuggingFaceProvider."
+            raise NotImplementedError(msg)
         if self.base_url is None:
             msg = "load_model() must be called before generate_chat()"
             raise RuntimeError(msg)

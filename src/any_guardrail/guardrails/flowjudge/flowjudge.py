@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 try:
     from flow_judge import EvalInput, FlowJudge
@@ -23,47 +23,77 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
 
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
 
+    Two ways to specify the evaluation. Either supply the convenience fields
+    (``name``/``criteria``/``rubric``/``required_inputs``/``required_output``) to
+    build a metric, or pass a prebuilt ``metric`` — a ``flow_judge`` ``Metric`` /
+    ``CustomMetric`` or one of the library's preset metrics (e.g.
+    ``RESPONSE_FAITHFULNESS_3POINT``).
+
     Args:
-        name: User defined metric name.
-        criteria: User defined question that they want answered by FlowJudge model.
+        name: User defined metric name (convenience path).
+        criteria: User defined question that they want answered by FlowJudge model (convenience path).
         rubric: A scoring rubric in a likert scale fashion, providing an integer score and then a description of what the
-            value means.
-        required_inputs: A list of what is required for the judge to consider.
-        required_output: What is the expected output from the judge.
+            value means (convenience path).
+        required_inputs: A list of what is required for the judge to consider (convenience path).
+        required_output: What is the expected output from the judge (convenience path).
         pass_threshold: The rubric score at which the text counts as passing. ``valid`` is
             ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better`` is False).
         higher_is_better: Whether higher rubric scores mean better/passing text. Set to
             False for rubrics where higher scores mean worse text.
+        metric: A prebuilt ``flow_judge`` ``Metric`` / ``CustomMetric`` (e.g. a preset). When
+            given, the convenience fields are not required and are ignored.
+        model: A prebuilt ``flow_judge`` backend (``Hf``, ``Vllm``, ``Llamafile``, ``Baseten``).
+            Defaults to ``Hf(flash_attn=False)``. Use this to pick a faster/quantized backend
+            (install the matching ``flow-judge[vllm|llamafile|baseten]`` extra yourself).
+        generation_params: Generation parameters (``temperature``, ``top_p``, ``max_new_tokens``,
+            ``do_sample``) for the default ``Hf`` backend. Ignored when ``model`` is supplied.
 
     Raises:
-        ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
+        ImportError: When the ``flowjudge`` extra is not installed.
+        ValueError: When neither ``metric`` nor the full convenience field set is provided.
 
     """
 
     def __init__(
         self,
-        name: str,
-        criteria: str,
-        rubric: dict[int, str],
-        required_inputs: list[str],
-        required_output: str,
-        pass_threshold: int,
+        name: str | None = None,
+        criteria: str | None = None,
+        rubric: dict[int, str] | None = None,
+        required_inputs: list[str] | None = None,
+        required_output: str | None = None,
+        pass_threshold: int = 3,
         higher_is_better: bool = True,
+        *,
+        metric: Any | None = None,
+        model: Any | None = None,
+        generation_params: dict[str, Any] | None = None,
     ) -> None:
         """Initialize the FlowJudgeClass."""
         if MISSING_PACKAGES_ERROR is not None:
             msg = "Missing packages for FlowJudge guardrail. You can try `pip install 'any-guardrail[flowjudge]'`"
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
 
-        self.metric_name = name
-        self.criteria = criteria
-        self.rubric = rubric
-        self.required_inputs = required_inputs
-        self.required_output = required_output
+        if metric is not None:
+            self.metric_prompt = metric
+            # Keep ``self.rubric`` populated so ``_post_processing`` can infer the
+            # likert bounds from the metric's rubric items, same as the convenience path.
+            self.rubric = {item.score: item.description for item in metric.rubric}
+        # Explicit ``is None`` chain (not ``None in (...)``) so the type checker narrows
+        # each field to non-None in the ``else`` branch.
+        elif name is None or criteria is None or rubric is None or required_inputs is None or required_output is None:
+            msg = "Provide either a prebuilt `metric=` or all of name/criteria/rubric/required_inputs/required_output."
+            raise ValueError(msg)
+        else:
+            self.metric_name = name
+            self.criteria = criteria
+            self.rubric = rubric
+            self.required_inputs = required_inputs
+            self.required_output = required_output
+            self.metric_prompt = self._define_metric_prompt()
+
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
-        self.metric_prompt = self._define_metric_prompt()
-        self.model = self._load_model()
+        self.model = self._load_model(model, generation_params)
 
     def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:  # type: ignore[override]
         """Classifies the desired input and output according to the associated metric provided to the judge.
@@ -82,15 +112,22 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
         """
         return self._execute(inputs, output)
 
-    def _load_model(self) -> FlowJudge:
-        """Construct the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
+    def _load_model(self, backend: Any | None, generation_params: dict[str, Any] | None) -> FlowJudge:
+        """Construct the FlowJudge model from the metric prompt and a backend.
+
+        Args:
+            backend: A prebuilt ``flow_judge`` backend, or None to build a default
+                ``Hf(flash_attn=False)`` (``flash_attn=False`` keeps it portable to
+                non-Ampere GPUs and CPU).
+            generation_params: Generation params for the default ``Hf`` backend; ignored
+                when ``backend`` is supplied.
 
         Returns:
             judge: The evaluation model.
 
         """
-        model = Hf(flash_attn=False)
-        return FlowJudge(metric=self.metric_prompt, model=model)
+        resolved_backend = backend if backend is not None else Hf(flash_attn=False, generation_params=generation_params)
+        return FlowJudge(metric=self.metric_prompt, model=resolved_backend)
 
     def _define_metric_prompt(self) -> Metric:
         """Construct the Metric object needed to instantiate the FlowJudge model.

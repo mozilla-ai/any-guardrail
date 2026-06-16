@@ -391,6 +391,26 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.protectai.protectai", "Protectai", "protectai.md"),
     ("any_guardrail.guardrails.sentinel.sentinel", "Sentinel", "sentinel.md"),
     ("any_guardrail.guardrails.shield_gemma.shield_gemma", "ShieldGemma", "shield-gemma.md"),
+    ("any_guardrail.guardrails.prompt_guard.prompt_guard", "PromptGuard", "prompt-guard.md"),
+    ("any_guardrail.guardrails.bielik_guard.bielik_guard", "BielikGuard", "bielik-guard.md"),
+    ("any_guardrail.guardrails.wild_guard.wild_guard", "WildGuard", "wild-guard.md"),
+    ("any_guardrail.guardrails.dyna_guard.dyna_guard", "DynaGuard", "dyna-guard.md"),
+    ("any_guardrail.guardrails.sguard.sguard", "Sguard", "sguard.md"),
+    (
+        "any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety",
+        "NemotronContentSafety",
+        "nemotron-content-safety.md",
+    ),
+    ("any_guardrail.guardrails.poly_guard.poly_guard", "PolyGuard", "poly-guard.md"),
+    ("any_guardrail.guardrails.kanana_safeguard.kanana_safeguard", "KananaSafeguard", "kanana-safeguard.md"),
+    ("any_guardrail.guardrails.gpt_oss_safeguard.gpt_oss_safeguard", "GptOssSafeguard", "gpt-oss-safeguard.md"),
+    ("any_guardrail.guardrails.prometheus.prometheus", "Prometheus", "prometheus.md"),
+    ("any_guardrail.guardrails.compass_judger.compass_judger", "CompassJudger", "compass-judger.md"),
+    ("any_guardrail.guardrails.selene.selene", "Selene", "selene.md"),
+    ("any_guardrail.guardrails.privacy_filter.privacy_filter", "PrivacyFilter", "privacy-filter.md"),
+    ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "LettuceDetect", "lettuce-detect.md"),
+    ("any_guardrail.guardrails.hhem.hhem", "Hhem", "hhem.md"),
+    ("any_guardrail.guardrails.gli_guard.gli_guard", "GliGuard", "gli-guard.md"),
 ]
 
 

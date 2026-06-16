@@ -12,12 +12,14 @@ PANGOLIN_INJECTION_LABEL = "unsafe"
 class Pangolin(StandardGuardrail):
     """Prompt injection detection encoder based models.
 
-    For more information, please see the model card:
+    For more information, please see the model cards:
 
-    - [Pangolin Base](https://huggingface.co/dcarpintero/pangolin-guard-base)
+    - [Pangolin Base](https://huggingface.co/dcarpintero/pangolin-guard-base) (default) — ModernBERT-base.
+    - [Pangolin Large](https://huggingface.co/dcarpintero/pangolin-guard-large) — ModernBERT-large;
+      higher accuracy, 8192-token context. Same ``"unsafe"`` label, so it is a drop-in alternative.
     """
 
-    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base"]
+    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base", "dcarpintero/pangolin-guard-large"]
 
     def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
         """Initialize the Pangolin guardrail."""

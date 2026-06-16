@@ -45,6 +45,22 @@ class GuardrailName(StrEnum):
     AZURE_PROMPT_SHIELDS = "azure_prompt_shields"
     ALINIA = "alinia"
     LAKERA_GUARD = "lakera_guard"
+    PROMPT_GUARD = "prompt_guard"
+    BIELIK_GUARD = "bielik_guard"
+    WILD_GUARD = "wild_guard"
+    DYNA_GUARD = "dyna_guard"
+    SGUARD = "sguard"
+    NEMOTRON_CONTENT_SAFETY = "nemotron_content_safety"
+    POLY_GUARD = "poly_guard"
+    KANANA_SAFEGUARD = "kanana_safeguard"
+    GPT_OSS_SAFEGUARD = "gpt_oss_safeguard"
+    PROMETHEUS = "prometheus"
+    COMPASS_JUDGER = "compass_judger"
+    SELENE = "selene"
+    PRIVACY_FILTER = "privacy_filter"
+    LETTUCE_DETECT = "lettuce_detect"
+    HHEM = "hhem"
+    GLI_GUARD = "gli_guard"
 
 
 class Guardrail(ABC):
