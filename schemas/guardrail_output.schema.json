@@ -173,7 +173,6 @@
       "type": "object"
     }
   },
-  "$id": "https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Represents the output of a guardrail evaluation with runtime validation.\n\nThis is the single concrete result shape shared by every guardrail\nimplementation, so application code can swap guardrails without changes.\n\nExample:\n    >>> output = GuardrailOutput(valid=True, explanation=\"Content is safe\", score=0.05)\n    >>> output.valid\n    True",
   "properties": {
@@ -211,7 +210,6 @@
     "extra": {
       "anyOf": [
         {
-          "additionalProperties": true,
           "type": "object"
         },
         {

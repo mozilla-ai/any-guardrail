@@ -163,6 +163,9 @@ class ThreeStageGuardrail(Guardrail, ABC, Generic[PreprocessT, InferenceT]):
         if isinstance(input_text, list):
             start = time.perf_counter()
             results = self._validate_batch(input_text, **kwargs)
+            # Whole-batch wall-clock: a true-batch _validate_batch runs one shared
+            # inference call, so per-item latency isn't measurable. Every item is
+            # stamped with the batch duration (documented on GuardrailUsage.latency_ms).
             latency_ms = (time.perf_counter() - start) * 1000.0
             for result in results:
                 self._stamp_usage(result, latency_ms)

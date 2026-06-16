@@ -6,11 +6,12 @@ component models — derived directly from the Pydantic definitions. The schema
 is committed at ``schemas/guardrail_output.schema.json`` so it is browsable on
 GitHub and can be referenced from docs and downstream consumers.
 
-The committed artifact is intentionally *structural only*: it does not embed the
-package version (which is a volatile setuptools_scm dev string between releases
-and would churn on every commit). Versioning is provided by git — the schema at
-a given tag is that release's schema — so pin a release tag in the raw URL when
-you need a specific version.
+The committed artifact is intentionally *structural only*: it carries no ``$id``
+and does not embed the package version (which is a volatile setuptools_scm dev
+string between releases and would churn on every commit, and an ``$id`` baked to
+``main`` would mislabel a tagged checkout). Versioning is provided by git — the
+schema at a given tag is that release's schema — so pin a release tag in the raw
+URL when you need a specific version.
 
 This script is wired into pre-commit, so CI regenerates the schema and fails if
 the committed file has drifted from the models.
@@ -34,19 +35,29 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from any_guardrail import GuardrailOutput
 
 DEFAULT_OUT = Path(__file__).parent.parent / "schemas" / "guardrail_output.schema.json"
-SCHEMA_ID = "https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json"
+
+
+def _strip_redundant_keywords(node: Any) -> None:
+    """Drop JSON-Schema keywords that restate the default (e.g. ``additionalProperties: true``)."""
+    if isinstance(node, dict):
+        if node.get("additionalProperties") is True:
+            del node["additionalProperties"]
+        for value in node.values():
+            _strip_redundant_keywords(value)
+    elif isinstance(node, list):
+        for item in node:
+            _strip_redundant_keywords(item)
 
 
 def build_schema() -> dict[str, Any]:
-    """Build the enriched JSON Schema dict for ``GuardrailOutput``."""
+    """Build the JSON Schema dict for ``GuardrailOutput``.
+
+    Pydantic v2 emits draft 2020-12; advertise the dialect. No ``$id`` is added so
+    the committed file doesn't self-identify with a version (see module docstring).
+    """
     schema = GuardrailOutput.model_json_schema()
-    # Pydantic v2 emits draft 2020-12; advertise the dialect and a stable $id so
-    # the document is a self-describing, referenceable schema.
-    return {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": SCHEMA_ID,
-        **schema,
-    }
+    _strip_redundant_keywords(schema)
+    return {"$schema": "https://json-schema.org/draft/2020-12/schema", **schema}
 
 
 def render(schema: dict[str, Any]) -> str:

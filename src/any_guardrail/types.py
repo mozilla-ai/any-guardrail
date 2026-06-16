@@ -80,7 +80,11 @@ class GuardrailUsage(BaseModel):
     """Identifier of the model or service that produced the result."""
 
     latency_ms: float | None = None
-    """Wall-clock duration of the validation call in milliseconds."""
+    """Wall-clock duration of the validation call in milliseconds.
+
+    For batched ``validate([...])`` calls this is the whole-batch wall-clock stamped on every item
+    (the shared call is not measured per-item), so treat it as a batch-level figure there.
+    """
 
     prompt_tokens: int | None = None
     """Prompt token count, when the backend surfaces it."""
@@ -117,10 +121,18 @@ class GuardrailOutput(BaseModel):
     """Per-category results. Empty when the guardrail has no category taxonomy."""
 
     spans: list[SpanResult] | None = None
-    """Character spans flagged by the guardrail. None when the guardrail does not produce spans."""
+    """Character spans flagged by the guardrail. None when the guardrail does not produce spans.
+
+    Reserved/forward-looking: no built-in guardrail emits spans yet (PII/redaction backends are the
+    expected first consumers). Present so consumers can rely on the field once such backends land.
+    """
 
     modified_text: str | None = None
-    """Sanitized/masked text when the guardrail rewrites input. None means no modification."""
+    """Sanitized/masked text when the guardrail rewrites input. None means no modification.
+
+    Reserved/forward-looking: no built-in guardrail rewrites input yet; present for future
+    sanitizer/redaction backends.
+    """
 
     action: str | None = None
     """Provider-recommended enforcement action (e.g. ``"block"``), when the backend returns one.
