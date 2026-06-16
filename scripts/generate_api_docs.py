@@ -191,12 +191,21 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
     return "\n".join(lines)
 
 
+# Extras whose name can't be derived as `class_name.lower()` (e.g. guardrails
+# that reuse another backend's extra).
+_INSTALL_EXTRA_OVERRIDES = {
+    "AzureContentSafety": "azure-content-safety",
+    "AzurePromptShields": "azure-content-safety",
+}
+
+
 def _stub_page(class_name: str) -> str:
     """Minimal page for a guardrail whose heavy deps aren't installed."""
+    extra = _INSTALL_EXTRA_OVERRIDES.get(class_name, class_name.lower())
     return (
         f"# {class_name}\n\n"
         "> API reference for this guardrail requires its optional dependencies to be installed.\n\n"
-        f"Install with: `pip install 'any-guardrail[{class_name.lower()}]'`\n"
+        f"Install with: `pip install 'any-guardrail[{extra}]'`\n"
     )
 
 
@@ -349,6 +358,11 @@ GUARDRAILS = [
         "azure-content-safety.md",
     ),
     (
+        "any_guardrail.guardrails.azure_prompt_shields.azure_prompt_shields",
+        "AzurePromptShields",
+        "azure-prompt-shields.md",
+    ),
+    (
         "any_guardrail.guardrails.bedrock_guardrails.bedrock_guardrails",
         "BedrockGuardrails",
         "bedrock-guardrails.md",
@@ -365,8 +379,14 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.harm_guard.harm_guard", "HarmGuard", "harm-guard.md"),
     ("any_guardrail.guardrails.injec_guard.injec_guard", "InjecGuard", "injec-guard.md"),
     ("any_guardrail.guardrails.jasper.jasper", "Jasper", "jasper.md"),
+    ("any_guardrail.guardrails.lakera_guard.lakera_guard", "LakeraGuard", "lakera-guard.md"),
     ("any_guardrail.guardrails.llama_guard.llama_guard", "LlamaGuard", "llama-guard.md"),
     ("any_guardrail.guardrails.off_topic.off_topic", "OffTopic", "off-topic.md"),
+    (
+        "any_guardrail.guardrails.openai_moderation.openai_moderation",
+        "OpenaiModeration",
+        "openai-moderation.md",
+    ),
     ("any_guardrail.guardrails.pangolin.pangolin", "Pangolin", "pangolin.md"),
     ("any_guardrail.guardrails.protectai.protectai", "Protectai", "protectai.md"),
     ("any_guardrail.guardrails.sentinel.sentinel", "Sentinel", "sentinel.md"),

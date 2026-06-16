@@ -15,7 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai]"
 ]
 
 bedrock = [
@@ -48,6 +48,12 @@ encoderfile = [
 llamafile = [
     "huggingface-hub>=0.33.4",
     "hf-xet>=1.1.5",
+]
+
+# Already a core dependency of any-llm-sdk today; declared explicitly so the
+# OpenaiModeration guardrail keeps working even if that transitive dep changes.
+openai = [
+    "openai>=1.99.3",
 ]
 
 [project.urls]

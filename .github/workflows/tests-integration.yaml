@@ -38,6 +38,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           ALINIA_ENDPOINT: ${{ secrets.ALINIA_ENDPOINT }}
           ALINIA_API_KEY: ${{ secrets.ALINIA_API_KEY }}
+          LAKERA_API_KEY: ${{ secrets.LAKERA_API_KEY }}
           # Bedrock API key (bearer token). boto3 >= 1.39 reads AWS_BEARER_TOKEN_BEDROCK
           # natively for bedrock / bedrock-runtime calls; no SigV4 creds needed.
           AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEDROCK_API_KEY }}
