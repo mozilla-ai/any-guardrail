@@ -43,6 +43,7 @@ class GuardrailName(StrEnum):
     AZURE_CONTENT_SAFETY = "azure_content_safety"
     AZURE_PROMPT_SHIELDS = "azure_prompt_shields"
     ALINIA = "alinia"
+    LAKERA_GUARD = "lakera_guard"
 
 
 class Guardrail(ABC):

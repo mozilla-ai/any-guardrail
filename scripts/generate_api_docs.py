@@ -374,6 +374,7 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.harm_guard.harm_guard", "HarmGuard", "harm-guard.md"),
     ("any_guardrail.guardrails.injec_guard.injec_guard", "InjecGuard", "injec-guard.md"),
     ("any_guardrail.guardrails.jasper.jasper", "Jasper", "jasper.md"),
+    ("any_guardrail.guardrails.lakera_guard.lakera_guard", "LakeraGuard", "lakera-guard.md"),
     ("any_guardrail.guardrails.llama_guard.llama_guard", "LlamaGuard", "llama-guard.md"),
     ("any_guardrail.guardrails.off_topic.off_topic", "OffTopic", "off-topic.md"),
     (

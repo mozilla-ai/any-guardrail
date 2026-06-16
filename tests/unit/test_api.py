@@ -11,6 +11,7 @@ from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.azure_prompt_shields import AzurePromptShields
 from any_guardrail.guardrails.glider.glider import Glider
+from any_guardrail.guardrails.lakera_guard import LakeraGuard
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.off_topic.off_topic import OffTopic
 from any_guardrail.guardrails.openai_moderation.openai_moderation import OpenaiModeration
@@ -103,6 +104,7 @@ def test_model_load() -> None:
             or guardrail_class is AzureContentSafety
             or guardrail_class is AzurePromptShields
             or guardrail_class is Alinia
+            or guardrail_class is LakeraGuard
             or guardrail_class is OpenaiModeration  # API-based, no provider.load_model
             or guardrail_class is Glider  # Loads model directly, no provider
             or guardrail_class is OffTopic  # Loads model directly, no provider
