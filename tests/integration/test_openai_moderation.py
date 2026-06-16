@@ -8,7 +8,7 @@ def test_openai_moderation_guardrail_integration() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid
-    assert result.explanation is not None
+    assert result.categories
     assert result.score is not None
     assert result.score < 0.5
 
@@ -20,7 +20,7 @@ def test_openai_moderation_guardrail_integration_flagged() -> None:
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
-    assert result.explanation is not None
-    assert result.explanation["violence"] > 0.5
+    assert result.categories
+    assert any(c.name == "violence" and (c.score or 0) > 0.5 for c in result.categories)
     assert result.score is not None
     assert result.score > 0.5

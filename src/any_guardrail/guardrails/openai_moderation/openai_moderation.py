@@ -12,10 +12,10 @@ except ImportError as e:
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
-from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
-class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any, bool, dict[str, float], float]):
+class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any]):
     """Guardrail implementation using OpenAI's Moderation API.
 
     Wraps OpenAI's hosted moderation classifier (default model:
@@ -27,8 +27,9 @@ class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any, bool, dict[str, float],
     The classifier returns a calibrated per-category probability score
     alongside a boolean ``flagged`` verdict. This guardrail surfaces both:
     ``valid`` is ``False`` when OpenAI flags the content **or** when the
-    maximum per-category score exceeds ``threshold``; ``explanation`` is the
-    full ``{category: score}`` dict; ``score`` is the max category score.
+    maximum per-category score exceeds ``threshold``; ``categories`` is the
+    full per-category breakdown (score + triggered flag); ``score`` is the
+    max category score.
 
     The current ``omni-moderation`` model is a GPT-4o-derived multimodal
     classifier; the original methodology (taxonomy, active-learning loop,
@@ -95,29 +96,36 @@ class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any, bool, dict[str, float],
         response = self.client.moderations.create(model=self.model_id, input=model_inputs.data["input"])
         return GuardrailInferenceOutput(data=response)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[Any]
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[Any]) -> GuardrailOutput:
         """Translate the OpenAI moderation result into a GuardrailOutput.
 
         Returns:
             GuardrailOutput where ``valid`` is False if OpenAI flagged the
             content or the max category score exceeds ``self.threshold``,
-            ``explanation`` is the full ``{category: score}`` dict, and
-            ``score`` is the max category score.
+            ``categories`` is the full per-category breakdown (score +
+            triggered flag), and ``score`` is the max category score.
 
         """
         result = model_outputs.data.results[0]
-        category_scores = result.category_scores
-        if hasattr(category_scores, "model_dump"):
-            scores_dict: dict[str, float] = category_scores.model_dump()
-        elif isinstance(category_scores, dict):
-            scores_dict = dict(category_scores)
-        else:
-            scores_dict = dict(vars(category_scores))
+        scores_dict = self._unwrap(result.category_scores)
+        flags_dict = self._unwrap(result.categories)
 
         filtered_scores: dict[str, float] = {k: float(v) for k, v in scores_dict.items() if v is not None}
         max_score: float = max(filtered_scores.values()) if filtered_scores else 0.0
         flagged = bool(result.flagged)
         valid = not flagged and max_score <= self.threshold
-        return GuardrailOutput(valid=valid, explanation=filtered_scores, score=max_score)
+
+        categories = [
+            CategoryResult(name=cat, score=score, triggered=bool(flags_dict.get(cat)))
+            for cat, score in filtered_scores.items()
+        ]
+        return GuardrailOutput(valid=valid, score=max_score, categories=categories, raw=model_outputs.data)
+
+    @staticmethod
+    def _unwrap(obj: Any) -> dict[str, Any]:
+        """Coerce an OpenAI SDK per-category object into a plain dict."""
+        if hasattr(obj, "model_dump"):
+            return dict(obj.model_dump())
+        if isinstance(obj, dict):
+            return dict(obj)
+        return dict(vars(obj))

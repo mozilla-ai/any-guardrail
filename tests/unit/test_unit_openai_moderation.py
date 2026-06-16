@@ -52,7 +52,9 @@ def test_openai_moderation_flagged_above_threshold() -> None:
         assert isinstance(result, GuardrailOutput)
         assert result.valid is False
         assert result.score == pytest.approx(0.85)
-        assert result.explanation == pytest.approx(scores)
+        assert result.explanation is None
+        assert {c.name: c.score for c in result.categories} == pytest.approx(scores)
+        assert next(c for c in result.categories if c.name == "violence").triggered is True
 
 
 def test_openai_moderation_safe_below_threshold() -> None:
@@ -74,7 +76,9 @@ def test_openai_moderation_safe_below_threshold() -> None:
         assert isinstance(result, GuardrailOutput)
         assert result.valid is True
         assert result.score == pytest.approx(0.05)
-        assert result.explanation == pytest.approx(scores)
+        assert result.explanation is None
+        assert {c.name: c.score for c in result.categories} == pytest.approx(scores)
+        assert all(c.triggered is False for c in result.categories)
 
 
 def test_openai_moderation_custom_threshold_respected() -> None:
@@ -109,7 +113,9 @@ def test_openai_moderation_post_processing_directly() -> None:
         assert isinstance(result, GuardrailOutput)
         assert result.valid is False
         assert result.score == pytest.approx(0.9)
-        assert result.explanation == pytest.approx({"hate": 0.9, "violence": 0.2})
+        assert result.explanation is None
+        assert {c.name: c.score for c in result.categories} == pytest.approx({"hate": 0.9, "violence": 0.2})
+        assert next(c for c in result.categories if c.name == "hate").triggered is True
 
 
 def test_openai_moderation_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
