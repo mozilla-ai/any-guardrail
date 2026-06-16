@@ -407,7 +407,6 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.prometheus.prometheus", "Prometheus", "prometheus.md"),
     ("any_guardrail.guardrails.compass_judger.compass_judger", "CompassJudger", "compass-judger.md"),
     ("any_guardrail.guardrails.selene.selene", "Selene", "selene.md"),
-    ("any_guardrail.guardrails.privacy_filter.privacy_filter", "PrivacyFilter", "privacy-filter.md"),
     ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "LettuceDetect", "lettuce-detect.md"),
     ("any_guardrail.guardrails.gli_guard.gli_guard", "GliGuard", "gli-guard.md"),
 ]

@@ -9,49 +9,6 @@ import pytest
 from any_guardrail.guardrails.flowjudge.flowjudge import MISSING_PACKAGES_ERROR, Flowjudge
 from any_guardrail.guardrails.gli_guard.gli_guard import GliGuard
 from any_guardrail.guardrails.lettuce_detect.lettuce_detect import LettuceDetect
-from any_guardrail.guardrails.privacy_filter.privacy_filter import PrivacyFilter
-from any_guardrail.types import GuardrailInferenceOutput
-
-# --- PrivacyFilter -------------------------------------------------------------
-
-
-def test_privacy_filter_extracts_spans() -> None:
-    text = "My name is Alice"
-    instance = object.__new__(PrivacyFilter)
-    instance.model_id = "openai/privacy-filter"
-    instance.provider = MagicMock()
-    instance.provider.infer.return_value = GuardrailInferenceOutput(
-        data={
-            "token_label_ids": [[0, 0, 0, 1]],
-            "offsets": [[[0, 2], [3, 7], [8, 10], [11, 16]]],
-            "id2label": {0: "O", 1: "S-private_person"},
-            "token_scores": [[0.9, 0.9, 0.9, 0.97]],
-        }
-    )
-    result = instance.validate(text)
-    assert result.valid is False
-    assert result.spans is not None
-    assert (result.spans[0].start, result.spans[0].end, result.spans[0].text) == (11, 16, "Alice")
-    assert result.spans[0].label == "private_person"
-    assert {c.name for c in result.categories} == {"private_person"}
-
-
-def test_privacy_filter_clean_text_is_valid() -> None:
-    instance = object.__new__(PrivacyFilter)
-    instance.model_id = "openai/privacy-filter"
-    instance.provider = MagicMock()
-    instance.provider.infer.return_value = GuardrailInferenceOutput(
-        data={
-            "token_label_ids": [[0, 0]],
-            "offsets": [[[0, 5], [6, 11]]],
-            "id2label": {0: "O", 1: "S-secret"},
-            "token_scores": [[0.99, 0.99]],
-        }
-    )
-    result = instance.validate("hello world")
-    assert result.valid is True
-    assert result.spans is None
-
 
 # --- LettuceDetect -------------------------------------------------------------
 

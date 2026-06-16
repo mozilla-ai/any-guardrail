@@ -37,6 +37,5 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Prometheus](prometheus.md) | `GuardrailName.PROMETHEUS` |
 | [Compass_judger](compass-judger.md) | `GuardrailName.COMPASS_JUDGER` |
 | [Selene](selene.md) | `GuardrailName.SELENE` |
-| [Privacy_filter](privacy-filter.md) | `GuardrailName.PRIVACY_FILTER` |
 | [Lettuce_detect](lettuce-detect.md) | `GuardrailName.LETTUCE_DETECT` |
 | [Gli_guard](gli-guard.md) | `GuardrailName.GLI_GUARD` |

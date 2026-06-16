@@ -46,7 +46,6 @@
   * [OffTopic](api/guardrails/off-topic.md)
   * [OpenAI Moderation](api/guardrails/openai-moderation.md)
   * [Pangolin](api/guardrails/pangolin.md)
-  * [PrivacyFilter](api/guardrails/privacy-filter.md)
   * [Prometheus](api/guardrails/prometheus.md)
   * [Prompt Guard 2](api/guardrails/prompt-guard.md)
   * [ProtectAI](api/guardrails/protectai.md)

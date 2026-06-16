@@ -210,14 +210,6 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         and run their own torch ops) and ``scores`` / ``predicted_indices`` /
         ``predicted_labels`` are ``None``.
 
-        Token-classification path: when the preprocessing output carries an
-        ``offset_mapping`` (i.e. the caller tokenized with
-        ``return_offsets_mapping=True``), it is split off before the model call
-        and the result is the token-classification shape — per-token
-        ``token_label_ids`` / ``token_scores`` plus the ``offsets`` and
-        ``id2label`` map — which ``guardrails.utils.spans_from_token_labels``
-        turns into character spans.
-
         Args:
             model_inputs: The wrapped preprocessing output.
 
@@ -227,16 +219,9 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
             ``predicted_labels`` may be ``None`` depending on the model shape.
 
         """
-        inputs = model_inputs.data
-        offset_mapping = None
-        if "offset_mapping" in inputs:
-            offset_mapping = inputs["offset_mapping"]
-            inputs = {key: value for key, value in inputs.items() if key != "offset_mapping"}
         with torch.no_grad():
-            output = self.model(**inputs)
+            output = self.model(**model_inputs.data)
         raw_logits = output.logits.detach()
-        if offset_mapping is not None:
-            return self._token_classification_output(raw_logits, offset_mapping)
         if raw_logits.dim() != 2:
             # Causal-LM-style output, e.g. ShieldGemma where logits are
             # (batch, seq, vocab). Label resolution doesn't apply; return the
@@ -268,31 +253,6 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                 "predicted_indices": predicted_indices,
                 "predicted_labels": predicted_labels,
                 "labels": labels,
-            }
-        )
-
-    def _token_classification_output(self, raw_logits: Any, offset_mapping: Any) -> GuardrailInferenceOutput[AnyDict]:
-        """Shape token-classification logits ``(batch, seq, num_labels)`` for span extraction.
-
-        Returns per-token argmax label ids and their probabilities alongside the
-        character ``offsets`` and an int-keyed ``id2label`` map, the inputs
-        ``guardrails.utils.spans_from_token_labels`` needs to build spans.
-        """
-        logits = raw_logits.float().cpu().numpy()
-        scores = _softmax(logits)
-        id2label = {int(index): label for index, label in self.model.config.id2label.items()}
-        labels = [id2label.get(index, f"LABEL_{index}") for index in range(logits.shape[-1])]
-        return GuardrailInferenceOutput(
-            data={
-                "logits": logits,
-                "scores": scores,
-                "token_label_ids": scores.argmax(axis=-1).tolist(),
-                "token_scores": scores.max(axis=-1).tolist(),
-                "offsets": offset_mapping.cpu().numpy().tolist(),
-                "labels": labels,
-                "id2label": id2label,
-                "predicted_indices": None,
-                "predicted_labels": None,
             }
         )
 

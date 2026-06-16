@@ -57,7 +57,6 @@ class GuardrailName(StrEnum):
     PROMETHEUS = "prometheus"
     COMPASS_JUDGER = "compass_judger"
     SELENE = "selene"
-    PRIVACY_FILTER = "privacy_filter"
     LETTUCE_DETECT = "lettuce_detect"
     GLI_GUARD = "gli_guard"
 

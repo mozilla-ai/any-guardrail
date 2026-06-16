@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutput, GuardrailOutput, SpanResult
+from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutput, GuardrailOutput
 
 
 def normalize_rubric_to_risk(raw: float, lo: int, hi: int, *, higher_is_better: bool) -> float | None:
@@ -15,82 +15,6 @@ def normalize_rubric_to_risk(raw: float, lo: int, hi: int, *, higher_is_better: 
     quality = (raw - lo) / (hi - lo)
     quality = max(0.0, min(1.0, quality))  # clamp out-of-range rubric values
     return (1.0 - quality) if higher_is_better else quality
-
-
-def _entity_type(label: str) -> str | None:
-    """Strip a BIO/BIOES tag prefix, returning the entity type or None for an 'outside' tag."""
-    if label in ("O", "o", ""):
-        return None
-    for prefix in ("B-", "I-", "E-", "S-", "L-", "U-"):
-        if label.startswith(prefix):
-            return label[len(prefix) :]
-    return label
-
-
-def spans_from_token_labels(
-    label_ids: Sequence[int],
-    offsets: Sequence[Sequence[int]],
-    id2label: dict[int, str],
-    text: str,
-    scores: Sequence[float] | None = None,
-) -> list[SpanResult]:
-    """Merge per-token entity predictions into character-level ``SpanResult`` objects.
-
-    Greedy decoding: contiguous tokens sharing an entity type (after stripping any
-    ``B-``/``I-``/``E-``/``S-`` tag prefix) collapse into one span. Tokens tagged
-    ``O``/outside and special tokens (offset ``(0, 0)``) are skipped. Robust to BIO,
-    BIOES, IOB2, and entity-per-token schemes; Viterbi/CRF decoding is not applied.
-
-    Args:
-        label_ids: Predicted label id per token (argmax over the label dimension).
-        offsets: ``(start, end)`` character offsets per token (from a fast tokenizer's
-            ``return_offsets_mapping``). Special tokens carry ``(0, 0)``.
-        id2label: Mapping from label id to label string.
-        text: The validated text the offsets index into.
-        scores: Optional per-token probability of the predicted label; averaged across
-            a span to populate ``SpanResult.score``.
-
-    Returns:
-        Character spans for every detected entity, in order of appearance.
-
-    """
-    spans: list[SpanResult] = []
-    current_type: str | None = None
-    current_start = 0
-    current_end = 0
-    current_scores: list[float] = []
-
-    def _close() -> None:
-        nonlocal current_type, current_scores
-        if current_type is not None:
-            span_score = sum(current_scores) / len(current_scores) if current_scores else None
-            spans.append(
-                SpanResult(
-                    start=current_start,
-                    end=current_end,
-                    text=text[current_start:current_end],
-                    label=current_type,
-                    score=span_score,
-                )
-            )
-        current_type = None
-        current_scores = []
-
-    for index, (label_id, offset) in enumerate(zip(label_ids, offsets, strict=True)):
-        off_start, off_end = int(offset[0]), int(offset[1])
-        entity = _entity_type(id2label.get(int(label_id), "O")) if off_start != off_end else None
-        token_score = float(scores[index]) if scores is not None else None
-        if entity is not None and entity == current_type:
-            current_end = off_end
-            if token_score is not None:
-                current_scores.append(token_score)
-            continue
-        _close()
-        if entity is not None:
-            current_type, current_start, current_end = entity, off_start, off_end
-            current_scores = [token_score] if token_score is not None else []
-    _close()
-    return spans
 
 
 def default(model_id: str | None, supported_models: list[str]) -> str:

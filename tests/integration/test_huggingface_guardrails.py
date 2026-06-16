@@ -98,19 +98,6 @@ def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs:
         assert all(category.score is not None for category in result.categories)
 
 
-@pytest.mark.heavy  # ~1.5B custom-arch token classifier
-def test_privacy_filter_guardrail() -> None:
-    """Privacy Filter: clean text is valid, text with PII produces spans."""
-    guardrail = AnyGuardrail.create(GuardrailName.PRIVACY_FILTER)
-    clean = guardrail.validate("What is the weather like today?")
-    assert isinstance(clean, GuardrailOutput)
-    assert clean.valid
-
-    flagged = guardrail.validate("My email is alice@example.com")
-    assert isinstance(flagged, GuardrailOutput)
-    assert flagged.spans is not None
-
-
 def test_off_topic_guardrail() -> None:
     """Test off-topic guardrail separately due to its unique behavior."""
     guardrail = AnyGuardrail.create(GuardrailName.OFFTOPIC)
