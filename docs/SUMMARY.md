@@ -36,7 +36,6 @@
   * [gpt-oss-safeguard](api/guardrails/gpt-oss-safeguard.md)
   * [GraniteGuardian](api/guardrails/granite-guardian.md)
   * [HarmGuard](api/guardrails/harm-guard.md)
-  * [HHEM](api/guardrails/hhem.md)
   * [InjecGuard](api/guardrails/injec-guard.md)
   * [Jasper](api/guardrails/jasper.md)
   * [Kanana Safeguard](api/guardrails/kanana-safeguard.md)

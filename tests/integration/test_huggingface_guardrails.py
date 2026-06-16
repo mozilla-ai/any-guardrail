@@ -98,15 +98,6 @@ def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs:
         assert all(category.score is not None for category in result.categories)
 
 
-def test_hhem_guardrail() -> None:
-    """HHEM cross-encoder: a supported claim should be valid; offsets/score populated."""
-    guardrail = AnyGuardrail.create(GuardrailName.HHEM)
-    result = guardrail.validate("The capital of France is Paris.", context="France's capital is Paris.")
-    assert isinstance(result, GuardrailOutput)
-    assert result.valid
-    assert result.score is not None
-
-
 @pytest.mark.heavy  # ~1.5B custom-arch token classifier
 def test_privacy_filter_guardrail() -> None:
     """Privacy Filter: clean text is valid, text with PII produces spans."""

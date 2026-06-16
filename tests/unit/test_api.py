@@ -116,7 +116,6 @@ def test_model_load() -> None:
         # Guardrails that load a model directly or wrap an external library (no
         # HuggingFaceProvider.load_model to assert against).
         if guardrail_name in (
-            GuardrailName.HHEM,  # Loads the cross-encoder directly via trust_remote_code
             GuardrailName.LETTUCE_DETECT,  # Wraps the lettucedetect library
             GuardrailName.GLI_GUARD,  # Wraps the gliner2 library
         ):

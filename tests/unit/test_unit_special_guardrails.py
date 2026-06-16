@@ -8,39 +8,9 @@ import pytest
 
 from any_guardrail.guardrails.flowjudge.flowjudge import MISSING_PACKAGES_ERROR, Flowjudge
 from any_guardrail.guardrails.gli_guard.gli_guard import GliGuard
-from any_guardrail.guardrails.hhem.hhem import Hhem
 from any_guardrail.guardrails.lettuce_detect.lettuce_detect import LettuceDetect
 from any_guardrail.guardrails.privacy_filter.privacy_filter import PrivacyFilter
 from any_guardrail.types import GuardrailInferenceOutput
-
-# --- HHEM ----------------------------------------------------------------------
-
-
-def _hhem(consistency: float, threshold: float = 0.5) -> Hhem:
-    instance = object.__new__(Hhem)
-    instance.model_id = "vectara/hallucination_evaluation_model"
-    instance.threshold = threshold
-    instance.model = MagicMock()
-    instance.model.predict.return_value = [consistency]
-    return instance
-
-
-def test_hhem_consistent_is_valid() -> None:
-    result = _hhem(0.9).validate("Paris is the capital.", context="France's capital is Paris.")
-    assert result.valid is True
-    assert result.score == pytest.approx(1.0 - 0.9)
-
-
-def test_hhem_inconsistent_is_invalid() -> None:
-    result = _hhem(0.1).validate("Berlin is the capital of France.", context="France's capital is Paris.")
-    assert result.valid is False
-    assert result.score == pytest.approx(0.9)
-
-
-def test_hhem_requires_context() -> None:
-    with pytest.raises(ValueError, match="context"):
-        _hhem(0.9).validate("claim", context=None)
-
 
 # --- PrivacyFilter -------------------------------------------------------------
 

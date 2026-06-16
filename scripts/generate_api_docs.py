@@ -409,7 +409,6 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.selene.selene", "Selene", "selene.md"),
     ("any_guardrail.guardrails.privacy_filter.privacy_filter", "PrivacyFilter", "privacy-filter.md"),
     ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "LettuceDetect", "lettuce-detect.md"),
-    ("any_guardrail.guardrails.hhem.hhem", "Hhem", "hhem.md"),
     ("any_guardrail.guardrails.gli_guard.gli_guard", "GliGuard", "gli-guard.md"),
 ]
 

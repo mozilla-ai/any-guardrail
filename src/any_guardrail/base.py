@@ -59,7 +59,6 @@ class GuardrailName(StrEnum):
     SELENE = "selene"
     PRIVACY_FILTER = "privacy_filter"
     LETTUCE_DETECT = "lettuce_detect"
-    HHEM = "hhem"
     GLI_GUARD = "gli_guard"
 
 
