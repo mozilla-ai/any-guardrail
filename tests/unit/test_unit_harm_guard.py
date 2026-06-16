@@ -46,3 +46,18 @@ def test_threshold_is_respected(harm_guard_instance: HarmGuard) -> None:
 
     assert result.valid is True
     assert result.categories[1].triggered is False
+
+
+def test_unsafe_class_resolved_by_label_name(harm_guard_instance: HarmGuard) -> None:
+    """When the provider exposes meaningful labels, the unsafe column is resolved by name."""
+    # Labels are inverted relative to HarmAug-Guard's default column order.
+    output = GuardrailInferenceOutput(data={"scores": np.array([[0.8, 0.2]]), "labels": ["unsafe", "safe"]})
+
+    result = harm_guard_instance._post_processing(output)
+
+    assert result.valid is False  # unsafe prob is column 0 here (0.8)
+    assert result.score == pytest.approx(0.8)
+    assert {c.name: c.score for c in result.categories} == {
+        "unsafe": pytest.approx(0.8),
+        "safe": pytest.approx(0.2),
+    }

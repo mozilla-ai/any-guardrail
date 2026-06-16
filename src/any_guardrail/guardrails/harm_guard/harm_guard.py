@@ -72,16 +72,32 @@ class HarmGuard(StandardGuardrail):
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
         return self.provider.infer(model_inputs)
 
+    # Index of the "unsafe" class when the model exposes no usable label names.
+    # HarmAug-Guard ships no id2label, and its card defines softmax(logits)[1]
+    # as the unsafe probability.
+    _UNSAFE_INDEX = 1
+
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:
-        scores_row = model_outputs.data["scores"][0]
-        safe_probability = float(scores_row[0])
-        final_score = float(scores_row[1])  # scores[0][1] is the unsafe probability
+        scores_row = [float(probability) for probability in model_outputs.data["scores"][0]]
+        # Prefer resolving the unsafe class by the provider's label list (the
+        # reason infer() surfaces ``labels``); fall back to the documented column
+        # for models like HarmAug-Guard that don't ship meaningful label names.
+        labels = model_outputs.data.get("labels")
+        unsafe_index = self._UNSAFE_INDEX
+        if labels is not None:
+            unsafe_index = next(
+                (i for i, name in enumerate(labels) if name.lower() == "unsafe"),
+                self._UNSAFE_INDEX,
+            )
+        safe_index = 1 - unsafe_index  # HarmGuard is a binary safe/unsafe classifier.
+
+        final_score = scores_row[unsafe_index]
         triggered = final_score >= self.threshold
         return GuardrailOutput(
             valid=not triggered,
             score=final_score,
             categories=[
-                CategoryResult(name="safe", score=safe_probability),
+                CategoryResult(name="safe", score=scores_row[safe_index], triggered=not triggered),
                 CategoryResult(name="unsafe", score=final_score, triggered=triggered),
             ],
         )
