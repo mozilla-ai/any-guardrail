@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from any_guardrail.guardrails.bielik_guard.bielik_guard import BielikGuard, _build_output as bielik_build
+from any_guardrail.guardrails.bielik_guard.bielik_guard import _build_output as bielik_build
 from any_guardrail.guardrails.compass_judger.compass_judger import CompassJudger
 from any_guardrail.guardrails.dyna_guard.dyna_guard import DynaGuard
 from any_guardrail.guardrails.gpt_oss_safeguard.gpt_oss_safeguard import GptOssSafeguard
@@ -25,9 +25,7 @@ from any_guardrail.types import GuardrailInferenceOutput, GuardrailOutput
 
 def _gen(text: str) -> GuardrailInferenceOutput[Any]:
     """Mimic a provider.generate_chat output."""
-    return GuardrailInferenceOutput(
-        data={"generated_text": text, "prompt_token_count": 7, "completion_token_count": 3}
-    )
+    return GuardrailInferenceOutput(data={"generated_text": text, "prompt_token_count": 7, "completion_token_count": 3})
 
 
 # --- Encoder classifiers -------------------------------------------------------
@@ -208,6 +206,15 @@ def test_prometheus_parse_and_score() -> None:
     assert failing.valid is False
 
 
+def test_prometheus_uses_final_result_not_inline_reference() -> None:
+    """Feedback that references a rubric level inline must not be mistaken for the verdict."""
+    judge = _judge(Prometheus, pass_threshold=3)
+    text = "Feedback: a Score: 2 response would lack detail, but this one is solid. [RESULT] 4"
+    result = judge._post_processing(_gen(text))
+    assert result.extra is not None and result.extra["rubric_score"] == 4
+    assert result.valid is True
+
+
 def test_prometheus_fails_closed() -> None:
     judge = _judge(Prometheus)
     result = judge._post_processing(_gen("no result marker"))
@@ -237,6 +244,14 @@ def test_compass_judger_rating_parse() -> None:
     failing = judge._post_processing(_gen("Weak. Rating: [[3]]"))
     assert passing.valid is True
     assert failing.valid is False
+
+
+def test_compass_judger_uses_final_rating() -> None:
+    """A bracketed number quoted mid-justification must not override the final rating."""
+    judge = _judge(CompassJudger, pass_threshold=6)
+    result = judge._post_processing(_gen("I considered scores [[3]] and [[8]]. Rating: [[7]]"))
+    assert result.extra is not None and result.extra["rubric_score"] == 7
+    assert result.valid is True
 
 
 def test_compass_judger_out_of_range_fails_closed() -> None:

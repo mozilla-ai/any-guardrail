@@ -73,6 +73,7 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         model_id: Optional HuggingFace model ID. Defaults to ``prometheus-eval/prometheus-7b-v2.0``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -143,17 +144,16 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[PrometheusInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[PrometheusInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
-        match = _RESULT_PATTERN.search(text)
-        if match is None:
+        # The verdict is the LAST score marker: feedback often references other rubric
+        # levels inline (e.g. "a Score: 2 response would... [RESULT] 4"), so leftmost-match
+        # would capture the wrong number. Take the final match.
+        matches = list(_RESULT_PATTERN.finditer(text))
+        if not matches:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
-        rubric_score = int(match.group(1))
-        passed = (
-            rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
-        )
+        rubric_score = int(matches[-1].group(1))
+        passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
         feedback = text.split("[RESULT]")[0].replace("Feedback:", "").strip() or text
         return GuardrailOutput(
             valid=passed,

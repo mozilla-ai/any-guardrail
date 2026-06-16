@@ -67,6 +67,7 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
         model_id: Optional HuggingFace model ID. Defaults to ``opencompass/CompassJudger-2-7B-Instruct``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
+
     """
 
     SUPPORTED_MODELS: ClassVar = [
@@ -136,14 +137,14 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[CompassJudgerInferenceData]
-    ) -> GuardrailOutput:
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[CompassJudgerInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
-        match = _RATING_PATTERN.search(text)
-        if match is None:
+        # The verdict is the LAST ``[[X]]``: the justification may quote other bracketed
+        # numbers before the final rating, so leftmost-match would be wrong. Take the final one.
+        matches = list(_RATING_PATTERN.finditer(text))
+        if not matches:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
-        rating = int(match.group(1))
+        rating = int(matches[-1].group(1))
         if not SCORE_MIN <= rating <= SCORE_MAX:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         passed = rating >= self.pass_threshold if self.higher_is_better else rating <= self.pass_threshold
