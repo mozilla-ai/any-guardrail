@@ -121,7 +121,11 @@ class GuardrailOutput(BaseModel):
     """Provenance and cost information for this validation call."""
 
     extra: dict[str, Any] | None = None
-    """Structured, guardrail-specific extras (e.g. rubric score, highlights, blocklist matches)."""
+    """Structured, guardrail-specific extras (e.g. rubric score, highlights, blocklist matches).
+
+    Must be JSON-serializable so the output round-trips through ``model_dump_json()`` and matches
+    the published schema. Push non-serializable backend/SDK objects to ``raw`` instead.
+    """
 
     raw: Any | None = None
     """Unmodified backend payload (API response JSON, model tensors) for escape-hatch access."""

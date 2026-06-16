@@ -8,8 +8,17 @@ from any_guardrail.guardrails.azure_content_safety.azure_content_safety import A
 from any_guardrail.types import GuardrailInferenceOutput
 
 
+def _blocklist_match(text: str) -> mock.MagicMock:
+    """Mimic an Azure SDK ``TextBlocklistMatch`` (a non-JSON-serializable object)."""
+    match = mock.MagicMock()
+    match.blocklist_name = "default"
+    match.blocklist_item_id = "item-1"
+    match.blocklist_item_text = text
+    return match
+
+
 def _mock_model_outputs(
-    severities: dict[str, int], blocklists_match: list[str] | None = None
+    severities: dict[str, int | None], blocklists_match: list[mock.MagicMock] | None = None
 ) -> GuardrailInferenceOutput:  # type: ignore[type-arg]
     mock_model_outputs = mock.MagicMock()
     mock_model_outputs.categories_analysis = [
@@ -61,14 +70,44 @@ def test_azure_content_safety_guardrail_post_processing_with_blocklist() -> None
     result = guardrail._post_processing(
         _mock_model_outputs(
             {"hate": 0, "self_harm": 2, "sexual": 4, "violence": 6},
-            blocklists_match=["some inappropriate content"],
+            blocklists_match=[_blocklist_match("some inappropriate content")],
         )
     )
 
     assert isinstance(result, GuardrailOutput)
     assert not result.valid
     assert result.score == pytest.approx(6 / 7)
-    assert result.extra == {"blocklists_match": ["some inappropriate content"]}
+    # The SDK match object is unwrapped into a plain, JSON-serializable dict.
+    assert result.extra == {
+        "blocklists_match": [
+            {
+                "blocklist_name": "default",
+                "blocklist_item_id": "item-1",
+                "blocklist_item_text": "some inappropriate content",
+            }
+        ]
+    }
+    # The whole output must round-trip as JSON now that the SDK object is gone.
+    assert result.model_dump_json()
+
+
+def test_azure_content_safety_guardrail_post_processing_all_severities_none() -> None:
+    """An all-None severity response aggregates to 0.0 instead of raising."""
+    guardrail = AzureContentSafety(
+        endpoint="https://fake-endpoint.cognitiveservices.azure.com/",
+        api_key="fake-api-key",
+        threshold=2,
+        score_type="max",
+        blocklist_names=None,
+    )
+
+    result = guardrail._post_processing(
+        _mock_model_outputs({"hate": None, "self_harm": None, "sexual": None, "violence": None})
+    )
+
+    assert result.valid
+    assert result.score == 0.0
+    assert all(category.severity is None for category in result.categories)
 
 
 def test_azure_content_safety_guardrail_post_processing_below_threshold() -> None:

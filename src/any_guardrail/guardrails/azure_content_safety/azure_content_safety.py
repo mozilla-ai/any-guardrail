@@ -310,12 +310,30 @@ class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutp
                 )
             )
 
-        if self.score_type == "max":
+        # Azure normally returns a severity per category, but guard the empty
+        # case so an all-None response can't raise on max()/sum().
+        if not severity_values:
+            aggregate_severity = 0.0
+        elif self.score_type == "max":
             aggregate_severity = float(max(severity_values))
         else:
             aggregate_severity = sum(severity_values) / len(severity_values)
 
-        blocklists_match = model_outputs.data.blocklists_match if self.blocklist_names else None
+        # Unwrap the Azure SDK ``TextBlocklistMatch`` objects into plain dicts so
+        # ``extra`` stays JSON-serializable (the published schema types it as a
+        # JSON object). The untouched SDK response remains reachable via ``raw``.
+        blocklists_match = (
+            [
+                {
+                    "blocklist_name": match.blocklist_name,
+                    "blocklist_item_id": match.blocklist_item_id,
+                    "blocklist_item_text": match.blocklist_item_text,
+                }
+                for match in (model_outputs.data.blocklists_match or [])
+            ]
+            if self.blocklist_names
+            else None
+        )
 
         valid = aggregate_severity < self.threshold
         if valid and blocklists_match:
