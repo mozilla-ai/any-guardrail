@@ -116,7 +116,7 @@ class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any]):
         valid = not flagged and max_score <= self.threshold
 
         categories = [
-            CategoryResult(name=cat, score=score, triggered=bool(flags_dict.get(cat)))
+            CategoryResult(name=cat, score=score, triggered=bool(flags_dict.get(cat)) or score > self.threshold)
             for cat, score in filtered_scores.items()
         ]
         return GuardrailOutput(valid=valid, score=max_score, categories=categories, raw=model_outputs.data)

@@ -98,6 +98,8 @@ def test_openai_moderation_custom_threshold_respected() -> None:
         assert isinstance(result, GuardrailOutput)
         assert result.valid is False
         assert result.score == pytest.approx(0.15)
+        assert next(c for c in result.categories if c.name == "hate").triggered is True
+        assert next(c for c in result.categories if c.name == "violence").triggered is False
 
 
 def test_openai_moderation_post_processing_directly() -> None:
