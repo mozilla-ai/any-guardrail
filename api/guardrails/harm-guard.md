@@ -34,4 +34,4 @@ Validate whether the input (and optionally output) text is safe.
 | `input_text` | `str` | Yes | — |
 | `output_text` | `str | None` | No | `None` |
 
-**Returns:** `GuardrailOutput[bool, NoneType, float]`
+**Returns:** `GuardrailOutput`

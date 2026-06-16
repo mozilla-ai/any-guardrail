@@ -83,7 +83,7 @@ finally:
 
 ### DuoGuard
 
-DuoGuard is a multi-label classifier across 12 harm categories. The `GuardrailOutput.explanation` is a dict mapping each category to a boolean (`True` if its probability is above the threshold).
+DuoGuard is a multi-label classifier across 12 harm categories. Each of the 12 categories surfaces as a `CategoryResult` in `GuardrailOutput.categories`, carrying its real probability (`score`) and whether it fired (`triggered`).
 
 ```python
 from any_guardrail.guardrails.duo_guard.duo_guard import DuoGuard
@@ -97,7 +97,7 @@ try:
         "What's a good recipe for chocolate chip cookies?",
     ]:
         result = duo.validate(prompt)
-        triggered = [k for k, v in result.explanation.items() if v]
+        triggered = [c.name for c in result.categories if c.triggered]
         print(f"  {prompt!r:75}\n    valid={result.valid}, top_score={result.score:.4f}, triggered={triggered}\n")
 finally:
     ef_provider.close()

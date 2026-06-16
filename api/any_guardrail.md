@@ -13,7 +13,7 @@ Create a guardrail instance.
 | `guardrail_name` | `GuardrailName` | Yes | — |
 | `provider` | `Optional[Provider[Any, Any]]` | No | `None` |
 
-**Returns:** `Guardrail[Any, Any, Any]`
+**Returns:** `Guardrail`
 
 ## get_supported_guardrails
 

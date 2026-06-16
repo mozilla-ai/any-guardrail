@@ -2,29 +2,78 @@
 
 Runtime-validated wrappers used throughout the pipeline and the output type returned by every guardrail.
 
+A machine-readable JSON Schema for `GuardrailOutput` (generated from these models) is published at <https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json>. Pin a release tag in the URL for a specific version.
+
 ## GuardrailOutput
 
 Represents the output of a guardrail evaluation with runtime validation.
 
-This class wraps the final output of the guardrail evaluation, providing
-a consistent interface and runtime validation across all guardrail
-implementations.
-
-Type Parameters:
-    ValidT: The type of the valid field (e.g., bool, str, custom enum).
-    ExplanationT: The type of the explanation field (e.g., str, dict, list).
-    ScoreT: The type of the score field (e.g., float, int, dict).
+This is the single concrete result shape shared by every guardrail
+implementation, so application code can swap guardrails without changes.
 
 Example:
-    >>> output = GuardrailOutput(valid=True, explanation="Content is safe", score=0.95)
+    >>> output = GuardrailOutput(valid=True, explanation="Content is safe", score=0.05)
     >>> output.valid
     True
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `valid` | `Optional[~ValidT]` |  |
-| `explanation` | `Optional[~ExplanationT]` |  |
-| `score` | `Optional[~ScoreT]` |  |
+| `valid` | `bool` |  |
+| `explanation` | `str | None` |  |
+| `score` | `float | None` |  |
+| `categories` | `list[CategoryResult]` |  |
+| `spans` | `list[SpanResult] | None` |  |
+| `modified_text` | `str | None` |  |
+| `action` | `str | None` |  |
+| `usage` | `GuardrailUsage | None` |  |
+| `extra` | `dict[str, Any] | None` |  |
+| `raw` | `Any | None` |  |
+
+## CategoryResult
+
+Result for one taxonomy category evaluated by a guardrail.
+
+Categories give multi-label and taxonomy guardrails (DuoGuard, Llama Guard
+S-codes, Azure severities, binary classifiers' label distributions) a
+lossless, uniform home instead of overloading ``explanation``.
+
+Example:
+    >>> CategoryResult(name="S1", description="Violent Crimes", triggered=True)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `str` |  |
+| `description` | `str | None` |  |
+| `triggered` | `bool | None` |  |
+| `score` | `float | None` |  |
+| `severity` | `int | None` |  |
+
+## SpanResult
+
+A character span flagged by a guardrail.
+
+Reserved for span-producing guardrails (PII/NER detection, span-level
+toxicity, token classification). Offsets are zero-based character indices
+into the validated text.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `start` | `int` |  |
+| `end` | `int` |  |
+| `text` | `str | None` |  |
+| `label` | `str | None` |  |
+| `score` | `float | None` |  |
+
+## GuardrailUsage
+
+Provenance and cost envelope for one ``validate()`` call.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model_id` | `str | None` |  |
+| `latency_ms` | `float | None` |  |
+| `prompt_tokens` | `int | None` |  |
+| `completion_tokens` | `int | None` |  |
 
 ## GuardrailPreprocessOutput
 

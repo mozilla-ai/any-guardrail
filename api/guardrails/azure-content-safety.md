@@ -3,7 +3,7 @@
 Guardrail implementation using Azure Content Safety service.
 
 Azure Content Safety provides content moderation capabilities for text and images. To learn more about Azure
-Content Safety, visit the [official documentation](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/contentsafety/azure-ai-contentsafety`).
+Content Safety, visit the [official documentation](https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/contentsafety/azure-ai-contentsafety).
 
 ## Supported Models
 
@@ -31,4 +31,4 @@ Validate content using Azure Content Safety.
 |-----------|------|----------|---------|
 | `content` | `str` | Yes | — |
 
-**Returns:** `GuardrailOutput[bool, dict[str, Union[int, list[str], NoneType]], float]`
+**Returns:** `GuardrailOutput`

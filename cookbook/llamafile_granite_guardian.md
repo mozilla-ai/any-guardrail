@@ -62,8 +62,8 @@ for prompt in PROMPTS:
 
     print(
         f"{prompt!r:75}\n"
-        f"  HF:        valid={hf.valid}, score={hf.score!r}, time={hf_dt:6.2f}s\n"
-        f"  llamafile: valid={lf.valid}, score={lf.score!r}, time={lf_dt:6.2f}s\n"
+        f"  HF:        valid={hf.valid}, answer={hf.extra['raw_answer']!r}, time={hf_dt:6.2f}s\n"
+        f"  llamafile: valid={lf.valid}, answer={lf.extra['raw_answer']!r}, time={lf_dt:6.2f}s\n"
     )
 
 ratio = hf_total / lf_total if lf_total > 0 else float("inf")
@@ -98,7 +98,7 @@ JAILBREAK_PROMPTS = [
 
 for prompt in JAILBREAK_PROMPTS:
     result = jailbreak_guardian.validate(prompt)
-    print(f"{prompt!r:75} -> valid={result.valid}, score={result.score!r}")
+    print(f"{prompt!r:75} -> valid={result.valid}, answer={result.extra['raw_answer']!r}")
 ```
 
 Custom criteria work the same way — pass a free-form string phrased as a violation (so `valid=True` keeps meaning "safe"):
@@ -114,7 +114,7 @@ for prompt in [
     "What's a good book on Italian Renaissance painting?",
 ]:
     result = byoc_guardian.validate(prompt)
-    print(f"{prompt!r:75} -> valid={result.valid}, score={result.score!r}")
+    print(f"{prompt!r:75} -> valid={result.valid}, answer={result.extra['raw_answer']!r}")
 ```
 
 ## 3. Lifecycle

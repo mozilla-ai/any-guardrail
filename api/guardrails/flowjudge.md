@@ -11,6 +11,10 @@ Args:
         value means.
     required_inputs: A list of what is required for the judge to consider.
     required_output: What is the expected output from the judge.
+    pass_threshold: The rubric score at which the text counts as passing. ``valid`` is
+        ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better`` is False).
+    higher_is_better: Whether higher rubric scores mean better/passing text. Set to
+        False for rubrics where higher scores mean worse text.
 
 Raises:
     ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
@@ -24,6 +28,8 @@ Raises:
 | `rubric` | `dict[int, str]` | Yes | — |
 | `required_inputs` | `list[str]` | Yes | — |
 | `required_output` | `str` | Yes | — |
+| `pass_threshold` | `int` | Yes | — |
+| `higher_is_better` | `bool` | No | `True` |
 
 Initialize the FlowJudgeClass.
 
@@ -38,4 +44,4 @@ Classifies the desired input and output according to the associated metric provi
 | `inputs` | `list[dict[str, str]]` | Yes | — |
 | `output` | `dict[str, str]` | Yes | — |
 
-**Returns:** `GuardrailOutput[NoneType, str, int]`
+**Returns:** `GuardrailOutput`

@@ -32,4 +32,4 @@ Compare two texts to see if they are relevant to each other.
 | `input_text` | `str` | Yes | — |
 | `comparison_text` | `str | None` | No | `None` |
 
-**Returns:** `GuardrailOutput[bool, dict[str, float], float]`
+**Returns:** `GuardrailOutput`

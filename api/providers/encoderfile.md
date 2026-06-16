@@ -100,7 +100,9 @@ client-side preparation is shaping the JSON payload.
 POST the preprocessed payload to the running encoderfile server.
 
 Returns the same uniform shape as HuggingFaceProvider: ``logits``,
-``scores``, ``predicted_indices``, ``predicted_labels``.
+``scores``, ``predicted_indices``, ``predicted_labels``, ``labels``.
+``labels`` is ``None`` because the encoderfile ``/predict`` response
+only carries the predicted label, not the full ordered label list.
 
 **Parameters**
 

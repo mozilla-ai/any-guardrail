@@ -31,8 +31,7 @@ Initialize the Alinia guardrail with the provided configuration.
 
 Validate conversation or text input using the Alinia API.
 
-This can be used for validation using any of the API endpoints provided by Alinia. If using sensitive information endpoint,
-use the explanation from the GuardrailOutput to grab the recommended action text.
+This can be used for validation using any of the API endpoints provided by Alinia.
 
 **Parameters**
 
@@ -42,4 +41,4 @@ use the explanation from the GuardrailOutput to grab the recommended action text
 | `output` | `str | None` | No | `None` |
 | `context_documents` | `list[str] | None` | No | `None` |
 
-**Returns:** `GuardrailOutput[bool, dict[str, dict[str, Union[float, bool, str]]], dict[str, dict[str, float]]]`
+**Returns:** `GuardrailOutput`

@@ -66,4 +66,4 @@ Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 | `documents` | `list[dict[str, Any]] | None` | No | `None` |
 | `available_tools` | `list[dict[str, Any]] | None` | No | `None` |
 
-**Returns:** `GuardrailOutput[bool, str, str]`
+**Returns:** `GuardrailOutput`
