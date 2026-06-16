@@ -21,4 +21,5 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Shield_gemma](shield-gemma.md) | `GuardrailName.SHIELD_GEMMA` |
 | [Llama_guard](llama-guard.md) | `GuardrailName.LLAMA_GUARD` |
 | [Azure_content_safety](azure-content-safety.md) | `GuardrailName.AZURE_CONTENT_SAFETY` |
+| [Azure_prompt_shields](azure-prompt-shields.md) | `GuardrailName.AZURE_PROMPT_SHIELDS` |
 | [Alinia](alinia.md) | `GuardrailName.ALINIA` |
