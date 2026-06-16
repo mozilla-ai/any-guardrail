@@ -14,6 +14,7 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Injecguard](injec-guard.md) | `GuardrailName.INJECGUARD` |
 | [Jasper](jasper.md) | `GuardrailName.JASPER` |
 | [Offtopic](off-topic.md) | `GuardrailName.OFFTOPIC` |
+| [Openai_moderation](openai-moderation.md) | `GuardrailName.OPENAI_MODERATION` |
 | [Pangolin](pangolin.md) | `GuardrailName.PANGOLIN` |
 | [Protectai](protectai.md) | `GuardrailName.PROTECTAI` |
 | [Sentinel](sentinel.md) | `GuardrailName.SENTINEL` |
