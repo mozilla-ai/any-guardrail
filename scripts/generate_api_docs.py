@@ -191,12 +191,21 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
     return "\n".join(lines)
 
 
+# Extras whose name can't be derived as `class_name.lower()` (e.g. guardrails
+# that reuse another backend's extra).
+_INSTALL_EXTRA_OVERRIDES = {
+    "AzureContentSafety": "azure-content-safety",
+    "AzurePromptShields": "azure-content-safety",
+}
+
+
 def _stub_page(class_name: str) -> str:
     """Minimal page for a guardrail whose heavy deps aren't installed."""
+    extra = _INSTALL_EXTRA_OVERRIDES.get(class_name, class_name.lower())
     return (
         f"# {class_name}\n\n"
         "> API reference for this guardrail requires its optional dependencies to be installed.\n\n"
-        f"Install with: `pip install 'any-guardrail[{class_name.lower()}]'`\n"
+        f"Install with: `pip install 'any-guardrail[{extra}]'`\n"
     )
 
 
@@ -347,6 +356,11 @@ GUARDRAILS = [
         "any_guardrail.guardrails.azure_content_safety.azure_content_safety",
         "AzureContentSafety",
         "azure-content-safety.md",
+    ),
+    (
+        "any_guardrail.guardrails.azure_prompt_shields.azure_prompt_shields",
+        "AzurePromptShields",
+        "azure-prompt-shields.md",
     ),
     ("any_guardrail.guardrails.deepset.deepset", "Deepset", "deepset.md"),
     ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),

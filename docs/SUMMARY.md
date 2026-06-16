@@ -11,6 +11,7 @@
 * [Custom Blocklists with Azure Content Safety](cookbook/azure_blocklist_slang_filter.md)
 * [Running Guardrails with EncoderFile](cookbook/encoderfile_guardrail.md)
 * [Granite Guardian with Llamafile vs HuggingFace](cookbook/llamafile_granite_guardian.md)
+* [Azure Prompt Shields Guardrail Usage](cookbook/azure_prompt_shields_guardrail.md)
 * [OpenAI Moderation Guardrail Usage](cookbook/openai_moderation_guardrail.md)
 
 ## API Reference
@@ -21,6 +22,7 @@
   * [Alinia](api/guardrails/alinia.md)
   * [AnyLLM](api/guardrails/any-llm.md)
   * [Azure Content Safety](api/guardrails/azure-content-safety.md)
+  * [Azure Prompt Shields](api/guardrails/azure-prompt-shields.md)
   * [Deepset](api/guardrails/deepset.md)
   * [DuoGuard](api/guardrails/duo-guard.md)
   * [FlowJudge](api/guardrails/flowjudge.md)
