@@ -22,10 +22,14 @@ def test_lakera_guard_guardrail_integration() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid
     assert result.score == 0.0
-    assert result.explanation is not None
+    assert result.extra is not None
+    assert result.raw is not None
     # breakdown is requested by default: the policy's detectors are listed, none detected.
-    assert isinstance(result.explanation["breakdown"], list)
-    assert result.explanation["detected_detector_types"] == []
+    assert isinstance(result.raw["breakdown"], list)
+    # one CategoryResult per breakdown entry; none triggered for a safe prompt.
+    assert result.categories
+    assert all(not c.triggered for c in result.categories)
+    assert result.extra["detected_detector_types"] == []
 
 
 @pytest.mark.parametrize("attack", CANONICAL_INJECTIONS)
@@ -38,10 +42,13 @@ def test_lakera_guard_guardrail_integration_flagged(attack: str) -> None:
     assert not result.valid  # Lakera flagged the prompt as an attack.
     assert result.score is not None
     assert result.score > 0.0  # confidence level of the detected threat mapped to a float
-    assert result.explanation is not None
-    breakdown = result.explanation["breakdown"]
+    assert result.extra is not None
+    assert result.raw is not None
+    breakdown = result.raw["breakdown"]
     assert breakdown, "breakdown should be populated when breakdown=True"
     assert any(entry["detected"] for entry in breakdown)
-    assert result.explanation["detected_detector_types"]
+    assert result.extra["detected_detector_types"]
     # each breakdown entry carries the documented per-detector fields
     assert {"detector_type", "detected", "result"} <= breakdown[0].keys()
+    # the breakdown is mirrored into categories; at least one is triggered
+    assert any(c.triggered for c in result.categories)

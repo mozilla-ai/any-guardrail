@@ -86,12 +86,22 @@ def test_lakera_guard_safe_input_returns_valid_true() -> None:
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True
     assert result.score == 0.0
-    assert result.explanation is not None
-    assert result.explanation["flagged"] is False
-    assert result.explanation["detected_detector_types"] == []
-    assert result.explanation["breakdown"] == safe_body["breakdown"]
-    assert result.explanation["payload"] == []
-    assert result.explanation["metadata"] == {"request_uuid": "u-1"}
+    assert result.extra is not None
+    assert result.extra["flagged"] is False
+    assert result.extra["detected_detector_types"] == []
+    assert result.extra["payload"] == []
+    assert result.extra["metadata"] == {"request_uuid": "u-1"}
+    # the per-detector breakdown is surfaced via categories (one CategoryResult per entry)
+    assert len(result.categories) == 1
+    assert result.categories[0].name == "prompt_attack"
+    assert result.categories[0].triggered is False
+    assert result.categories[0].score == 0.0
+    # the raw response body still carries the full breakdown list
+    assert result.raw is not None
+    assert result.raw["breakdown"] == safe_body["breakdown"]
+    # validate() overrides the base method, so usage is stamped manually with a latency
+    assert result.usage is not None
+    assert result.usage.latency_ms is not None
 
 
 def test_lakera_guard_flagged_input_maps_confidence_level_to_score() -> None:
@@ -118,12 +128,20 @@ def test_lakera_guard_flagged_input_maps_confidence_level_to_score() -> None:
     assert result.valid is False
     # max(l1_confident=1.0, l3_likely=0.6) -> 1.0
     assert result.score == pytest.approx(1.0)
-    assert result.explanation is not None
-    assert result.explanation["detected_detector_types"] == ["moderated_content/hate", "prompt_attack"]
+    assert result.extra is not None
+    assert result.extra["detected_detector_types"] == ["moderated_content/hate", "prompt_attack"]
+    # categories carry one entry per breakdown row, with the mapped confidence as the score
+    by_name = {c.name: c for c in result.categories}
+    assert by_name["prompt_attack"].triggered is True
+    assert by_name["prompt_attack"].score == pytest.approx(1.0)
+    assert by_name["moderated_content/hate"].triggered is True
+    assert by_name["moderated_content/hate"].score == pytest.approx(0.6)
+    assert by_name["pii/email_address"].triggered is False
+    assert by_name["pii/email_address"].score == pytest.approx(0.0)
 
 
 def test_lakera_guard_surfaces_payload_matches() -> None:
-    """PII / profanity / regex matches from the payload list are surfaced in the explanation."""
+    """PII / profanity / regex matches from the payload list are surfaced in extra."""
     guardrail = LakeraGuard(api_key="test-key")
     payload_match = {
         "start": 11,
@@ -148,8 +166,13 @@ def test_lakera_guard_surfaces_payload_matches() -> None:
 
     assert result.valid is False
     assert result.score == pytest.approx(0.8)
-    assert result.explanation is not None
-    assert result.explanation["payload"] == [payload_match]
+    assert result.extra is not None
+    assert result.extra["payload"] == [payload_match]
+    # the single detected detector is also represented as a triggered category
+    assert len(result.categories) == 1
+    assert result.categories[0].name == "pii/email_address"
+    assert result.categories[0].triggered is True
+    assert result.categories[0].score == pytest.approx(0.8)
 
 
 def test_lakera_guard_breakdown_disabled_falls_back_to_binary_score() -> None:
@@ -168,9 +191,12 @@ def test_lakera_guard_breakdown_disabled_falls_back_to_binary_score() -> None:
     assert kwargs["json"]["payload"] is False
     assert result.valid is False
     assert result.score == 1.0
-    assert result.explanation is not None
-    assert result.explanation["breakdown"] == []
-    assert result.explanation["detected_detector_types"] == []
+    assert result.extra is not None
+    assert result.extra["detected_detector_types"] == []
+    # no breakdown requested -> no categories, and raw has no breakdown list
+    assert result.categories == []
+    assert result.raw is not None
+    assert "breakdown" not in result.raw
 
 
 def test_lakera_guard_dev_info_requested_and_surfaced() -> None:
@@ -187,8 +213,8 @@ def test_lakera_guard_dev_info_requested_and_surfaced() -> None:
 
     _, kwargs = mock_post.call_args
     assert kwargs["json"]["dev_info"] is True
-    assert result.explanation is not None
-    assert result.explanation["dev_info"] == dev_info
+    assert result.extra is not None
+    assert result.extra["dev_info"] == dev_info
 
 
 def test_lakera_guard_accepts_messages_list_input() -> None:

@@ -1,15 +1,16 @@
 import os
+import time
 from typing import Any, ClassVar
 
 import requests
 
 from any_guardrail.base import Guardrail, GuardrailOutput
-from any_guardrail.types import AnyDict
+from any_guardrail.types import AnyDict, CategoryResult, GuardrailUsage
 
 # Lakera Guard v2 reports detection confidence as an ordinal *level*, not a
 # probability. We map each level to a float in [0, 1] so ``GuardrailOutput.score``
 # stays a single comparable number; the raw levels remain available per-detector
-# in ``explanation["breakdown"]``.
+# in ``result.categories`` and ``extra["breakdown"]``.
 # https://docs.lakera.ai/api-reference/lakera-api/guard/screen-content
 _CONFIDENCE_SCORES: dict[str, float] = {
     "l1_confident": 1.0,
@@ -21,7 +22,7 @@ _CONFIDENCE_SCORES: dict[str, float] = {
 }
 
 
-class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
+class LakeraGuard(Guardrail):
     """Wraps the Lakera Guard REST API for prompt-injection, jailbreak, content-moderation, and PII detection.
 
     Lakera Guard exposes a single ``/v2/guard`` endpoint that returns whether a message (or message list)
@@ -43,9 +44,12 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
           level to a float (``l1_confident`` → ``1.0`` … ``l5_unlikely`` → ``0.2``); ``0.0`` when nothing
           was detected. If ``breakdown`` is disabled, ``score`` falls back to ``1.0`` when flagged else
           ``0.0``.
-        - ``explanation`` carries the full ``breakdown`` and ``payload`` lists, the request ``metadata``
-          (``request_uuid``), the convenience ``detected_detector_types`` list, and ``dev_info`` when
-          requested.
+        - ``categories`` lists one ``CategoryResult`` per ``breakdown`` entry (``name`` =
+          ``detector_type``, ``triggered`` = whether it detected, ``score`` = the mapped confidence).
+        - ``extra`` carries the ``flagged`` flag, the ``payload`` list, the request ``metadata``
+          (``request_uuid``), the convenience ``detected_detector_types`` list, and ``dev_info``
+          when requested.
+        - ``raw`` is the full Lakera response body (including the per-detector ``breakdown``).
 
     Research backing:
         - Pfister et al., *Gandalf the Red: Adaptive Security for LLMs*
@@ -120,7 +124,7 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
     def validate(
         self,
         content: str | list[dict[str, str]],
-    ) -> GuardrailOutput[bool, dict[str, Any], float]:
+    ) -> GuardrailOutput:
         """Validate a string or chat-message list against the Lakera Guard API.
 
         Args:
@@ -130,13 +134,18 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
 
         Returns:
             ``GuardrailOutput`` with ``valid = not flagged``, ``score`` derived from the highest
-            detected-detector confidence level, and ``explanation`` carrying the ``breakdown``,
-            ``payload``, ``metadata``, ``detected_detector_types``, and (when requested) ``dev_info``.
+            detected-detector confidence level, ``categories`` (one per ``breakdown`` entry), and
+            ``extra`` carrying the ``flagged`` flag, ``payload``, ``metadata``,
+            ``detected_detector_types``, and (when requested) ``dev_info``. ``raw`` holds the full
+            response body (including the per-detector ``breakdown``).
 
         """
+        start = time.perf_counter()
         params = self._pre_processing(content)
         response = self._inference(params)
-        return self._post_processing(response)
+        result = self._post_processing(response)
+        result.usage = GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0)
+        return result
 
     def _pre_processing(self, content: str | list[dict[str, str]]) -> AnyDict:
         if isinstance(content, str):
@@ -174,7 +183,7 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
     def _post_processing(
         self,
         response: requests.Response,
-    ) -> GuardrailOutput[bool, dict[str, Any], float]:
+    ) -> GuardrailOutput:
         body = response.json()
         flagged = bool(body.get("flagged", False))
         breakdown = body.get("breakdown") or []
@@ -190,9 +199,17 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
         else:
             score = 0.0
 
-        explanation: dict[str, Any] = {
+        categories = [
+            CategoryResult(
+                name=entry.get("detector_type") or "unknown",
+                triggered=bool(entry.get("detected")),
+                score=_CONFIDENCE_SCORES.get(entry.get("result"), 0.0),
+            )
+            for entry in breakdown
+        ]
+
+        extra: dict[str, Any] = {
             "flagged": flagged,
-            "breakdown": breakdown,
             "payload": payload,
             "metadata": metadata,
             "detected_detector_types": sorted(
@@ -201,10 +218,12 @@ class LakeraGuard(Guardrail[bool, dict[str, Any], float]):
         }
         dev_info = body.get("dev_info")
         if dev_info:
-            explanation["dev_info"] = dev_info
+            extra["dev_info"] = dev_info
 
         return GuardrailOutput(
             valid=not flagged,
-            explanation=explanation,
             score=score,
+            categories=categories,
+            extra=extra,
+            raw=body,
         )
