@@ -10,6 +10,7 @@ except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.guardrails.utils import normalize_rubric_to_risk
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     from flow_judge import EvalOutput as EvalOutputType
 
 
-class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str, int]):
+class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
     """Wrapper around FlowJudge, allowing for custom guardrailing based on user defined criteria, metrics, and rubric.
 
     Please see the model card for more information: [FlowJudge](https://huggingface.co/flowaicom/Flow-Judge-v0.1).
@@ -29,6 +30,10 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
             value means.
         required_inputs: A list of what is required for the judge to consider.
         required_output: What is the expected output from the judge.
+        pass_threshold: The rubric score at which the text counts as passing. ``valid`` is
+            ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better`` is False).
+        higher_is_better: Whether higher rubric scores mean better/passing text. Set to
+            False for rubrics where higher scores mean worse text.
 
     Raises:
         ValueError: Only supports FlowJudge keywords to instantiate FlowJudge.
@@ -42,6 +47,8 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
         rubric: dict[int, str],
         required_inputs: list[str],
         required_output: str,
+        pass_threshold: int,
+        higher_is_better: bool = True,
     ) -> None:
         """Initialize the FlowJudgeClass."""
         if MISSING_PACKAGES_ERROR is not None:
@@ -53,10 +60,12 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
         self.rubric = rubric
         self.required_inputs = required_inputs
         self.required_output = required_output
+        self.pass_threshold = pass_threshold
+        self.higher_is_better = higher_is_better
         self.metric_prompt = self._define_metric_prompt()
         self.model = self._load_model()
 
-    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput[None, str, int]:  # type: ignore[override]
+    def validate(self, inputs: list[dict[str, str]], output: dict[str, str]) -> GuardrailOutput:  # type: ignore[override]
         """Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:
@@ -64,12 +73,14 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
             output: A dictionary mapping the required output name to the output.
 
         Return:
-            A score from the RubricItems and feedback related to the rubric and criteria.
+            GuardrailOutput where ``valid`` maps the rubric score through
+            ``pass_threshold``, ``score`` is the rubric normalized onto the
+            canonical risk axis (using the rubric's integer keys as bounds),
+            ``explanation`` is the judge's feedback, and ``extra["rubric_score"]``
+            is the raw rubric integer.
 
         """
-        eval_input = self._pre_processing(inputs, output)
-        result = self._inference(eval_input)
-        return self._post_processing(result)
+        return self._execute(inputs, output)
 
     def _load_model(self) -> FlowJudge:
         """Construct the FlowJudge model using the defined metric prompt that contains the rubric, criteria, and metric.
@@ -122,7 +133,15 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType", None, str
         result = self.model.evaluate(eval_input.data, save_results=False)
         return GuardrailInferenceOutput(data=result)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput["EvalOutputType"]
-    ) -> GuardrailOutput[None, str, int]:
-        return GuardrailOutput(explanation=model_outputs.data.feedback, score=model_outputs.data.score)
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput["EvalOutputType"]) -> GuardrailOutput:
+        rubric_score = model_outputs.data.score
+        feedback = model_outputs.data.feedback
+        if rubric_score is None:
+            return GuardrailOutput(valid=False, explanation=feedback, extra={"parse_failure": True})
+        passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
+        # The rubric's integer keys give the scale, so normalize the likert score
+        # onto the canonical risk axis (higher = riskier) for a portable `score`.
+        score = normalize_rubric_to_risk(
+            rubric_score, min(self.rubric), max(self.rubric), higher_is_better=self.higher_is_better
+        )
+        return GuardrailOutput(valid=passed, score=score, explanation=feedback, extra={"rubric_score": rubric_score})

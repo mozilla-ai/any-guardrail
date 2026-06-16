@@ -1,12 +1,13 @@
 import os
+import time
 
 import requests
 
 from any_guardrail.base import Guardrail, GuardrailOutput
-from any_guardrail.types import AnyDict
+from any_guardrail.types import AnyDict, CategoryResult, GuardrailUsage
 
 
-class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]):
+class Alinia(Guardrail):
     """Wraps the Alinia API for content moderation and safety detection.
 
     This wrapper allows you to send conversations or text inputs to the Alinia API. You must get an API key from Alinia
@@ -59,21 +60,30 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
         conversation: str | list[dict[str, str]],
         output: str | None = None,
         context_documents: list[str] | None = None,
-    ) -> GuardrailOutput[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]:
+    ) -> GuardrailOutput:
         """Validate conversation or text input using the Alinia API.
 
-        This can be used for validation using any of the API endpoints provided by Alinia. If using sensitive information endpoint,
-        use the explanation from the GuardrailOutput to grab the recommended action text.
+        This can be used for validation using any of the API endpoints provided by Alinia.
 
         Args:
             conversation (str | list[dict[str, str]]): The conversation or text input to validate.
             output (str | None): Optional expected output to validate against.
             context_documents (list[str] | None): Optional context documents to provide additional context for validation
 
+        Returns:
+            GuardrailOutput where ``categories`` flattens Alinia's nested
+            ``category_details`` (one entry per ``group/label``), ``score`` is the
+            highest category score when numeric scores exist, ``explanation``
+            carries the recommendation text when the endpoint returns one (e.g.
+            sensitive information), and ``raw`` is the full response JSON.
+
         """
+        start = time.perf_counter()
         params = self._pre_processing(conversation, output, context_documents)
         response = self._inference(params)
-        return self._post_processing(response)
+        result = self._post_processing(response)
+        result.usage = GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0)
+        return result
 
     def _pre_processing(
         self,
@@ -126,12 +136,45 @@ class Alinia(Guardrail[bool, dict[str, dict[str, float | bool | str]], dict[str,
     def _post_processing(
         self,
         response: requests.Response,
-    ) -> GuardrailOutput[bool, dict[str, dict[str, float | bool | str]], dict[str, dict[str, float]]]:
-        explanation = response.json()
-        valid = not explanation.get("result").get("flagged")
-        score = explanation.get("result").get("category_details")
+    ) -> GuardrailOutput:
+        response_json = response.json()
+        result = response_json.get("result") or {}
+        valid = not result.get("flagged")
+
+        categories: list[CategoryResult] = []
+        numeric_scores: list[float] = []
+        category_details = result.get("category_details") or {}
+        for group, labels in category_details.items():
+            if not isinstance(labels, dict):
+                continue
+            for label, value in labels.items():
+                name = f"{group}/{label}"
+                if isinstance(value, bool):
+                    categories.append(CategoryResult(name=name, triggered=value))
+                elif isinstance(value, (int, float)):
+                    score = float(value)
+                    categories.append(CategoryResult(name=name, score=score))
+                    numeric_scores.append(score)
+
+        # Alinia's recommendation is either a plain string or the richer
+        # ``{"action": "block", "output": "..."}`` form. Preserve it losslessly
+        # in ``extra`` and surface the action / message as first-class fields.
+        recommendation = response_json.get("recommendation") or result.get("recommendation")
+        action: str | None = None
+        explanation: str | None = None
+        if isinstance(recommendation, str):
+            explanation = recommendation
+        elif isinstance(recommendation, dict):
+            action = recommendation.get("action")
+            output = recommendation.get("output")
+            explanation = output if isinstance(output, str) else None
+
         return GuardrailOutput(
             valid=valid,
             explanation=explanation,
-            score=score,
+            score=max(numeric_scores) if numeric_scores else None,
+            categories=categories,
+            action=action,
+            extra={"recommendation": recommendation} if recommendation is not None else None,
+            raw=response_json,
         )
