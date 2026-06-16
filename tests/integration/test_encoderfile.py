@@ -41,10 +41,11 @@ def test_protectai_via_encoderfile() -> None:
 
         assert unsafe.valid is False
         assert safe.valid is True
+        # score is canonically P(injection): high for the attack, low for the recipe.
         assert unsafe.score is not None
         assert unsafe.score > 0.5
         assert safe.score is not None
-        assert safe.score > 0.5
+        assert safe.score < 0.5
     finally:
         provider.close()
 
@@ -88,9 +89,8 @@ def test_duoguard_via_encoderfile() -> None:
         assert unsafe.valid is False
         assert safe.valid is True
         # The unsafe prompt should fire at least one of the harm categories.
-        assert unsafe.explanation is not None
-        triggered = [k for k, v in unsafe.explanation.items() if v]
-        assert triggered, f"Expected at least one harm category to fire, got: {unsafe.explanation}"
+        triggered = [category.name for category in unsafe.categories if category.triggered]
+        assert triggered, f"Expected at least one harm category to fire, got: {unsafe.categories}"
     finally:
         provider.close()
 

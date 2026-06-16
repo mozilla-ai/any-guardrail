@@ -16,5 +16,5 @@ def test_alinia_guardrail() -> None:
     assert isinstance(result, GuardrailOutput)
 
     assert not result.valid
-    assert result.explanation is not None
-    assert result.score is not None
+    assert result.raw is not None
+    assert result.categories

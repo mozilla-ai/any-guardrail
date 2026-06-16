@@ -1,10 +1,11 @@
-import json
+import time
 from typing import TYPE_CHECKING, Any
 
 from any_llm import completion
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.types import GuardrailUsage
 
 if TYPE_CHECKING:
     from any_llm.types.completion import ChatCompletion
@@ -24,8 +25,9 @@ You must return the following:
 - explanation: str
     A clear explanation of why the input text was rejected or not.
 
-- score: float (0-1)
-    How confident you are about the validation.
+- risk_score: float (0-1)
+    How likely the input text is to violate the policy: 0.0 means clearly compliant,
+    1.0 means clearly violating.
 """
 """Will be used as default argument for `system_prompt`"""
 
@@ -38,10 +40,10 @@ class GuardrailOutputAnyLLM(BaseModel):
 
     valid: bool
     explanation: str
-    score: int
+    risk_score: float
 
 
-class AnyLlm(Guardrail[bool, str, float]):
+class AnyLlm(Guardrail):
     """A guardrail using `any-llm`."""
 
     def validate(
@@ -51,7 +53,7 @@ class AnyLlm(Guardrail[bool, str, float]):
         model_id: str = DEFAULT_MODEL_ID,
         system_prompt: str = DEFAULT_SYSTEM_PROMPT,
         **kwargs: Any,
-    ) -> GuardrailOutput[bool, str, float]:
+    ) -> GuardrailOutput:
         """Validate the `input_text` against the given `policy`.
 
         Args:
@@ -63,9 +65,13 @@ class AnyLlm(Guardrail[bool, str, float]):
             **kwargs: Additional keyword arguments to pass to `any_llm.completion` function.
 
         Returns:
-            GuardrailOutput: The output of the validation.
+            GuardrailOutput where ``score`` is the LLM-reported risk in [0, 1]
+            (higher = more likely violating the policy). When the LLM response
+            cannot be parsed, the output fails closed (``valid=False`` with
+            ``extra={"parse_failure": True}``).
 
         """
+        start = time.perf_counter()
         result: ChatCompletion = completion(  # type: ignore[assignment]
             model=model_id,
             messages=[
@@ -75,4 +81,23 @@ class AnyLlm(Guardrail[bool, str, float]):
             response_format=GuardrailOutputAnyLLM,
             **kwargs,
         )
-        return GuardrailOutput(**json.loads(result.choices[0].message.content))  # type: ignore[arg-type]
+        latency_ms = (time.perf_counter() - start) * 1000.0
+        usage = GuardrailUsage(model_id=model_id, latency_ms=latency_ms)
+        content = result.choices[0].message.content or ""
+        try:
+            parsed = GuardrailOutputAnyLLM.model_validate_json(content)
+        except ValidationError:
+            return GuardrailOutput(
+                valid=False,
+                explanation=content,
+                extra={"parse_failure": True},
+                usage=usage,
+                raw=result,
+            )
+        return GuardrailOutput(
+            valid=parsed.valid,
+            explanation=parsed.explanation,
+            score=parsed.risk_score,
+            usage=usage,
+            raw=result,
+        )
