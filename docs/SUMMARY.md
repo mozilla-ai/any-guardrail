@@ -12,6 +12,7 @@
 * [Running Guardrails with EncoderFile](cookbook/encoderfile_guardrail.md)
 * [Granite Guardian with Llamafile vs HuggingFace](cookbook/llamafile_granite_guardian.md)
 * [Azure Prompt Shields Guardrail Usage](cookbook/azure_prompt_shields_guardrail.md)
+* [OpenAI Moderation Guardrail Usage](cookbook/openai_moderation_guardrail.md)
 
 ## API Reference
 
@@ -32,6 +33,7 @@
   * [Jasper](api/guardrails/jasper.md)
   * [LlamaGuard](api/guardrails/llama-guard.md)
   * [OffTopic](api/guardrails/off-topic.md)
+  * [OpenAI Moderation](api/guardrails/openai-moderation.md)
   * [Pangolin](api/guardrails/pangolin.md)
   * [ProtectAI](api/guardrails/protectai.md)
   * [Sentinel](api/guardrails/sentinel.md)

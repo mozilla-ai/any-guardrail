@@ -376,6 +376,11 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.jasper.jasper", "Jasper", "jasper.md"),
     ("any_guardrail.guardrails.llama_guard.llama_guard", "LlamaGuard", "llama-guard.md"),
     ("any_guardrail.guardrails.off_topic.off_topic", "OffTopic", "off-topic.md"),
+    (
+        "any_guardrail.guardrails.openai_moderation.openai_moderation",
+        "OpenaiModeration",
+        "openai-moderation.md",
+    ),
     ("any_guardrail.guardrails.pangolin.pangolin", "Pangolin", "pangolin.md"),
     ("any_guardrail.guardrails.protectai.protectai", "Protectai", "protectai.md"),
     ("any_guardrail.guardrails.sentinel.sentinel", "Sentinel", "sentinel.md"),
