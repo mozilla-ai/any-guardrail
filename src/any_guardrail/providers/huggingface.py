@@ -200,6 +200,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         - ``scores``: softmax (or sigmoid for multi-label) of logits.
         - ``predicted_indices``: list of argmax indices, one per row.
         - ``predicted_labels``: labels resolved via ``model.config.id2label``.
+        - ``labels``: the full ordered label list from ``model.config.id2label``,
+          aligning index-wise with each row of ``scores``.
 
         For models that emit higher-rank logits (e.g. causal LMs returning
         ``(batch, seq, vocab)``) the classification fields don't apply — there
@@ -230,6 +232,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                     "scores": None,
                     "predicted_indices": None,
                     "predicted_labels": None,
+                    "labels": None,
                 }
             )
 
@@ -240,12 +243,16 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         predicted_indices = scores.argmax(axis=-1).tolist()
         id2label = self.model.config.id2label
         predicted_labels = [id2label[i] for i in predicted_indices]
+        # Derive the class count from the logits, not from id2label: configs can
+        # carry sparse or non-contiguous label maps, so fall back per index.
+        labels = [id2label.get(i, f"LABEL_{i}") for i in range(logits.shape[-1])]
         return GuardrailInferenceOutput(
             data={
                 "logits": logits,
                 "scores": scores,
                 "predicted_indices": predicted_indices,
                 "predicted_labels": predicted_labels,
+                "labels": labels,
             }
         )
 

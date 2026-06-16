@@ -5,7 +5,14 @@ from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
-from any_guardrail.types import AnyDict, ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import (
+    AnyDict,
+    CategoryResult,
+    ChatMessages,
+    GuardrailInferenceOutput,
+    GuardrailPreprocessOutput,
+    GuardrailUsage,
+)
 
 GraniteGuardianPreprocessData = AnyDict  # {"messages": list, "chat_template_kwargs": dict}
 GraniteGuardianInferenceData = AnyDict  # {"generated_text": str, ...} (shape from provider.generate_chat)
@@ -102,7 +109,7 @@ class GraniteGuardianRisk:
     )
 
 
-class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData, bool, str, str]):
+class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData]):
     """Wrapper class for IBM Granite Guardian 4.1 models.
 
     Granite Guardian is a hybrid-thinking safety/judge model that evaluates whether a
@@ -190,7 +197,7 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         documents: list[AnyDict] | None = None,
         available_tools: list[AnyDict] | None = None,
         **kwargs: Any,
-    ) -> GuardrailOutput[bool, str, str]:
+    ) -> GuardrailOutput:
         """Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 
         Args:
@@ -212,9 +219,12 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
         Returns:
             A :class:`GuardrailOutput` where ``valid=True`` means the criterion is
             **not** met (safe, when criteria are phrased as violations),
-            ``score`` is the raw ``"yes"``/``"no"`` string, and ``explanation`` is
-            the full raw decoded generation (including any ``<think>...</think>``
-            block in think mode).
+            ``categories`` holds one entry for the criterion (``triggered=True``
+            when the model answered ``yes``), ``extra["raw_answer"]`` is the raw
+            ``"yes"``/``"no"`` string, and ``explanation`` is the full raw decoded
+            generation (including any ``<think>...</think>`` block in think mode).
+            When the score cannot be parsed, the output fails closed:
+            ``valid=False`` with ``extra={"parse_failure": True}``.
 
         """
         result = super().validate(
@@ -309,33 +319,46 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
 
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[GraniteGuardianInferenceData]
-    ) -> GuardrailOutput[bool, str, str]:
+    ) -> GuardrailOutput:
         """Extract the yes/no score from the provider's generated text.
 
         Returns a :class:`GuardrailOutput` where:
 
         - ``valid`` is ``True`` if the model answered ``no`` (criterion not met) and
           ``False`` if the model answered ``yes`` (criterion met). When the score
-          cannot be parsed, ``valid`` is ``None``.
-        - ``score`` is the raw lower-cased ``yes``/``no`` string, or ``None`` if the
-          output did not contain a ``<score>`` tag.
+          cannot be parsed, the output fails closed: ``valid=False`` with
+          ``extra={"parse_failure": True}``.
+        - ``categories`` holds one entry named after the criterion, ``triggered=True``
+          when the model answered ``yes``.
+        - ``extra["raw_answer"]`` is the raw lower-cased ``yes``/``no`` string.
         - ``explanation`` is the full decoded generation (including any
           ``<think>...</think>`` reasoning block).
 
         """
-        return _parse_generation(model_outputs.data["generated_text"])
+        result = _parse_generation(model_outputs.data["generated_text"], self.criteria)
+        result.usage = GuardrailUsage(
+            prompt_tokens=model_outputs.data.get("prompt_token_count"),
+            completion_tokens=model_outputs.data.get("completion_token_count"),
+        )
+        return result
 
 
-def _parse_generation(text: str) -> GuardrailOutput[bool, str, str]:
+def _parse_generation(text: str, criteria: str) -> GuardrailOutput:
     """Parse a Granite Guardian generation into a GuardrailOutput.
 
     Strips any ``<think>...</think>`` block before searching for ``<score>yes|no</score>``.
-    Returns ``valid=None`` and ``score=None`` when the score cannot be parsed.
+    Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when the
+    score cannot be parsed.
     """
     without_think = THINK_PATTERN.sub("", text).strip()
     match = SCORE_PATTERN.search(without_think)
     if match is None:
-        return GuardrailOutput(valid=None, explanation=text, score=None)
-    score = match.group(1).strip().lower()
-    valid = score == "no"
-    return GuardrailOutput(valid=valid, explanation=text, score=score)
+        return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
+    answer = match.group(1).strip().lower()
+    meets_criteria = answer == "yes"
+    return GuardrailOutput(
+        valid=not meets_criteria,
+        explanation=text,
+        categories=[CategoryResult(name=criteria, triggered=meets_criteria)],
+        extra={"raw_answer": answer},
+    )

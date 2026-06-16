@@ -40,7 +40,7 @@ def _make_mock_provider(generated_text: str = "<score>no</score>") -> MagicMock:
 
 
 @pytest.mark.parametrize(
-    ("model_outputs", "expected_valid", "expected_score"),
+    ("model_outputs", "expected_valid", "expected_answer"),
     [
         ("<score>yes</score>", False, "yes"),
         ("<score>no</score>", True, "no"),
@@ -48,19 +48,28 @@ def _make_mock_provider(generated_text: str = "<score>no</score>") -> MagicMock:
         ("<score>  NO  </score>", True, "no"),
         ("<think>reasoning here</think>\n<score>yes</score>", False, "yes"),
         ("<think>multi\nline\nreasoning</think><score>no</score>", True, "no"),
-        ("no score tag at all", None, None),
-        ("<score>maybe</score>", None, None),
-        ("", None, None),
+        # Unparsable output fails closed: valid=False with a parse_failure marker.
+        ("no score tag at all", False, None),
+        ("<score>maybe</score>", False, None),
+        ("", False, None),
     ],
 )
-def test_parse_generation(model_outputs: str, expected_valid: bool | None, expected_score: str | None) -> None:
+def test_parse_generation(model_outputs: str, expected_valid: bool, expected_answer: str | None) -> None:
     """Score parsing handles yes/no, think-stripping, whitespace, case, and malformed output."""
-    result = _parse_generation(model_outputs)
+    result = _parse_generation(model_outputs, "criteria text")
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid == expected_valid
-    assert result.score == expected_score
     assert result.explanation == model_outputs
+    if expected_answer is None:
+        assert result.extra == {"parse_failure": True}
+        assert result.categories == []
+    else:
+        assert result.extra is not None
+        assert result.extra["raw_answer"] == expected_answer
+        assert len(result.categories) == 1
+        assert result.categories[0].name == "criteria text"
+        assert result.categories[0].triggered is (expected_answer == "yes")
 
 
 def test_post_processing_extracts_score_from_generated_text(guardian_instance: GraniteGuardian) -> None:
@@ -79,8 +88,13 @@ def test_post_processing_extracts_score_from_generated_text(guardian_instance: G
     )
 
     assert result.valid is True
-    assert result.score == "no"
+    assert result.extra is not None
+    assert result.extra["raw_answer"] == "no"
     assert result.explanation == "<score>no</score>"
+    # Token counts from generate_chat land in usage.
+    assert result.usage is not None
+    assert result.usage.prompt_tokens == 10
+    assert result.usage.completion_tokens == 3
 
 
 def test_build_guardian_block_nothink(guardian_instance: GraniteGuardian) -> None:
@@ -251,7 +265,8 @@ def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardia
     assert kwargs["chat_template_kwargs"]["documents"] == docs
     assert kwargs["chat_template_kwargs"]["available_tools"] == tools
     assert result.valid is True
-    assert result.score == "no"
+    assert result.extra is not None
+    assert result.extra["raw_answer"] == "no"
 
 
 def test_validate_raises_on_non_chat_capable_provider(guardian_instance: GraniteGuardian) -> None:
