@@ -5,7 +5,7 @@ from typing import Any, ClassVar
 import requests
 
 from any_guardrail.base import Guardrail, GuardrailOutput
-from any_guardrail.types import AnyDict, CategoryResult, GuardrailUsage
+from any_guardrail.types import AnyDict, CategoryResult
 
 # Lakera Guard v2 reports detection confidence as an ordinal *level*, not a
 # probability. We map each level to a float in [0, 1] so ``GuardrailOutput.score``
@@ -144,7 +144,7 @@ class LakeraGuard(Guardrail):
         params = self._pre_processing(content)
         response = self._inference(params)
         result = self._post_processing(response)
-        result.usage = GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0)
+        self._stamp_usage(result, (time.perf_counter() - start) * 1000.0)
         return result
 
     def _pre_processing(self, content: str | list[dict[str, str]]) -> AnyDict:
