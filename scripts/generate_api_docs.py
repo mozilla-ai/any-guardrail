@@ -194,6 +194,7 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
 # Extras whose name can't be derived as `class_name.lower()` (e.g. guardrails
 # that reuse another backend's extra).
 _INSTALL_EXTRA_OVERRIDES = {
+    "AzureContentSafety": "azure-content-safety",
     "AzurePromptShields": "azure-content-safety",
 }
 

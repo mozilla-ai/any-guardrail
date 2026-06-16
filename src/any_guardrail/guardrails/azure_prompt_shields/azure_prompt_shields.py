@@ -143,15 +143,25 @@ class AzurePromptShields(Guardrail):
         start = time.perf_counter()
         response = self._call_shield_prompt(user_prompt=user_prompt, documents=documents)
 
-        user_prompt_analysis = response.get("userPromptAnalysis") or {}
-        documents_analysis = response.get("documentsAnalysis") or []
-
+        # Fail CLOSED on a malformed response (mirrors the #178 convention):
+        # treat an unparsable Azure payload as unsafe rather than silently clean.
+        # Only validate the surfaces actually requested.
         user_prompt_attack: bool | None = None
         if user_prompt is not None:
+            user_prompt_analysis = response.get("userPromptAnalysis")
+            if not isinstance(user_prompt_analysis, dict) or "attackDetected" not in user_prompt_analysis:
+                return self._malformed_output(response, start)
             user_prompt_attack = bool(user_prompt_analysis.get("attackDetected", False))
 
         documents_attacks: list[bool] | None = None
         if documents is not None:
+            documents_analysis = response.get("documentsAnalysis")
+            if (
+                not isinstance(documents_analysis, list)
+                or len(documents_analysis) != len(documents)
+                or not all(isinstance(item, dict) and "attackDetected" in item for item in documents_analysis)
+            ):
+                return self._malformed_output(response, start)
             documents_attacks = [bool(item.get("attackDetected", False)) for item in documents_analysis]
 
         any_doc_attack = bool(documents_attacks and any(documents_attacks))
@@ -173,6 +183,34 @@ class AzurePromptShields(Guardrail):
             valid=not attack_detected,
             score=score,
             categories=categories,
+            extra=extra,
+            raw=response,
+            usage=GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0),
+        )
+
+    def _malformed_output(self, response: dict[str, Any], start: float) -> GuardrailOutput:
+        """Build a fail-closed ``GuardrailOutput`` for an unparsable Azure response.
+
+        Mirrors the #178 fail-closed convention: an unparsable Azure payload is
+        treated as unsafe (``valid=False``, ``score=1.0``) and flagged via
+        ``extra["parse_failure"]`` rather than silently passing as clean.
+
+        Args:
+            response: The decoded (but malformed) Azure REST response.
+            start: ``time.perf_counter()`` value captured before the request, for latency.
+
+        Returns:
+            GuardrailOutput with ``valid=False`` and ``extra["parse_failure"]=True``.
+
+        """
+        extra: dict[str, Any] = {
+            "parse_failure": True,
+            "user_prompt_attack_detected": None,
+            "documents_attacks_detected": None,
+        }
+        return GuardrailOutput(
+            valid=False,
+            score=1.0,
             extra=extra,
             raw=response,
             usage=GuardrailUsage(latency_ms=(time.perf_counter() - start) * 1000.0),

@@ -161,6 +161,24 @@ def test_documents_only_clean_is_valid() -> None:
     ]
 
 
+def test_malformed_response_fails_closed() -> None:
+    """A malformed response (userPromptAnalysis missing while user_prompt given) fails closed."""
+    guardrail = AzurePromptShields(endpoint=FAKE_ENDPOINT, api_key=FAKE_KEY)
+
+    fake = _mock_response({"documentsAnalysis": []})
+    with mock.patch(
+        "any_guardrail.guardrails.azure_prompt_shields.azure_prompt_shields.requests.post",
+        return_value=fake,
+    ):
+        result = guardrail.validate(user_prompt="What's the weather?")
+
+    assert isinstance(result, GuardrailOutput)
+    assert result.valid is False
+    assert result.score == 1.0
+    assert result.extra is not None
+    assert result.extra["parse_failure"] is True
+
+
 def test_non_2xx_response_raises_runtime_error() -> None:
     """A non-2xx HTTP response should raise RuntimeError with the status code and body."""
     guardrail = AzurePromptShields(endpoint=FAKE_ENDPOINT, api_key=FAKE_KEY)
