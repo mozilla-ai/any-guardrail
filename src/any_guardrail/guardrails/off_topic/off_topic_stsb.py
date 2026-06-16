@@ -5,6 +5,7 @@ import torch
 from transformers import AutoModel, AutoTokenizer
 
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.guardrails.off_topic._postprocess import off_topic_output
 from any_guardrail.guardrails.off_topic.models.cross_encoder_mlp import CrossEncoderWithMLP
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
@@ -17,7 +18,7 @@ StsbPreprocessData = tuple[torch.Tensor, torch.Tensor]
 StsbInferenceData = Any  # Model output tensor
 
 
-class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bool, dict[str, float], float]):
+class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
     """Wrapper for off-topic detection model from govtech.
 
     For more information, please see the model card:
@@ -69,15 +70,5 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData, bo
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)
         return GuardrailInferenceOutput(data=output)
 
-    def _post_processing(
-        self, model_outputs: GuardrailInferenceOutput[StsbInferenceData]
-    ) -> GuardrailOutput[bool, dict[str, float], float]:
-        probabilities = torch.softmax(model_outputs.data, dim=1)
-        predicted_label = torch.argmax(probabilities, dim=1).item()
-        explanatory_probs = probabilities.cpu().numpy().tolist()[0]
-        probs_dict = {"on-topic": explanatory_probs[0], "off-topic": explanatory_probs[1]}
-
-        return GuardrailOutput(
-            valid=predicted_label != 1,  # Assuming label '1' indicates off-topic
-            explanation=probs_dict,
-        )
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[StsbInferenceData]) -> GuardrailOutput:
+        return off_topic_output(model_outputs.data)

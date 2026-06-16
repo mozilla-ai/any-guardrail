@@ -1,0 +1,37 @@
+# LlamaGuard
+
+Wrapper class for Llama Guard 3 & 4 implementations.
+
+For more information about the implementations about either off topic model, please see the below model cards:
+
+- [Meta Llama Guard 3 Docs](https://www.llama.com/docs/model-cards-and-prompt-formats/llama-guard-3/)
+- [HuggingFace Llama Guard 3 Docs](https://huggingface.co/meta-llama/Llama-Guard-3-1B)
+- [Meta Llama Guard 4 Docs](https://www.llama.com/docs/model-cards-and-prompt-formats/llama-guard-4/)
+- [HuggingFace Llama Guard 4 Docs](https://huggingface.co/meta-llama/Llama-Guard-4-12B)
+
+## Supported Models
+
+- `meta-llama/Llama-Guard-3-1B`
+- `meta-llama/Llama-Guard-3-8B`
+- `meta-llama/Llama-Guard-4-12B`
+
+## Constructor
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `model_id` | `str | None` | No | `None` |
+| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` |
+
+Llama guard model. Either Llama Guard 3 or 4 depending on the model id. Defaults to Llama Guard 3.
+
+## validate
+
+Default validation pipeline: preprocess -> inference -> postprocess.
+
+**Parameters**
+
+| Parameter | Type | Required | Default |
+|-----------|------|----------|---------|
+| `input_text` | `str | list[str]` | Yes | — |
+
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
