@@ -34,6 +34,7 @@ class GuardrailName(StrEnum):
     INJECGUARD = "injec_guard"
     JASPER = "jasper"
     OFFTOPIC = "off_topic"
+    OPENAI_MODERATION = "openai_moderation"
     PANGOLIN = "pangolin"
     PROTECTAI = "protectai"
     SENTINEL = "sentinel"
