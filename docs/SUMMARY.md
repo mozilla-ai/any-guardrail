@@ -24,6 +24,7 @@
   * [AnyLLM](api/guardrails/any-llm.md)
   * [Azure Content Safety](api/guardrails/azure-content-safety.md)
   * [Azure Prompt Shields](api/guardrails/azure-prompt-shields.md)
+  * [Bedrock Guardrails](api/guardrails/bedrock-guardrails.md)
   * [Deepset](api/guardrails/deepset.md)
   * [DuoGuard](api/guardrails/duo-guard.md)
   * [FlowJudge](api/guardrails/flowjudge.md)

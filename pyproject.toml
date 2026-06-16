@@ -15,7 +15,12 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,llamafile,openai]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai]"
+]
+
+bedrock = [
+    # >= 1.39.0 for native AWS_BEARER_TOKEN_BEDROCK (Bedrock API key) auth.
+    "boto3>=1.39.0"
 ]
 
 flowjudge = [
@@ -110,7 +115,12 @@ ignore = [
 extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
+# D: docstrings aren't required in tests.
+# S105/S106 are scoped to the bedrock test only — its fake-cred fixtures hardcode
+# "credentials" that ruff flags, but they're fixtures, not real secrets. Ruff unions
+# per-file-ignores across matching patterns, so that file keeps D + S105 + S106.
 "tests/**" = ["D"]
+"tests/unit/test_unit_bedrock_guardrails.py" = ["S105", "S106"]
 "docs/cookbook/**" = ["T201", "TRY300"]
 "scripts/**" = ["T201"]
 

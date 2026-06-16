@@ -362,6 +362,11 @@ GUARDRAILS = [
         "AzurePromptShields",
         "azure-prompt-shields.md",
     ),
+    (
+        "any_guardrail.guardrails.bedrock_guardrails.bedrock_guardrails",
+        "BedrockGuardrails",
+        "bedrock-guardrails.md",
+    ),
     ("any_guardrail.guardrails.deepset.deepset", "Deepset", "deepset.md"),
     ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),
     ("any_guardrail.guardrails.flowjudge.flowjudge", "Flowjudge", "flowjudge.md"),
