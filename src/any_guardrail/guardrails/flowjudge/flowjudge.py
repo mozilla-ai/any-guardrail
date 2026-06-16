@@ -99,10 +99,10 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
         """Classifies the desired input and output according to the associated metric provided to the judge.
 
         Args:
-            inputs: A dictionary mapping the required input names to the inputs.
+            inputs: A list of single-key dictionaries, each mapping a required input name to its value.
             output: A dictionary mapping the required output name to the output.
 
-        Return:
+        Returns:
             GuardrailOutput where ``valid`` maps the rubric score through
             ``pass_threshold``, ``score`` is the rubric normalized onto the
             canonical risk axis (using the rubric's integer keys as bounds),

@@ -225,7 +225,7 @@ def test_gpt_oss_safeguard_fails_closed() -> None:
 # --- Rubric judges -------------------------------------------------------------
 
 
-def _judge(cls: type, **attrs: Any) -> Any:
+def _judge(cls: type[Any], **attrs: Any) -> Any:
     instance: Any = object.__new__(cls)
     instance.pass_threshold = attrs.get("pass_threshold", 3)
     instance.higher_is_better = attrs.get("higher_is_better", True)
