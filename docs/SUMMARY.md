@@ -51,7 +51,6 @@
   * [ProtectAI](api/guardrails/protectai.md)
   * [Selene](api/guardrails/selene.md)
   * [Sentinel](api/guardrails/sentinel.md)
-  * [SGuard](api/guardrails/sguard.md)
   * [ShieldGemma](api/guardrails/shield-gemma.md)
   * [WildGuard](api/guardrails/wild-guard.md)
 * Providers

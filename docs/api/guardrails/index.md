@@ -29,7 +29,6 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Bielik_guard](bielik-guard.md) | `GuardrailName.BIELIK_GUARD` |
 | [Wild_guard](wild-guard.md) | `GuardrailName.WILD_GUARD` |
 | [Dyna_guard](dyna-guard.md) | `GuardrailName.DYNA_GUARD` |
-| [Sguard](sguard.md) | `GuardrailName.SGUARD` |
 | [Nemotron_content_safety](nemotron-content-safety.md) | `GuardrailName.NEMOTRON_CONTENT_SAFETY` |
 | [Poly_guard](poly-guard.md) | `GuardrailName.POLY_GUARD` |
 | [Kanana_safeguard](kanana-safeguard.md) | `GuardrailName.KANANA_SAFEGUARD` |

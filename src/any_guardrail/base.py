@@ -49,7 +49,6 @@ class GuardrailName(StrEnum):
     BIELIK_GUARD = "bielik_guard"
     WILD_GUARD = "wild_guard"
     DYNA_GUARD = "dyna_guard"
-    SGUARD = "sguard"
     NEMOTRON_CONTENT_SAFETY = "nemotron_content_safety"
     POLY_GUARD = "poly_guard"
     KANANA_SAFEGUARD = "kanana_safeguard"

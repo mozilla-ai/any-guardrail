@@ -395,7 +395,6 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.bielik_guard.bielik_guard", "BielikGuard", "bielik-guard.md"),
     ("any_guardrail.guardrails.wild_guard.wild_guard", "WildGuard", "wild-guard.md"),
     ("any_guardrail.guardrails.dyna_guard.dyna_guard", "DynaGuard", "dyna-guard.md"),
-    ("any_guardrail.guardrails.sguard.sguard", "Sguard", "sguard.md"),
     (
         "any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety",
         "NemotronContentSafety",

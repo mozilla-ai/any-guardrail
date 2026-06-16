@@ -48,7 +48,6 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
         (GuardrailName.PROMPT_GUARD, {}),  # 86M encoder (Llama license; needs HF auth)
         (GuardrailName.BIELIK_GUARD, {}),  # 0.1B encoder (gated auto; needs HF auth)
         pytest.param(GuardrailName.WILD_GUARD, {}, marks=pytest.mark.heavy),  # 7B
-        pytest.param(GuardrailName.SGUARD, {}, marks=pytest.mark.heavy),  # 2B
         pytest.param(GuardrailName.NEMOTRON_CONTENT_SAFETY, {}, marks=pytest.mark.heavy),  # 4B
         pytest.param(GuardrailName.POLY_GUARD, {}, marks=pytest.mark.heavy),  # 8B
         pytest.param(GuardrailName.KANANA_SAFEGUARD, {}, marks=pytest.mark.heavy),  # 8B

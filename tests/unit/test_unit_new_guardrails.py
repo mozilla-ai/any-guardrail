@@ -18,7 +18,6 @@ from any_guardrail.guardrails.poly_guard.poly_guard import PolyGuard
 from any_guardrail.guardrails.prometheus.prometheus import Prometheus
 from any_guardrail.guardrails.prompt_guard.prompt_guard import _build_output as prompt_build
 from any_guardrail.guardrails.selene.selene import Selene
-from any_guardrail.guardrails.sguard.sguard import CONTENT_FILTER_MODEL, JAILBREAK_FILTER_MODEL, Sguard
 from any_guardrail.guardrails.wild_guard.wild_guard import WildGuard
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailOutput
 
@@ -183,23 +182,6 @@ def test_kanana_fails_closed() -> None:
     result = instance._post_processing(_gen("unexpected"))
     assert result.valid is False
     assert result.extra == {"parse_failure": True}
-
-
-def test_sguard_content_filter_and_jailbreak() -> None:
-    content = object.__new__(Sguard)
-    content.is_content_filter = True
-    flagged = content._post_processing(_gen("Crime: unsafe\nViolence: safe"))
-    assert flagged.valid is False
-    assert any(c.name == "Crime" and c.triggered for c in flagged.categories)
-
-    jailbreak = object.__new__(Sguard)
-    jailbreak.is_content_filter = False
-    assert jailbreak._post_processing(_gen("safe")).valid is True
-    assert jailbreak._post_processing(_gen("unsafe")).valid is False
-
-
-def test_sguard_models_distinct() -> None:
-    assert CONTENT_FILTER_MODEL != JAILBREAK_FILTER_MODEL
 
 
 @pytest.mark.parametrize(
