@@ -170,6 +170,14 @@ class Patronus(Guardrail):
         breakdown: list[AnyDict] = []
 
         for result in results:
+            if not isinstance(result, dict):
+                # Non-dict result entry: malformed -> count as a failed/triggered evaluator.
+                passes.append(False)
+                categories.append(CategoryResult(name="evaluator", triggered=True, score=None))
+                breakdown.append(
+                    {"name": "evaluator", "pass": False, "score_raw": None, "explanation": None, "malformed": True}
+                )
+                continue
             name = result.get("criteria") or result.get("evaluator_id") or result.get("evaluator") or "evaluator"
             evaluation = result.get("evaluation_result")
             if not isinstance(evaluation, dict):

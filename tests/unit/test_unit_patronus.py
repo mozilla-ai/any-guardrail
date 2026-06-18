@@ -167,6 +167,20 @@ def test_patronus_malformed_result_fails_closed_under_all_pass() -> None:
     assert by_name["broken"].triggered is True
 
 
+def test_patronus_non_dict_result_item_fails_closed_under_all_pass() -> None:
+    guardrail = Patronus(evaluators=EVALUATORS, api_key="test-key")
+    body = {"results": [_result("good", passed=True, score_raw=0.9), "garbage"]}  # a non-dict entry
+
+    with mock.patch(
+        "any_guardrail.guardrails.patronus.patronus.requests.post",
+        return_value=_mock_response(200, body),
+    ):
+        result = guardrail.validate("hello")
+
+    assert result.valid is False  # the non-dict entry counts as a failed evaluator
+    assert any(c.triggered for c in result.categories)
+
+
 def test_patronus_no_results_fails_closed() -> None:
     guardrail = Patronus(evaluators=EVALUATORS, api_key="test-key")
 
