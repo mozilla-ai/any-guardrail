@@ -45,6 +45,10 @@ class GuardrailName(StrEnum):
     AZURE_PROMPT_SHIELDS = "azure_prompt_shields"
     ALINIA = "alinia"
     LAKERA_GUARD = "lakera_guard"
+    WATSONX_GUARDIAN = "watsonx_guardian"
+    PATRONUS = "patronus"
+    QUALIFIRE = "qualifire"
+    PIONEER = "pioneer"
 
 
 class Guardrail(ABC):

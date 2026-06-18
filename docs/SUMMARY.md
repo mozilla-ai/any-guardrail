@@ -38,9 +38,13 @@
   * [OffTopic](api/guardrails/off-topic.md)
   * [OpenAI Moderation](api/guardrails/openai-moderation.md)
   * [Pangolin](api/guardrails/pangolin.md)
+  * [Patronus](api/guardrails/patronus.md)
+  * [Pioneer](api/guardrails/pioneer.md)
   * [ProtectAI](api/guardrails/protectai.md)
+  * [Qualifire](api/guardrails/qualifire.md)
   * [Sentinel](api/guardrails/sentinel.md)
   * [ShieldGemma](api/guardrails/shield-gemma.md)
+  * [Watsonx Guardian](api/guardrails/watsonx-guardian.md)
 * Providers
   * [EncoderFile](api/providers/encoderfile.md)
   * [Llamafile](api/providers/llamafile.md)
