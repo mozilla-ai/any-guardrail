@@ -178,21 +178,25 @@ class Qualifire(Guardrail):
 
     def _post_processing(self, response: requests.Response) -> GuardrailOutput:
         body = response.json()
-        if not isinstance(body, dict) or "evaluationResults" not in body:
+        eval_results = body.get("evaluationResults") if isinstance(body, dict) else None
+        if not isinstance(eval_results, list) or not eval_results:
+            # Missing, null, non-list, or empty -> no parseable verdict; fail closed.
             return GuardrailOutput(valid=False, extra={"parse_failure": True}, raw=body)
 
         categories: list[CategoryResult] = []
         explanations: list[str] = []
         flagged_risks: list[float] = []
         any_flagged = False
+        parsed_checks = 0
 
-        for item in body.get("evaluationResults") or []:
+        for item in eval_results:
             if not isinstance(item, dict):
                 continue
             item_type = item.get("type") or "check"
             for check in item.get("results") or []:
                 if not isinstance(check, dict):
                     continue
+                parsed_checks += 1
                 flagged = bool(check.get("flagged"))
                 any_flagged = any_flagged or flagged
                 risk = self._to_risk(check.get("score"))
@@ -211,6 +215,10 @@ class Qualifire(Guardrail):
                     reason = check.get("reason")
                     if isinstance(reason, str) and reason:
                         explanations.append(reason)
+
+        if parsed_checks == 0:
+            # Entries existed but none carried a parseable check -> no verdict; fail closed.
+            return GuardrailOutput(valid=False, extra={"parse_failure": True}, raw=body)
 
         # The verdict is the per-check ``flagged`` booleans; ``status`` is a
         # lifecycle field (e.g. "completed"), not a pass/fail signal.

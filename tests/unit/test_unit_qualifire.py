@@ -133,6 +133,36 @@ def test_qualifire_flagged_check_drives_invalid_and_risk_score() -> None:
     assert result.extra["qualifire_score"] == 12
 
 
+def test_qualifire_empty_results_fails_closed() -> None:
+    # An empty evaluationResults list carries no verdict -> fail closed, not valid=True.
+    guardrail = Qualifire(api_key="test-key")
+    body = {"status": "completed", "score": 100, "evaluationResults": []}
+
+    with mock.patch(
+        "any_guardrail.guardrails.qualifire.qualifire.requests.post",
+        return_value=_mock_response(200, body),
+    ):
+        result = guardrail.validate(input_text="hi")
+
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_qualifire_no_parseable_checks_fails_closed() -> None:
+    # Entries exist but none carry a parseable check -> fail closed.
+    guardrail = Qualifire(api_key="test-key")
+    body = {"status": "completed", "evaluationResults": [{"type": "prompt_injection", "results": []}]}
+
+    with mock.patch(
+        "any_guardrail.guardrails.qualifire.qualifire.requests.post",
+        return_value=_mock_response(200, body),
+    ):
+        result = guardrail.validate(input_text="hi")
+
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
 def test_qualifire_missing_fields_fails_closed() -> None:
     guardrail = Qualifire(api_key="test-key")
 
