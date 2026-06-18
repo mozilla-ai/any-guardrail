@@ -183,6 +183,12 @@ class Pioneer(Guardrail):
         any_flagged = False
         for task, value in predictions.items():
             labels = _to_labels(value)
+            if not labels and not (isinstance(value, list) and not value):
+                # Task prediction present but not interpretable (e.g. ``{}`` or an
+                # unexpected structure) -> fail closed rather than assume safe.
+                # An explicitly empty list is allowed (a multi-label task with no
+                # categories detected).
+                return GuardrailOutput(valid=False, extra={"parse_failure": True}, raw=body)
             flagged = any(label not in self.safe_labels for label in labels) if labels else False
             any_flagged = any_flagged or flagged
             categories.append(

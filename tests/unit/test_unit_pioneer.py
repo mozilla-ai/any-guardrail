@@ -174,6 +174,33 @@ def test_pioneer_score_dict_uses_argmax() -> None:
     assert unsafe.valid is False
 
 
+def test_pioneer_uninterpretable_task_value_fails_closed() -> None:
+    # A task is present but its value yields no labels (e.g. {}) -> fail closed.
+    guardrail = Pioneer(api_key="test-key")
+
+    with mock.patch(
+        "any_guardrail.guardrails.pioneer.pioneer.requests.post",
+        return_value=_mock_response(200, {"prompt_safety": {}}),
+    ):
+        result = guardrail.validate("hi")
+
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_pioneer_empty_list_task_value_is_safe() -> None:
+    # An explicitly empty multi-label result means "no categories detected" -> safe.
+    guardrail = Pioneer(api_key="test-key", schema={"prompt_toxicity": ["benign", "hate_and_discrimination"]})
+
+    with mock.patch(
+        "any_guardrail.guardrails.pioneer.pioneer.requests.post",
+        return_value=_mock_response(200, {"prompt_toxicity": []}),
+    ):
+        result = guardrail.validate("hello")
+
+    assert result.valid is True
+
+
 def test_pioneer_no_predictions_fails_closed() -> None:
     guardrail = Pioneer(api_key="test-key")
 
