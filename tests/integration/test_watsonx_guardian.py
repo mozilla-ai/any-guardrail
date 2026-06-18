@@ -10,7 +10,8 @@ pytestmark = pytest.mark.skipif(
         and os.environ.get("WATSONX_URL")
         and (os.environ.get("WATSONX_PROJECT_ID") or os.environ.get("WATSONX_SPACE_ID"))
     ),
-    reason="WATSONX_APIKEY / WATSONX_URL / WATSONX_PROJECT_ID not set; skipping live watsonx Guardian tests.",
+    reason="WATSONX_APIKEY / WATSONX_URL / WATSONX_PROJECT_ID (or WATSONX_SPACE_ID) not set; "
+    "skipping live watsonx Guardian tests.",
 )
 
 
