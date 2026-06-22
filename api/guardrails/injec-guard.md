@@ -2,12 +2,18 @@
 
 Prompt injection detection encoder based model.
 
-For more information, please see the model card:
+For more information, please see the model cards:
 
-- [InjecGuard](https://huggingface.co/leolee99/InjecGuard).
+- [PIGuard](https://huggingface.co/leolee99/PIGuard) (default) — the renamed,
+  maintained successor to InjecGuard; adds the "Mitigating Over-defense for
+  Free" training strategy (ACL 2025). Same DeBERTa-v3 architecture and
+  ``"injection"`` label, so it is a drop-in upgrade.
+- [InjecGuard](https://huggingface.co/leolee99/InjecGuard) — original repo,
+  kept for backward compatibility.
 
 ## Supported Models
 
+- `leolee99/PIGuard`
 - `leolee99/InjecGuard`
 
 ## Constructor

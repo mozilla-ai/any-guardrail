@@ -25,3 +25,16 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Azure_prompt_shields](azure-prompt-shields.md) | `GuardrailName.AZURE_PROMPT_SHIELDS` |
 | [Alinia](alinia.md) | `GuardrailName.ALINIA` |
 | [Lakera_guard](lakera-guard.md) | `GuardrailName.LAKERA_GUARD` |
+| [Prompt_guard](prompt-guard.md) | `GuardrailName.PROMPT_GUARD` |
+| [Bielik_guard](bielik-guard.md) | `GuardrailName.BIELIK_GUARD` |
+| [Wild_guard](wild-guard.md) | `GuardrailName.WILD_GUARD` |
+| [Dyna_guard](dyna-guard.md) | `GuardrailName.DYNA_GUARD` |
+| [Nemotron_content_safety](nemotron-content-safety.md) | `GuardrailName.NEMOTRON_CONTENT_SAFETY` |
+| [Poly_guard](poly-guard.md) | `GuardrailName.POLY_GUARD` |
+| [Kanana_safeguard](kanana-safeguard.md) | `GuardrailName.KANANA_SAFEGUARD` |
+| [Gpt_oss_safeguard](gpt-oss-safeguard.md) | `GuardrailName.GPT_OSS_SAFEGUARD` |
+| [Prometheus](prometheus.md) | `GuardrailName.PROMETHEUS` |
+| [Compass_judger](compass-judger.md) | `GuardrailName.COMPASS_JUDGER` |
+| [Selene](selene.md) | `GuardrailName.SELENE` |
+| [Lettuce_detect](lettuce-detect.md) | `GuardrailName.LETTUCE_DETECT` |
+| [Gli_guard](gli-guard.md) | `GuardrailName.GLI_GUARD` |
