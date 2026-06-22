@@ -34,8 +34,11 @@ DYNAGUARD_SYSTEM_PROMPT = (
 )
 DYNAGUARD_USER_TEMPLATE = "<rules>\n{policy}\n</rules>\n<transcript>\n{transcript}\n</transcript>"
 
-MAX_NEW_TOKENS_FAST = 100
-MAX_NEW_TOKENS_THINK = 512
+# DynaGuard reasons inside a <think> block before emitting <answer>PASS/FAIL</answer> even in
+# "fast" mode (we don't prime the response with <answer>), so the budget must be large enough to
+# reach the verdict tag — a too-small budget truncates mid-reasoning and fails closed.
+MAX_NEW_TOKENS_FAST = 512
+MAX_NEW_TOKENS_THINK = 1024
 
 _ANSWER_PATTERN = re.compile(r"<answer>\s*(PASS|FAIL)\s*</answer>", re.IGNORECASE)
 _THINK_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)

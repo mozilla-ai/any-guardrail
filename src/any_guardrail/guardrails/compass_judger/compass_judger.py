@@ -95,16 +95,23 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
         load_kwargs: AnyDict = {}
+        # CompassJudger-2's config requests flash_attention_2, which isn't available on
+        # CPU/MPS (or any env without flash-attn installed). Force the portable SDPA kernel.
         if provider is not None:
             self.provider = provider
             if isinstance(self.provider, HuggingFaceProvider):
                 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
+                load_kwargs = {
+                    "model_class": AutoModelForCausalLM,
+                    "tokenizer_class": AutoTokenizer,
+                    "attn_implementation": "sdpa",
+                }
         else:
             from transformers import AutoModelForCausalLM, AutoTokenizer
 
             self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
+            load_kwargs = {"attn_implementation": "sdpa"}
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
