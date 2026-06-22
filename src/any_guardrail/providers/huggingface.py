@@ -265,6 +265,8 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         temperature: float | None = None,
         chat_template_kwargs: AnyDict | None = None,
         generation_kwargs: AnyDict | None = None,
+        skip_special_tokens: bool = True,
+        apply_chat_template: bool = True,
     ) -> GuardrailInferenceOutput[AnyDict]:
         """Apply the model's chat template and run ``model.generate`` under ``no_grad``.
 
@@ -274,15 +276,23 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         of these via ``chat_template_kwargs`` (e.g. ``documents``,
         ``available_tools``, or ``add_generation_prompt=False`` for models that
         don't want an assistant prefix).
+
+        Set ``apply_chat_template=False`` to feed ``messages[0]["content"]`` to the
+        model verbatim (for models shipping their own instruction wrapper, e.g.
+        WildGuard). Set ``skip_special_tokens=False`` to keep special tokens in the
+        decoded output (for models whose verdict is a special token, e.g. Kanana).
         """
-        template_kwargs: AnyDict = {
-            "add_generation_prompt": True,
-            "tokenize": True,
-            "return_dict": True,
-            "return_tensors": "pt",
-            **(chat_template_kwargs or {}),
-        }
-        inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+        if apply_chat_template:
+            template_kwargs: AnyDict = {
+                "add_generation_prompt": True,
+                "tokenize": True,
+                "return_dict": True,
+                "return_tensors": "pt",
+                **(chat_template_kwargs or {}),
+            }
+            inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+        else:
+            inputs = self.tokenizer(messages[0]["content"], return_tensors="pt")
         if self.device is not None and hasattr(inputs, "to"):
             inputs = inputs.to(self.device)
 
@@ -298,7 +308,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
             output = self.model.generate(**inputs, **gen_kwargs)
 
         generated = output[:, prompt_len:]
-        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=True)
+        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=skip_special_tokens)
 
         return GuardrailInferenceOutput(
             data={

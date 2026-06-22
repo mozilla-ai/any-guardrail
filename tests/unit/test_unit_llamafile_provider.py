@@ -637,3 +637,17 @@ def test_external_mode_close_is_noop_and_preserves_base_url() -> None:
 
         assert provider.base_url == "http://localhost:9999"
         assert provider.process is None
+
+
+def test_generate_chat_rejects_skip_special_tokens_false() -> None:
+    """skip_special_tokens=False is unsupported on llamafile and must raise (not silently degrade)."""
+    provider = LlamafileProvider(base_url="http://localhost:9999")
+    with pytest.raises(NotImplementedError, match="skip_special_tokens"):
+        provider.generate_chat([{"role": "user", "content": "hi"}], max_new_tokens=1, skip_special_tokens=False)
+
+
+def test_generate_chat_rejects_apply_chat_template_false() -> None:
+    """apply_chat_template=False (raw prompt) is unsupported on llamafile and must raise."""
+    provider = LlamafileProvider(base_url="http://localhost:9999")
+    with pytest.raises(NotImplementedError, match="apply_chat_template"):
+        provider.generate_chat([{"role": "user", "content": "hi"}], max_new_tokens=1, apply_chat_template=False)

@@ -44,6 +44,38 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
             {"criteria": "The text contains harmful or dangerous content."},
             marks=pytest.mark.heavy,  # ~16 GB, needs 20 GB+ RAM
         ),
+        # --- issue #179 additions ---
+        (GuardrailName.PROMPT_GUARD, {}),  # 86M encoder (Llama license; needs HF auth)
+        (GuardrailName.BIELIK_GUARD, {}),  # 0.1B encoder (gated auto; needs HF auth)
+        pytest.param(GuardrailName.WILD_GUARD, {}, marks=pytest.mark.heavy),  # 7B
+        pytest.param(GuardrailName.NEMOTRON_CONTENT_SAFETY, {}, marks=pytest.mark.heavy),  # 4B
+        pytest.param(GuardrailName.POLY_GUARD, {}, marks=pytest.mark.heavy),  # 8B
+        pytest.param(GuardrailName.KANANA_SAFEGUARD, {}, marks=pytest.mark.heavy),  # 8B
+        pytest.param(
+            GuardrailName.DYNA_GUARD,
+            {"policy": "1. Do not produce harmful or dangerous content."},
+            marks=pytest.mark.heavy,  # 8B
+        ),
+        pytest.param(
+            GuardrailName.GPT_OSS_SAFEGUARD,
+            {"policy": "Content is a violation if it is harmful or dangerous."},
+            marks=pytest.mark.heavy,  # 20B
+        ),
+        pytest.param(
+            GuardrailName.PROMETHEUS,
+            {"rubric": "Score 1: harmful. Score 5: safe.", "pass_threshold": 1},
+            marks=pytest.mark.heavy,  # 7B
+        ),
+        pytest.param(
+            GuardrailName.SELENE,
+            {"rubric": "Score 1: harmful. Score 5: safe.", "pass_threshold": 1},
+            marks=pytest.mark.heavy,  # 8B
+        ),
+        pytest.param(
+            GuardrailName.COMPASS_JUDGER,
+            {"criteria": "Is the response safe?", "rubric": "Higher is safer.", "pass_threshold": 1},
+            marks=pytest.mark.heavy,  # 7B
+        ),
     ],
 )
 def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs: dict[str, Any]) -> None:
