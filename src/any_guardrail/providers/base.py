@@ -46,6 +46,8 @@ class Provider(ABC, Generic[PreprocessT, InferenceT]):
         temperature: float | None = None,
         chat_template_kwargs: AnyDict | None = None,
         generation_kwargs: AnyDict | None = None,
+        skip_special_tokens: bool = True,
+        apply_chat_template: bool = True,
     ) -> GuardrailInferenceOutput[AnyDict]:
         """Generate a chat completion from a list of messages.
 
@@ -75,6 +77,13 @@ class Provider(ABC, Generic[PreprocessT, InferenceT]):
             generation_kwargs: Extra kwargs forwarded to the underlying
                 generation call (e.g. ``pad_token_id`` for HF, OpenAI-specific
                 fields for HTTP backends).
+            skip_special_tokens: Whether to strip special tokens when decoding.
+                Set ``False`` for guardrails whose verdict *is* a special token
+                (e.g. Kanana Safeguard's ``<SAFE>``/``<UNSAFE-*>``).
+            apply_chat_template: When ``True`` (default), render ``messages``
+                through the model's chat template. Set ``False`` to feed the
+                first message's ``content`` to the model as a raw prompt, for
+                models shipping their own instruction wrapper (e.g. WildGuard).
 
         """
         msg = (

@@ -113,6 +113,14 @@ def test_model_load() -> None:
         ):
             continue
 
+        # Guardrails that load a model directly or wrap an external library (no
+        # HuggingFaceProvider.load_model to assert against).
+        if guardrail_name in (
+            GuardrailName.LETTUCE_DETECT,  # Wraps the lettucedetect library
+            GuardrailName.GLI_GUARD,  # Wraps the gliner2 library
+        ):
+            continue
+
         if guardrail_name == GuardrailName.FLOWJUDGE:
             with patch.object(guardrail_class, "_load_model") as mock_load_model:
                 mock_load_model.return_value = "mocked_model"
@@ -139,6 +147,15 @@ def test_model_load() -> None:
                     kwargs["policy"] = "Dummy"
                 elif guardrail_name == GuardrailName.GRANITE_GUARDIAN:
                     kwargs["criteria"] = "Dummy"
+                elif guardrail_name in (GuardrailName.DYNA_GUARD, GuardrailName.GPT_OSS_SAFEGUARD):
+                    kwargs["policy"] = "Dummy policy"
+                elif guardrail_name in (GuardrailName.PROMETHEUS, GuardrailName.SELENE):
+                    kwargs["rubric"] = "Score 1: bad. Score 5: good."
+                    kwargs["pass_threshold"] = 3
+                elif guardrail_name == GuardrailName.COMPASS_JUDGER:
+                    kwargs["criteria"] = "Dummy"
+                    kwargs["rubric"] = "Dummy rubric"
+                    kwargs["pass_threshold"] = 5
                 guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **kwargs)
                 mock_load.assert_called_once()
                 assert hasattr(guardrail, "provider")

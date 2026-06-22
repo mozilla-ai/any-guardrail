@@ -15,7 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai,lettucedetect,gliner]"
 ]
 
 bedrock = [
@@ -25,6 +25,18 @@ bedrock = [
 
 flowjudge = [
   "flow-judge[hf]>=0.1.2"
+]
+
+# Token-level RAG hallucination detection (LettuceDetect guardrail).
+lettucedetect = [
+  "lettucedetect"
+]
+
+# Schema-driven safety/toxicity/jailbreak detection (GLiGuard guardrail).
+# NOTE: the MiniCheck guardrail has no extra — its library is git-only (not on PyPI),
+# so install it directly: pip install "minicheck @ git+https://github.com/Liyan06/MiniCheck.git"
+gliner = [
+  "gliner2"
 ]
 
 huggingface = [
@@ -137,6 +149,10 @@ disallow_untyped_decorators = false # mypy gets confused by pytest decorators
 [[tool.mypy.overrides]]
 module = ["pytest", "mktestdocs", "pytest_lazy_fixtures"]
 ignore_missing_imports = true # pytest related modules are not found
+
+[[tool.mypy.overrides]]
+module = ["lettucedetect.*", "gliner2", "flow_judge.*"]
+ignore_missing_imports = true # optional guardrail backends, not installed in every env
 
 [[tool.mypy.overrides]]
 module = ["generate_cookbooks"]
