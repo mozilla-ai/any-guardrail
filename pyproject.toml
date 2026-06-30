@@ -11,8 +11,8 @@ dynamic = ["version"]
 dependencies = [
   "any-llm-sdk>=1.7.0",
   "pydantic",
-  # Used directly by the REST-based API guardrails (Alinia, Lakera, Patronus,
-  # Qualifire, Pioneer); not guaranteed transitively, so declared explicitly.
+  # Used directly by the REST-based API guardrails (Alinia, Lakera, Patronus);
+  # not guaranteed transitively, so declared explicitly.
   "requests>=2.31.0",
 ]
 
@@ -72,7 +72,7 @@ openai = [
 ]
 
 # IBM watsonx.ai SDK (Apache-2.0) for the WatsonxGuardian (Granite Guardian) API.
-# Patronus / Qualifire / Pioneer are plain REST (requests) and need no extra.
+# Patronus is plain REST (requests) and needs no extra.
 watsonx = [
     "ibm-watsonx-ai>=1.3.0",
 ]

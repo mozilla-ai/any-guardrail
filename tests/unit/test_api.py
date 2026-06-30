@@ -17,8 +17,6 @@ from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.off_topic.off_topic import OffTopic
 from any_guardrail.guardrails.openai_moderation.openai_moderation import OpenaiModeration
 from any_guardrail.guardrails.patronus import Patronus
-from any_guardrail.guardrails.pioneer import Pioneer
-from any_guardrail.guardrails.qualifire import Qualifire
 from any_guardrail.guardrails.watsonx_guardian import WatsonxGuardian
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 
@@ -112,8 +110,6 @@ def test_model_load() -> None:
             or guardrail_class is Alinia
             or guardrail_class is LakeraGuard
             or guardrail_class is Patronus  # API-based, no provider.load_model
-            or guardrail_class is Qualifire  # API-based, no provider.load_model
-            or guardrail_class is Pioneer  # API-based, no provider.load_model
             or guardrail_class is WatsonxGuardian  # SDK-based, no provider.load_model
             or guardrail_class is OpenaiModeration  # API-based, no provider.load_model
             or guardrail_class is Glider  # Loads model directly, no provider
