@@ -39,6 +39,12 @@ jobs:
           ALINIA_ENDPOINT: ${{ secrets.ALINIA_ENDPOINT }}
           ALINIA_API_KEY: ${{ secrets.ALINIA_API_KEY }}
           LAKERA_API_KEY: ${{ secrets.LAKERA_API_KEY }}
+          PATRONUS_API_KEY: ${{ secrets.PATRONUS_API_KEY }}
+          # IBM watsonx Guardian (Granite Guardian): IAM API key + region URL + project.
+          # The test skips unless APIKEY, URL, and PROJECT_ID (or SPACE_ID) are all set.
+          WATSONX_APIKEY: ${{ secrets.WATSONX_APIKEY }}
+          WATSONX_URL: ${{ secrets.WATSONX_URL }}
+          WATSONX_PROJECT_ID: ${{ secrets.WATSONX_PROJECT_ID }}
           # Bedrock API key (bearer token). boto3 >= 1.39 reads AWS_BEARER_TOKEN_BEDROCK
           # natively for bedrock / bedrock-runtime calls; no SigV4 creds needed.
           AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEDROCK_API_KEY }}
