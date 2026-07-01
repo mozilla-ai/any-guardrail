@@ -58,6 +58,8 @@ class GuardrailName(StrEnum):
     SELENE = "selene"
     LETTUCE_DETECT = "lettuce_detect"
     GLI_GUARD = "gli_guard"
+    WATSONX_GUARDIAN = "watsonx_guardian"
+    PATRONUS = "patronus"
 
 
 class Guardrail(ABC):

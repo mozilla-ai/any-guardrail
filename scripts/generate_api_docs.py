@@ -196,6 +196,7 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
 _INSTALL_EXTRA_OVERRIDES = {
     "AzureContentSafety": "azure-content-safety",
     "AzurePromptShields": "azure-content-safety",
+    "WatsonxGuardian": "watsonx",
 }
 
 
@@ -388,6 +389,7 @@ GUARDRAILS = [
         "openai-moderation.md",
     ),
     ("any_guardrail.guardrails.pangolin.pangolin", "Pangolin", "pangolin.md"),
+    ("any_guardrail.guardrails.patronus.patronus", "Patronus", "patronus.md"),
     ("any_guardrail.guardrails.protectai.protectai", "Protectai", "protectai.md"),
     ("any_guardrail.guardrails.sentinel.sentinel", "Sentinel", "sentinel.md"),
     ("any_guardrail.guardrails.shield_gemma.shield_gemma", "ShieldGemma", "shield-gemma.md"),
@@ -408,6 +410,11 @@ GUARDRAILS = [
     ("any_guardrail.guardrails.selene.selene", "Selene", "selene.md"),
     ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "LettuceDetect", "lettuce-detect.md"),
     ("any_guardrail.guardrails.gli_guard.gli_guard", "GliGuard", "gli-guard.md"),
+    (
+        "any_guardrail.guardrails.watsonx_guardian.watsonx_guardian",
+        "WatsonxGuardian",
+        "watsonx-guardian.md",
+    ),
 ]
 
 
