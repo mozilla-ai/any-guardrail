@@ -60,6 +60,7 @@ class GuardrailName(StrEnum):
     GLI_GUARD = "gli_guard"
     WATSONX_GUARDIAN = "watsonx_guardian"
     PATRONUS = "patronus"
+    QWEN3_GUARD = "qwen3_guard"
 
 
 class Guardrail(ABC):
