@@ -50,6 +50,8 @@
   * [Prometheus](api/guardrails/prometheus.md)
   * [Prompt Guard 2](api/guardrails/prompt-guard.md)
   * [ProtectAI](api/guardrails/protectai.md)
+  * [Qwen3Guard](api/guardrails/qwen3-guard.md)
+  * [Qwen3Guard Stream](api/guardrails/qwen3-guard-stream.md)
   * [Selene](api/guardrails/selene.md)
   * [Sentinel](api/guardrails/sentinel.md)
   * [ShieldGemma](api/guardrails/shield-gemma.md)
