@@ -97,7 +97,9 @@ class Qwen3GuardStream(ThreeStageGuardrail[Qwen3GuardStreamPreprocessData, Qwen3
 
     HuggingFace-only: the model ships its classification heads as remote code, so a
     user-supplied provider must be a ``HuggingFaceProvider`` constructed with
-    ``trust_remote_code=True``.
+    ``trust_remote_code=True``. The remote modeling code currently requires
+    ``transformers>=4.51,<5`` (transformers 5 removed APIs it relies on); construction
+    raises ``ImportError`` on transformers >= 5.
 
     For more information, see the model cards:
 
@@ -130,6 +132,7 @@ class Qwen3GuardStream(ThreeStageGuardrail[Qwen3GuardStreamPreprocessData, Qwen3
         """Initialize the Qwen3GuardStream guardrail."""
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.strict = strict
+        self._require_supported_transformers()
         load_kwargs: AnyDict = {}
         if provider is not None:
             if isinstance(provider, HuggingFaceProvider):
@@ -274,6 +277,27 @@ class Qwen3GuardStream(ThreeStageGuardrail[Qwen3GuardStreamPreprocessData, Qwen3
             spans=spans or None,
             extra=extra,
         )
+
+    def _require_supported_transformers(self) -> None:
+        """Raise when the installed transformers cannot run the remote modeling code.
+
+        The Qwen3Guard-Stream model repos target transformers 4.x (>= 4.51 per the
+        model card); transformers 5 removed several APIs the remote code relies on
+        (the implicit ``pad_token_id`` config default, ``ROPE_INIT_FUNCTIONS["default"]``,
+        the old rotary-embedding weight-init interface).
+        """
+        try:
+            from transformers import __version__ as transformers_version
+        except ImportError:
+            return  # provider construction surfaces the install hint instead
+        if int(transformers_version.split(".")[0]) >= 5:
+            msg = (
+                f"Qwen3Guard-Stream's remote modeling code (in the {self.model_id} model repo, not this "
+                f"library) is incompatible with transformers >= 5 (installed: {transformers_version}). "
+                "Install 'transformers>=4.51,<5' to use Qwen3GuardStream, or check the model repo for an "
+                "updated revision."
+            )
+            raise ImportError(msg)
 
     @staticmethod
     def _user_turn_end(tokenizer: Any, token_ids: list[int]) -> int:

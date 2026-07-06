@@ -19,7 +19,9 @@ no usable risk level. For the generative variants (``Qwen3Guard-Gen-*``), see
 
 HuggingFace-only: the model ships its classification heads as remote code, so a
 user-supplied provider must be a ``HuggingFaceProvider`` constructed with
-``trust_remote_code=True``.
+``trust_remote_code=True``. The remote modeling code currently requires
+``transformers>=4.51,<5`` (transformers 5 removed APIs it relies on); construction
+raises ``ImportError`` on transformers >= 5.
 
 For more information, see the model cards:
 
