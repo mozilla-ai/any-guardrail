@@ -76,6 +76,9 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
             {"criteria": "Is the response safe?", "rubric": "Higher is safer.", "pass_threshold": 1},
             marks=pytest.mark.heavy,  # 7B
         ),
+        # --- issue #93 additions ---
+        (GuardrailName.QWEN3_GUARD, {}),  # 0.6B decoder
+        (GuardrailName.QWEN3_GUARD_STREAM, {}),  # 0.6B, remote-code streaming heads
     ],
 )
 def test_huggingface_guardrails(guardrail_name: GuardrailName, guardrail_kwargs: dict[str, Any]) -> None:
