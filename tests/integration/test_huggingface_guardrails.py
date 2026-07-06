@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+import transformers
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
@@ -75,6 +76,16 @@ from any_guardrail.guardrails.duo_guard.duo_guard import DUOGUARD_CATEGORIES
             GuardrailName.COMPASS_JUDGER,
             {"criteria": "Is the response safe?", "rubric": "Higher is safer.", "pass_threshold": 1},
             marks=pytest.mark.heavy,  # 7B
+        ),
+        # --- issue #93 additions ---
+        (GuardrailName.QWEN3_GUARD, {}),  # 0.6B decoder
+        pytest.param(
+            GuardrailName.QWEN3_GUARD_STREAM,  # 0.6B, remote-code streaming heads
+            {},
+            marks=pytest.mark.skipif(
+                int(transformers.__version__.split(".")[0]) >= 5,
+                reason="Qwen3Guard-Stream's remote modeling code requires transformers<5",
+            ),
         ),
     ],
 )

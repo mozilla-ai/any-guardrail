@@ -3,6 +3,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+import transformers
 
 from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import Guardrail, ThreeStageGuardrail
@@ -138,6 +139,10 @@ def test_model_load() -> None:
                     pass_threshold=1,
                 )
                 assert guardrail.model == "mocked_model"  # type: ignore[attr-defined]
+        elif guardrail_name == GuardrailName.QWEN3_GUARD_STREAM and int(transformers.__version__.split(".")[0]) >= 5:
+            # Construction is version-gated: the model repo's remote code needs transformers<5.
+            with pytest.raises(ImportError, match="transformers"):
+                AnyGuardrail.create(guardrail_name=guardrail_name)
         elif guardrail_name == GuardrailName.DUOGUARD:
             mock_provider = MagicMock(spec=HuggingFaceProvider)
             mock_provider.tokenizer = MagicMock()

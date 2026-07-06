@@ -415,6 +415,12 @@ GUARDRAILS = [
         "WatsonxGuardian",
         "watsonx-guardian.md",
     ),
+    ("any_guardrail.guardrails.qwen3_guard.qwen3_guard", "Qwen3Guard", "qwen3-guard.md"),
+    (
+        "any_guardrail.guardrails.qwen3_guard_stream.qwen3_guard_stream",
+        "Qwen3GuardStream",
+        "qwen3-guard-stream.md",
+    ),
 ]
 
 

@@ -17,6 +17,8 @@ from any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety im
 from any_guardrail.guardrails.poly_guard.poly_guard import PolyGuard
 from any_guardrail.guardrails.prometheus.prometheus import Prometheus
 from any_guardrail.guardrails.prompt_guard.prompt_guard import _build_output as prompt_build
+from any_guardrail.guardrails.qwen3_guard.qwen3_guard import Qwen3Guard
+from any_guardrail.guardrails.qwen3_guard_stream.qwen3_guard_stream import Qwen3GuardStream
 from any_guardrail.guardrails.selene.selene import Selene
 from any_guardrail.guardrails.wild_guard.wild_guard import WildGuard
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailOutput
@@ -200,6 +202,200 @@ def test_gpt_oss_safeguard_parse(text: str, expected_valid: bool) -> None:
 def test_gpt_oss_safeguard_fails_closed() -> None:
     instance = object.__new__(GptOssSafeguard)
     result = instance._post_processing(_gen("no verdict word here"))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def _qwen3(strict: bool = True) -> Qwen3Guard:
+    instance = object.__new__(Qwen3Guard)
+    instance.strict = strict
+    return instance
+
+
+def test_qwen3guard_safe_none_category_not_surfaced() -> None:
+    result = _qwen3()._post_processing(_gen("Safety: Safe\nCategories: None"))
+    assert result.valid is True
+    assert result.score == 0.0
+    assert result.extra == {"severity": "Safe"}
+    assert result.categories == []
+
+
+def test_qwen3guard_unsafe_single_category() -> None:
+    result = _qwen3()._post_processing(_gen("Safety: Unsafe\nCategories: Violent"))
+    assert result.valid is False
+    assert result.score == 1.0
+    assert result.extra == {"severity": "Unsafe"}
+    assert [(c.name, c.triggered) for c in result.categories] == [("Violent", True)]
+
+
+def test_qwen3guard_unsafe_multiple_categories() -> None:
+    result = _qwen3()._post_processing(_gen("Safety: Unsafe\nCategories: Non-violent Illegal Acts, Jailbreak"))
+    assert result.valid is False
+    # "Non-violent Illegal Acts" must not also spuriously match "Violent".
+    assert [c.name for c in result.categories] == ["Non-violent Illegal Acts", "Jailbreak"]
+
+
+def test_qwen3guard_controversial_strict_vs_lenient() -> None:
+    text = "Safety: Controversial\nCategories: Politically Sensitive Topics"
+    strict = _qwen3(strict=True)._post_processing(_gen(text))
+    lenient = _qwen3(strict=False)._post_processing(_gen(text))
+    assert strict.valid is False
+    assert lenient.valid is True
+    for result in (strict, lenient):
+        assert result.score == 0.5
+        assert result.extra == {"severity": "Controversial"}
+
+
+@pytest.mark.parametrize(("verdict", "expected"), [("Yes", True), ("No", False)])
+def test_qwen3guard_refusal_surfaced_in_response_mode(verdict: str, expected: bool) -> None:
+    data = {"generated_text": f"Safety: Safe\nCategories: None\nRefusal: {verdict}", "has_response": True}
+    result = _qwen3()._post_processing(GuardrailInferenceOutput(data=data))
+    refusal = next(c for c in result.categories if c.name == "refusal")
+    assert refusal.triggered is expected
+
+
+def test_qwen3guard_prompt_mode_omits_refusal() -> None:
+    # _gen carries no has_response flag -> prompt moderation; Refusal is not surfaced even if emitted.
+    result = _qwen3()._post_processing(_gen("Safety: Safe\nCategories: None\nRefusal: No"))
+    assert all(c.name != "refusal" for c in result.categories)
+
+
+def test_qwen3guard_missing_refusal_tolerated_in_response_mode() -> None:
+    data = {"generated_text": "Safety: Unsafe\nCategories: Violent", "has_response": True}
+    result = _qwen3()._post_processing(GuardrailInferenceOutput(data=data))
+    assert result.valid is False
+    assert result.extra == {"severity": "Unsafe"}  # not a parse failure
+    refusal = next(c for c in result.categories if c.name == "refusal")
+    assert refusal.triggered is None
+
+
+def test_qwen3guard_categories_scoped_to_categories_line() -> None:
+    text = "Safety: Safe\nCategories: None\nNote: the request mentions Violent movies and PII in passing."
+    result = _qwen3()._post_processing(_gen(text))
+    assert result.valid is True
+    assert result.categories == []
+
+
+def test_qwen3guard_strips_think_block_before_parsing() -> None:
+    text = "<think>Is this a Jailbreak? Safety: Unsafe seems wrong.</think>\nSafety: Safe\nCategories: None"
+    result = _qwen3()._post_processing(_gen(text))
+    assert result.valid is True
+    assert result.categories == []
+
+
+def test_qwen3guard_fails_closed() -> None:
+    result = _qwen3()._post_processing(_gen("no verdict here"))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def _qwen3_stream(strict: bool = True) -> Qwen3GuardStream:
+    instance = object.__new__(Qwen3GuardStream)
+    instance.strict = strict
+    return instance
+
+
+def _stream_data(
+    prompt: tuple[str, str] = ("Safe", "None"),
+    response: list[tuple[str, str, int | None, int | None]] | None = None,
+    output_text: str | None = None,
+) -> GuardrailInferenceOutput[Any]:
+    """Mimic Qwen3GuardStream._inference output: (risk, category, start, end) per response token."""
+    return GuardrailInferenceOutput(
+        data={
+            "prompt_result": {"risk_level": [prompt[0]], "category": [prompt[1]]},
+            "response_tokens": [
+                {"result": {"risk_level": [risk], "category": [category]}, "start": start, "end": end}
+                for risk, category, start, end in (response or [])
+            ],
+            "has_response": response is not None,
+            "output_text": output_text,
+        }
+    )
+
+
+def test_qwen3guard_stream_safe_prompt() -> None:
+    result = _qwen3_stream()._post_processing(_stream_data())
+    assert result.valid is True
+    assert result.score == 0.0
+    assert result.extra == {"severity": "Safe", "prompt_severity": "Safe"}
+    assert result.categories == []
+    assert result.spans is None
+
+
+def test_qwen3guard_stream_unsafe_prompt_with_category() -> None:
+    result = _qwen3_stream()._post_processing(_stream_data(prompt=("Unsafe", "Violent")))
+    assert result.valid is False
+    assert result.score == 1.0
+    assert result.extra == {"severity": "Unsafe", "prompt_severity": "Unsafe"}
+    assert [(c.name, c.triggered) for c in result.categories] == [("Violent", True)]
+    assert result.spans is None  # prompt mode judges the prompt as one unit
+
+
+def test_qwen3guard_stream_response_worst_wins_dedups_and_merges_span() -> None:
+    output_text = "some unsafe text"
+    result = _qwen3_stream()._post_processing(
+        _stream_data(
+            response=[("Safe", "None", 0, 5), ("Unsafe", "Violent", 5, 11), ("Unsafe", "Violent", 11, 16)],
+            output_text=output_text,
+        )
+    )
+    assert result.valid is False
+    assert result.score == 1.0
+    assert result.extra == {"severity": "Unsafe", "prompt_severity": "Safe", "response_severity": "Unsafe"}
+    assert [c.name for c in result.categories] == ["Violent"]  # deduplicated across tokens
+    assert result.spans is not None
+    span = result.spans[0]
+    assert (span.start, span.end, span.text, span.label, span.score) == (5, 16, "unsafe text", "Violent", 1.0)
+    assert len(result.spans) == 1  # consecutive same-verdict tokens merge into one span
+
+
+def test_qwen3guard_stream_span_splits_on_verdict_change() -> None:
+    result = _qwen3_stream()._post_processing(
+        _stream_data(
+            response=[("Unsafe", "Violent", 0, 4), ("Controversial", "PII", 4, 8)],
+            output_text="abcdefgh",
+        )
+    )
+    assert result.spans is not None
+    assert [(s.start, s.end, s.label, s.score) for s in result.spans] == [(0, 4, "Violent", 1.0), (4, 8, "PII", 0.5)]
+    assert [c.name for c in result.categories] == ["Violent", "PII"]
+
+
+def test_qwen3guard_stream_offsetless_tokens_flagged_but_not_spanned() -> None:
+    # Scaffolding tokens (start=None) still count toward the verdict but split/skip spans.
+    result = _qwen3_stream()._post_processing(
+        _stream_data(
+            response=[("Unsafe", "Violent", 0, 4), ("Unsafe", "Violent", None, None), ("Unsafe", "Violent", 6, 9)],
+            output_text="abcdefghi",
+        )
+    )
+    assert result.valid is False
+    assert result.spans is not None
+    assert [(s.start, s.end) for s in result.spans] == [(0, 4), (6, 9)]
+
+
+def test_qwen3guard_stream_controversial_strict_vs_lenient() -> None:
+    strict = _qwen3_stream(strict=True)._post_processing(_stream_data(prompt=("Controversial", "None")))
+    lenient = _qwen3_stream(strict=False)._post_processing(_stream_data(prompt=("Controversial", "None")))
+    assert strict.valid is False
+    assert lenient.valid is True
+    for result in (strict, lenient):
+        assert result.score == 0.5
+
+
+def test_qwen3guard_stream_fails_closed_on_missing_prompt_risk() -> None:
+    data = _stream_data()
+    data.data["prompt_result"] = {"risk_level": []}
+    result = _qwen3_stream()._post_processing(data)
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_qwen3guard_stream_fails_closed_on_missing_response_risk() -> None:
+    data = _stream_data(response=[("Safe", "None", 0, 4)])
+    data.data["response_tokens"][0]["result"] = {}
+    result = _qwen3_stream()._post_processing(data)
     assert result.valid is False
     assert result.extra == {"parse_failure": True}
 

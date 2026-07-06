@@ -38,3 +38,7 @@ Available guardrails and their parameters. Select a guardrail to view its API de
 | [Selene](selene.md) | `GuardrailName.SELENE` |
 | [Lettuce_detect](lettuce-detect.md) | `GuardrailName.LETTUCE_DETECT` |
 | [Gli_guard](gli-guard.md) | `GuardrailName.GLI_GUARD` |
+| [Watsonx_guardian](watsonx-guardian.md) | `GuardrailName.WATSONX_GUARDIAN` |
+| [Patronus](patronus.md) | `GuardrailName.PATRONUS` |
+| [Qwen3_guard](qwen3-guard.md) | `GuardrailName.QWEN3_GUARD` |
+| [Qwen3_guard_stream](qwen3-guard-stream.md) | `GuardrailName.QWEN3_GUARD_STREAM` |
