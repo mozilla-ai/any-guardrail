@@ -47,6 +47,7 @@
   * [OpenAI Moderation](api/guardrails/openai-moderation.md)
   * [Pangolin](api/guardrails/pangolin.md)
   * [Patronus](api/guardrails/patronus.md)
+  * [PolyGuard](api/guardrails/poly-guard.md)
   * [Prometheus](api/guardrails/prometheus.md)
   * [Prompt Guard 2](api/guardrails/prompt-guard.md)
   * [ProtectAI](api/guardrails/protectai.md)
