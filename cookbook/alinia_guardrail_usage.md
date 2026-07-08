@@ -54,7 +54,7 @@ GuardrailOutput(
 
 # Advanced Usage
 
-Let's customize the behavior of Alinia's guardrails. For more information, please see our [docs](https://mozilla-ai.github.io/any-guardrail/api/guardrails/alinia/).
+Let's customize the behavior of Alinia's guardrails. For more information, please see our [docs](https://docs.mozilla.ai/any-guardrail/api/guardrails/alinia/).
 
 ## Customizing the `detection_config`
 

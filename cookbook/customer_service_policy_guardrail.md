@@ -28,7 +28,7 @@ nest_asyncio.apply()
 ```
 
 We will be using a model from `openai` by default, but you can experiment with
-the different [providers supported](https://mozilla-ai.github.io/any-llm/providers/) by `any-llm`
+the different [providers supported](https://docs.mozilla.ai/providers) by `any-llm`
 
 ```python
 import os

@@ -75,4 +75,4 @@ per-document verdicts: [False, True]
 
 You can also pass `documents` without a `user_prompt` to screen retrieved context on its own.
 
-For more information, please see our [docs](https://mozilla-ai.github.io/any-guardrail/api/guardrails/azure-prompt-shields/). Note that hosted prompt-injection detectors have [known evasion gaps under adaptive attacks](https://arxiv.org/pdf/2504.11168) — treat Prompt Shields as defense-in-depth, not a complete mitigation.
+For more information, please see our [docs](https://docs.mozilla.ai/any-guardrail/api/guardrails/azure-prompt-shields/). Note that hosted prompt-injection detectors have [known evasion gaps under adaptive attacks](https://arxiv.org/pdf/2504.11168) — treat Prompt Shields as defense-in-depth, not a complete mitigation.

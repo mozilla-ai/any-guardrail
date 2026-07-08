@@ -79,7 +79,7 @@ print(f"valid={output.valid}")
 
 # Advanced Usage
 
-For more information, please see our [docs](https://mozilla-ai.github.io/any-guardrail/api/guardrails/lakera-guard/).
+For more information, please see our [docs](https://docs.mozilla.ai/any-guardrail/api/guardrails/lakera-guard/).
 
 ## Per-project policies
 

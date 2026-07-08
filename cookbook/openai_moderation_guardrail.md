@@ -55,7 +55,7 @@ sorted([(c.name, c.score) for c in output.categories], key=lambda kv: -(kv[1] or
 
 # Advanced Usage
 
-For more information, please see our [docs](https://mozilla-ai.github.io/any-guardrail/api/guardrails/openai-moderation/).
+For more information, please see our [docs](https://docs.mozilla.ai/any-guardrail/api/guardrails/openai-moderation/).
 
 ## Customizing the threshold
 

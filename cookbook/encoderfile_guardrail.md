@@ -158,5 +158,5 @@ guardrail = Protectai(provider=provider)
 
 ## What's next?
 
-- Build your own encoderfile from a fine-tuned encoder: see the [encoderfile docs](https://mozilla-ai.github.io/encoderfile/getting-started/).
+- Build your own encoderfile from a fine-tuned encoder: see the [encoderfile docs](https://docs.mozilla.ai/encoderfile/getting-started).
 - Available pre-built artifacts: <https://huggingface.co/mozilla-ai/encoderfile/tree/main>.
