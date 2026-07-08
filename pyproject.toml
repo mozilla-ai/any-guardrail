@@ -78,7 +78,7 @@ watsonx = [
 ]
 
 [project.urls]
-Documentation = "https://mozilla-ai.github.io/any-guardrail/"
+Documentation = "https://docs.mozilla.ai/any-guardrail"
 Issues = "https://github.com/mozilla-ai/any-guardrail/issues"
 Source = "https://github.com/mozilla-ai/any-guardrail"
 
