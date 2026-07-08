@@ -1,4 +1,4 @@
-# Table of Contents
+# Table of contents
 
 * [Introduction](index.md)
 * [Quick Start](quickstart.md)
@@ -58,6 +58,6 @@
   * [ShieldGemma](api/guardrails/shield-gemma.md)
   * [Watsonx Guardian](api/guardrails/watsonx-guardian.md)
   * [WildGuard](api/guardrails/wild-guard.md)
-* Providers
+* [Providers](api-reference/providers/README.md)
   * [EncoderFile](api/providers/encoderfile.md)
   * [Llamafile](api/providers/llamafile.md)
