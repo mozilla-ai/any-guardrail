@@ -14,7 +14,7 @@ records what a guardrail *can* find and the shape of its decision.
 """
 
 from enum import StrEnum
-from typing import Self
+from typing import Any, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
@@ -177,6 +177,10 @@ class GuardrailMetadata(BaseModel):
         "required_validate_kwargs",
         "optional_validate_kwargs",
     )
-    def _serialize_set(self, value: frozenset[str]) -> list[str]:
-        """Emit set-valued fields as sorted lists so JSON export is deterministic."""
-        return sorted(value)
+    def _serialize_set(self, value: frozenset[Any]) -> list[str]:
+        """Emit set-valued fields as sorted string lists so JSON export is deterministic.
+
+        Applies to both the ``str`` kwarg sets and the ``StrEnum`` sets (categories,
+        stages, output_shapes); each element is stringified to its value explicitly.
+        """
+        return sorted(str(member) for member in value)
