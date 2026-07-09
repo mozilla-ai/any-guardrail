@@ -1,6 +1,10 @@
 import time
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
+
 try:
     from gliner2 import GLiNER2
 
@@ -104,6 +108,8 @@ class GliGuard(Guardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["fastino/gliguard-LLMGuardrails-300M"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GLI_GUARD]
 
     def __init__(self, model_id: str | None = None, threshold: float = 0.5) -> None:
         """Initialize the GLiGuard guardrail.

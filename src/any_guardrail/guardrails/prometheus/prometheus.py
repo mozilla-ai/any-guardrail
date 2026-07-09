@@ -1,10 +1,12 @@
 import re
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import (
     AnyDict,
     ChatMessages,
@@ -108,6 +110,8 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         "prometheus-eval/prometheus-7b-v1.0",
         "prometheus-eval/prometheus-13b-v1.0",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PROMETHEUS]
 
     def __init__(
         self,

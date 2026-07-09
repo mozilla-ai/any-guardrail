@@ -4,7 +4,9 @@ from typing import ClassVar, Literal
 
 import requests
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import AnyDict, CategoryResult
 
 
@@ -79,6 +81,8 @@ class Patronus(Guardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["patronus-evaluate"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PATRONUS]
 
     def __init__(
         self,

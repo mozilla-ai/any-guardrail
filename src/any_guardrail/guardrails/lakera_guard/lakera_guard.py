@@ -4,7 +4,9 @@ from typing import Any, ClassVar
 
 import requests
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import AnyDict, CategoryResult
 
 # Lakera Guard v2 reports detection confidence as an ordinal *level*, not a
@@ -96,6 +98,8 @@ class LakeraGuard(Guardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["lakera-guard"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.LAKERA_GUARD]
 
     def __init__(
         self,

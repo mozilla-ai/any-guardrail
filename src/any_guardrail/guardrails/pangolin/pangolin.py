@@ -1,9 +1,11 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import StandardGuardrail
+from any_guardrail.base import GuardrailName, StandardGuardrail
 from any_guardrail.guardrails.utils import default, match_injection_label, match_injection_label_batch
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import GuardrailOutput, StandardInferenceOutput, StandardPreprocessOutput
 
 PANGOLIN_INJECTION_LABEL = "unsafe"
@@ -40,6 +42,8 @@ class Pangolin(StandardGuardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base", "dcarpintero/pangolin-guard-large"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PANGOLIN]
 
     def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
         """Initialize the Pangolin Guard guardrail.

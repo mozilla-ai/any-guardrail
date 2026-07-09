@@ -2,7 +2,9 @@ import os
 import time
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import AnyDict, CategoryResult, SpanResult
 
 if TYPE_CHECKING:
@@ -82,6 +84,8 @@ class WatsonxGuardian(Guardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["granite_guardian"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.WATSONX_GUARDIAN]
 
     def __init__(
         self,

@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from any_guardrail.base import StandardGuardrail
+from any_guardrail.base import GuardrailName, StandardGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import CategoryResult, GuardrailOutput, StandardInferenceOutput, StandardPreprocessOutput
 
 BIELIK_DEFAULT_THRESHOLD = 0.5
@@ -72,6 +74,8 @@ class BielikGuard(StandardGuardrail):
         "speakleash/Bielik-Guard-0.1B-v1.1",
         "speakleash/Bielik-Guard-0.5B-v1.1",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.BIELIK_GUARD]
 
     def __init__(
         self,

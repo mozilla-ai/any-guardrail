@@ -1,6 +1,10 @@
 import os
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
+
 try:
     from openai import OpenAI
 except ImportError as e:
@@ -57,6 +61,8 @@ class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any]):
         "omni-moderation-2024-09-26",
         "text-moderation-latest",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.OPENAI_MODERATION]
 
     def __init__(
         self,

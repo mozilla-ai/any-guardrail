@@ -1,9 +1,11 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import StandardGuardrail
+from any_guardrail.base import GuardrailName, StandardGuardrail
 from any_guardrail.guardrails.utils import default, match_injection_label, match_injection_label_batch
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import GuardrailOutput, StandardInferenceOutput, StandardPreprocessOutput
 
 SENTINEL_INJECTION_LABEL = "jailbreak"
@@ -35,6 +37,8 @@ class Sentinel(StandardGuardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["qualifire/prompt-injection-sentinel"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SENTINEL]
 
     def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
         """Initialize the Sentinel guardrail.

@@ -1,4 +1,8 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
+
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 
 try:
     from flow_judge import EvalInput, FlowJudge
@@ -89,6 +93,8 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
         ValueError: When neither ``metric`` nor the full convenience field set is provided.
 
     """
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.FLOWJUDGE]
 
     def __init__(
         self,

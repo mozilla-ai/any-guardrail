@@ -2,6 +2,10 @@ import os
 import time
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
+
 try:
     import requests
     from azure.core.credentials import AzureKeyCredential
@@ -88,6 +92,8 @@ class AzurePromptShields(Guardrail):
     """
 
     SUPPORTED_MODELS: ClassVar = ["azure-prompt-shields"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.AZURE_PROMPT_SHIELDS]
 
     def __init__(self, endpoint: str | None = None, api_key: str | None = None) -> None:
         """Initialize the Azure Prompt Shields guardrail.
