@@ -25,7 +25,8 @@ class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData]):
     ``mozilla-ai/jina-embeddings-v2-small-en-off-topic``. It embeds ``input_text`` and
     ``comparison_text`` separately with a shared jina-embeddings-v2-small-en base, then
     learns their relationship through cross-attention layers before a 2-class head. Both
-    inputs are truncated to 1024 tokens (a ``warnings.warn`` fires when this happens).
+    inputs are truncated to 1024 tokens; ``_pre_processing`` emits a ``warnings.warn`` about
+    this limit on every call, regardless of whether the input is long enough to be truncated.
     Output maps to ``GuardrailOutput`` exactly as ``OffTopic`` documents: ``valid`` is
     ``True`` on-topic, ``score`` is ``P(off-topic)`` (higher = riskier), and
     ``categories`` reports both class probabilities. English-language model.

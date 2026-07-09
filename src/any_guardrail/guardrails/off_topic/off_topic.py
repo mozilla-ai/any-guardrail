@@ -23,8 +23,9 @@ class OffTopic(ThreeStageGuardrail[Any, Any]):
       cross-encoder that concatenates the two texts and scores them jointly with a
       fine-tuned stsb-roberta-base.
 
-    Both are English-language models and truncate long inputs (Jina at 1024 tokens, STSB
-    at 514 tokens), emitting a ``warnings.warn`` when they do.
+    Both are English-language models that truncate long inputs (Jina at 1024 tokens, STSB
+    at 514 tokens). Note they emit a ``warnings.warn`` about that truncation limit on every
+    call, whether or not the input is actually long enough to be truncated.
 
     Verdict mapping onto ``GuardrailOutput``:
 

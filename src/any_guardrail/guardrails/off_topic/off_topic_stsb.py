@@ -25,8 +25,9 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
     ``mozilla-ai/stsb-roberta-base-off-topic`` (the ``OffTopic`` default). It
     concatenates ``input_text`` and ``comparison_text`` into a single sequence and scores
     them jointly with a fine-tuned stsb-roberta-base, capturing the interaction between
-    the two texts directly. Inputs are truncated to 514 tokens (a ``warnings.warn`` fires
-    when this happens). Output maps to ``GuardrailOutput`` exactly as ``OffTopic``
+    the two texts directly. Inputs are truncated to 514 tokens; ``_pre_processing`` emits a
+    ``warnings.warn`` about this limit on every call, regardless of whether the input is long
+    enough to be truncated. Output maps to ``GuardrailOutput`` exactly as ``OffTopic``
     documents: ``valid`` is ``True`` on-topic, ``score`` is ``P(off-topic)`` (higher =
     riskier), and ``categories`` reports both class probabilities. English-language model.
 
