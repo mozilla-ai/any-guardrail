@@ -50,27 +50,53 @@ _RESULT_PATTERN = re.compile(r"(?:\[RESULT\]|\[SCORE\]|Result:|Score:)\s*\(?\[?\
 
 
 class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferenceData]):
-    """Prometheus — open rubric-based LLM judge (KAIST).
+    """Prometheus — open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval).
 
-    Evaluates a response against a user-defined ``rubric`` on a 1-5 scale (absolute
-    grading) and returns feedback plus an integer score. ``valid`` maps the score
-    through ``pass_threshold``; ``score`` is the rubric normalized onto the canonical
-    risk axis; ``explanation`` is the model's feedback. Fails closed (``valid=False``
-    with ``extra={"parse_failure": True}``) when no score parses.
+    Prometheus is an open-source decoder LLM specialized in evaluating other models'
+    outputs. This guardrail drives it in **absolute grading** mode: each call wraps the
+    instruction and response in Prometheus's evaluation prompt together with the caller's
+    ``rubric`` (and an optional ``reference_answer`` that would score 5), and the model
+    replies with written feedback followed by ``[RESULT] <n>`` where ``n`` is an integer
+    1-5. It runs through ``provider.generate_chat``, so it can be served from either a
+    ``HuggingFaceProvider`` or a ``LlamafileProvider``.
 
-    For more information, see the model cards:
+    Verdict mapping onto ``GuardrailOutput``:
 
-    - [prometheus-7b-v2.0](https://huggingface.co/prometheus-eval/prometheus-7b-v2.0) (default).
-    - [prometheus-8x7b-v2.0](https://huggingface.co/prometheus-eval/prometheus-8x7b-v2.0).
-    - [prometheus-7b-v1.0](https://huggingface.co/prometheus-eval/prometheus-7b-v1.0).
-    - [prometheus-13b-v1.0](https://huggingface.co/prometheus-eval/prometheus-13b-v1.0).
+    - ``valid`` is ``rubric_score >= pass_threshold`` (or ``<=`` when
+      ``higher_is_better=False``).
+    - ``score`` (canonical risk: higher = riskier) is the 1-5 rubric score normalized onto
+      [0, 1] via ``normalize_rubric_to_risk`` — inverted when higher rubric values mean
+      better, so a high-quality response yields a low risk.
+    - ``explanation`` is the model's feedback (the text before the ``[RESULT]`` marker).
+    - ``extra["rubric_score"]`` is the raw integer 1-5.
+    - When no score can be parsed, the output fails closed: ``valid=False`` with
+      ``extra={"parse_failure": True}``. The parser takes the **last** ``[RESULT]`` marker,
+      because feedback often quotes other rubric levels inline.
+
+    Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the
+    response being graded (when ``output_text`` is omitted, ``input_text`` is graded as the
+    response). List/batch input is not supported.
+
+    For more information, see:
+
+    - [prometheus-7b-v2.0 model card](https://huggingface.co/prometheus-eval/prometheus-7b-v2.0) (default)
+    - [prometheus-8x7b-v2.0 model card](https://huggingface.co/prometheus-eval/prometheus-8x7b-v2.0)
+    - [prometheus-7b-v1.0 model card](https://huggingface.co/prometheus-eval/prometheus-7b-v1.0)
+    - [prometheus-13b-v1.0 model card](https://huggingface.co/prometheus-eval/prometheus-13b-v1.0)
+    - [Prometheus 2: An Open Source Language Model Specialized in Evaluating Other Language Models (arXiv:2405.01535)](https://arxiv.org/abs/2405.01535)
+    - [prometheus-eval/prometheus-eval on GitHub](https://github.com/prometheus-eval/prometheus-eval)
 
     Args:
-        rubric: The score rubric (criteria plus ``Score 1:`` … ``Score 5:`` descriptions).
-        pass_threshold: The score (1-5) at or above which the response passes.
-        reference_answer: Optional reference answer that would score 5.
-        higher_is_better: Whether higher scores mean better. Defaults to ``True``.
-        model_id: Optional HuggingFace model ID. Defaults to ``prometheus-eval/prometheus-7b-v2.0``.
+        rubric: The score rubric — the evaluation criteria plus ``Score 1:`` … ``Score 5:``
+            descriptions of what each level means.
+        pass_threshold: The score (1-5) at or above which the response passes (or at or below
+            when ``higher_is_better=False``).
+        reference_answer: Optional gold answer that would earn a score of 5, given to the
+            model as an anchor for the top of the scale.
+        higher_is_better: Whether higher rubric scores mean better responses. Defaults to
+            ``True``.
+        model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``.
+            Defaults to ``prometheus-eval/prometheus-7b-v2.0``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
             loading a causal LM.
 
@@ -92,7 +118,31 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         model_id: str | None = None,
         provider: StandardProvider | None = None,
     ) -> None:
-        """Initialize the Prometheus guardrail."""
+        """Initialize the Prometheus guardrail.
+
+        Args:
+            rubric: The score rubric applied to every ``validate`` call — the evaluation
+                criteria plus ``Score 1:`` … ``Score 5:`` descriptions, e.g.
+                ``"Is the answer factually correct? Score 1: entirely wrong. ... Score 5: fully correct."``.
+            pass_threshold: The score (1-5) at or above which the response passes (or at or
+                below when ``higher_is_better=False``), e.g. ``4``.
+            reference_answer: Optional gold answer that would earn a score of 5, supplied to
+                the model as an anchor for the top of the scale. Defaults to ``None`` (no
+                reference; an empty string is sent).
+            higher_is_better: Whether higher rubric scores mean better responses. Set
+                ``False`` for rubrics where a higher number is worse (e.g. a severity scale).
+                Defaults to ``True``.
+            model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``.
+                Defaults to ``prometheus-eval/prometheus-7b-v2.0``.
+            provider: Optional pre-configured provider. When ``None``, a
+                ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` /
+                ``AutoTokenizer`` (transformers is imported lazily here). Pass a
+                ``LlamafileProvider`` to run a GGUF build without the huggingface extra.
+
+        Raises:
+            ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
+
+        """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.rubric = rubric
         self.pass_threshold = pass_threshold
@@ -114,7 +164,26 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
     def validate(  # type: ignore[override]
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailOutput:
-        """Judge ``output_text`` (the response) given ``input_text`` (the instruction)."""
+        """Judge ``output_text`` (the response) given ``input_text`` (the instruction).
+
+        Args:
+            input_text: The instruction the response was produced for, e.g.
+                ``"Explain why the sky is blue to a five-year-old."``. Single string only;
+                list/batch input is not supported and raises ``TypeError``.
+            output_text: The response being graded against the rubric, e.g.
+                ``"The sky is blue because sunlight scatters off the air."``. When ``None``,
+                ``input_text`` itself is graded as the response.
+            **kwargs: Ignored; accepted only so the signature matches the ``ThreeStageGuardrail``
+                contract.
+
+        Returns:
+            GuardrailOutput where ``valid`` maps the rubric score through ``pass_threshold``,
+            ``score`` is the 1-5 rubric score normalized onto the canonical risk axis
+            (higher = riskier), ``explanation`` is the model's feedback, and
+            ``extra["rubric_score"]`` is the raw integer. When no score can be parsed the
+            output fails closed (``valid=False`` with ``extra={"parse_failure": True}``).
+
+        """
         result = super().validate(input_text, output_text=output_text, **kwargs)
         if isinstance(result, list):
             msg = "Prometheus.validate received a list input but only supports single strings."
@@ -124,6 +193,21 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailPreprocessOutput[PrometheusPreprocessData]:
+        """Format Prometheus's absolute-grading prompt as a system + user chat message pair.
+
+        Args:
+            input_text: The instruction, substituted into the prompt's
+                ``###The instruction to evaluate`` block.
+            output_text: The response to grade, substituted into the ``###Response to
+                evaluate`` block. When ``None``, ``input_text`` is reused as the response.
+            **kwargs: Ignored (dropped via ``del kwargs``); present only for signature
+                compatibility with the ``ThreeStageGuardrail`` contract.
+
+        Returns:
+            GuardrailPreprocessOutput wrapping the two-message chat prompt (system prompt
+            plus the filled absolute-grading template) under the ``messages`` key.
+
+        """
         del kwargs
         user = ABSOLUTE_PROMPT.format(
             instruction=input_text,

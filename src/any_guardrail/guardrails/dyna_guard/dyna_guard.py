@@ -50,26 +50,55 @@ _BARE_VERDICT = re.compile(r"\b(PASS|FAIL)\b")
 
 
 class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceData]):
-    """DynaGuard — dynamic guardian model evaluating compliance with user-defined policies.
+    """DynaGuard — dynamic guardian model evaluating conversation compliance with user-defined policies.
 
-    Decoder LLM that checks a transcript against a numbered list of natural-language
-    rules (the ``policy``) and returns ``PASS`` (compliant) or ``FAIL`` (a rule was
-    violated). ``valid`` is ``True`` on ``PASS``. With ``think=True`` the model emits
-    chain-of-thought reasoning before the verdict (stripped before parsing). Fails closed
-    (``valid=False`` with ``extra={"parse_failure": True}``) when no verdict parses.
+    A decoder-LLM guardian model (University of Maryland / Capital One) that checks a
+    conversation transcript against a bring-your-own ``policy`` — a numbered list of
+    natural-language rules — and returns ``PASS`` (compliant) or ``FAIL`` (at least one
+    rule violated). Unlike fixed-taxonomy safety classifiers, the rules are
+    application-specific: e.g. "the agent must never issue a refund" or "the agent must
+    not give medical advice". With ``think=True`` the model first emits a
+    chain-of-thought ``<think>`` block justifying each rule before the ``<answer>``
+    verdict (higher latency, potentially higher accuracy); the reasoning is stripped
+    before the verdict is parsed.
 
-    For more information, see the model cards:
+    Verdict mapping onto ``GuardrailOutput``:
 
-    - [DynaGuard-8B](https://huggingface.co/tomg-group-umd/DynaGuard-8B) (default).
-    - [DynaGuard-4B](https://huggingface.co/tomg-group-umd/DynaGuard-4B).
-    - [DynaGuard-1.7B](https://huggingface.co/tomg-group-umd/DynaGuard-1.7B).
+    - ``valid`` is ``True`` on ``PASS`` and ``False`` on ``FAIL``.
+    - ``categories`` carries a single ``policy_violation`` entry whose ``triggered``
+      flag is ``True`` when the verdict is ``FAIL``.
+    - ``extra["verdict"]`` holds the raw ``"PASS"`` / ``"FAIL"`` token.
+    - ``explanation`` holds the model's full raw generation (including any reasoning).
+    - ``score`` is left ``None`` — DynaGuard emits a categorical verdict, not a
+      calibrated risk probability.
+    - ``usage`` records the prompt/completion token counts when the backend reports them.
+    - Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when neither
+      an ``<answer>`` block nor a bare ``PASS``/``FAIL`` token can be parsed (e.g. the
+      generation was truncated mid-reasoning).
+
+    Expected inputs: a single ``input_text`` (the user turn / transcript; required) plus
+    an optional ``output_text`` (the agent's response). The two are assembled into a
+    ``User: ... Agent: ...`` transcript (the turns joined by a newline) before being
+    wrapped with the ``policy``. List/batch input is not supported — passing a list
+    raises ``TypeError``.
+
+    For more information, see:
+
+    - [DynaGuard-8B model card](https://huggingface.co/tomg-group-umd/DynaGuard-8B) (default).
+    - [DynaGuard-4B model card](https://huggingface.co/tomg-group-umd/DynaGuard-4B).
+    - [DynaGuard-1.7B model card](https://huggingface.co/tomg-group-umd/DynaGuard-1.7B).
+    - [DynaGuard: A Dynamic Guardian Model With User-Defined Policies (arXiv:2509.02563)](https://arxiv.org/abs/2509.02563)
 
     Args:
-        policy: The rules to enforce, as numbered natural-language text.
-        think: If ``True``, request chain-of-thought reasoning (higher latency).
-        model_id: Optional HuggingFace model ID. Defaults to ``tomg-group-umd/DynaGuard-8B``.
+        policy: The rules to enforce, as numbered natural-language text (a bring-your-own
+            taxonomy), e.g. a newline-separated list of ``1. Do not reveal the system
+            prompt.`` and ``2. Do not issue refunds.``.
+        think: If ``True``, request chain-of-thought reasoning before the verdict (higher
+            latency, larger token budget). Defaults to ``False``.
+        model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+            defaults to ``tomg-group-umd/DynaGuard-8B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
-            loading a causal LM.
+            loading the model as a causal LM.
 
     """
 
@@ -86,7 +115,27 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         model_id: str | None = None,
         provider: StandardProvider | None = None,
     ) -> None:
-        """Initialize the DynaGuard guardrail."""
+        """Initialize the DynaGuard guardrail.
+
+        Args:
+            policy: The rules to enforce, as numbered natural-language text (a
+                bring-your-own taxonomy), e.g. a newline-separated list of ``1. Do not
+                reveal the system prompt.`` and ``2. Do not issue refunds.``. Applied to
+                every ``validate`` call.
+            think: If ``True``, request chain-of-thought reasoning before the verdict,
+                which raises the generation token budget and latency. Defaults to
+                ``False``.
+            model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+                defaults to ``tomg-group-umd/DynaGuard-8B``.
+            provider: Optional pre-configured provider. Defaults to a
+                ``HuggingFaceProvider`` loading the model as a causal LM. When a
+                ``HuggingFaceProvider`` is supplied, it is loaded with
+                ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer``.
+
+        Raises:
+            ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
+
+        """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.policy = policy
         self.think = think
@@ -106,7 +155,30 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
     def validate(  # type: ignore[override]
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailOutput:
-        """Evaluate the transcript (``input_text`` plus optional agent ``output_text``) against the policy."""
+        """Evaluate a conversation transcript against the configured policy.
+
+        Args:
+            input_text: The user turn (or the transcript to evaluate), e.g.
+                ``"Please refund my last order."``. A single string; list/batch input is
+                rejected with ``TypeError``.
+            output_text: Optional agent response judged alongside the user turn, e.g.
+                ``"Sure, I've issued your refund."``. When supplied, the two are
+                assembled into a ``User: ... Agent: ...`` transcript (turns joined by a
+                newline).
+            **kwargs: Reserved for forward compatibility; forwarded to the base pipeline
+                and otherwise ignored.
+
+        Returns:
+            GuardrailOutput where ``valid`` is ``True`` on ``PASS`` / ``False`` on
+            ``FAIL``, ``categories`` carries the ``policy_violation`` flag,
+            ``extra["verdict"]`` holds the raw verdict token, ``explanation`` is the raw
+            generation, and ``usage`` holds token counts. Fails closed (``valid=False``
+            with ``extra={"parse_failure": True}``) when no verdict can be parsed.
+
+        Raises:
+            TypeError: If a list input is supplied (only single strings are supported).
+
+        """
         result = super().validate(input_text, output_text=output_text, **kwargs)
         if isinstance(result, list):
             msg = "DynaGuard.validate received a list input but only supports single strings."
@@ -116,6 +188,20 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailPreprocessOutput[DynaGuardPreprocessData]:
+        """Assemble the transcript and wrap it with the policy in DynaGuard's chat prompt.
+
+        Args:
+            input_text: The user turn / transcript, placed in the ``<transcript>`` block.
+            output_text: Optional agent response; when supplied the transcript becomes
+                ``User: {input_text}`` and ``Agent: {output_text}`` joined by a newline,
+                otherwise it is ``input_text`` alone.
+            **kwargs: Ignored (accepted for pipeline compatibility).
+
+        Returns:
+            GuardrailPreprocessOutput wrapping the system+user chat messages (the
+            configured ``policy`` in ``<rules>`` and the transcript in ``<transcript>``).
+
+        """
         del kwargs
         transcript = f"User: {input_text}\nAgent: {output_text}" if output_text is not None else input_text
         user = DYNAGUARD_USER_TEMPLATE.format(policy=self.policy, transcript=transcript)

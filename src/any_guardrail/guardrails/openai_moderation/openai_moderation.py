@@ -16,31 +16,39 @@ from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutpu
 
 
 class OpenaiModeration(ThreeStageGuardrail[AnyDict, Any]):
-    """Guardrail implementation using OpenAI's Moderation API.
+    """OpenAI Moderation — hosted moderation API flagging content across 13 harm categories with calibrated scores (OpenAI).
 
     Wraps OpenAI's hosted moderation classifier (default model:
     ``omni-moderation-latest``) to flag content across 13 harm
     sub-categories: hate, hate/threatening, harassment, harassment/threatening,
     self-harm, self-harm/intent, self-harm/instructions, sexual, sexual/minors,
-    violence, violence/graphic, illicit, and illicit/violent.
+    violence, violence/graphic, illicit, and illicit/violent. The classifier
+    returns a calibrated per-category probability score alongside a boolean
+    ``flagged`` verdict.
 
-    The classifier returns a calibrated per-category probability score
-    alongside a boolean ``flagged`` verdict. This guardrail surfaces both:
-    ``valid`` is ``False`` when OpenAI flags the content **or** when the
-    maximum per-category score exceeds ``threshold``; ``categories`` is the
-    full per-category breakdown (score + triggered flag); ``score`` is the
-    max category score.
+    Expected input: a single string (or a list of strings, screened one at a time
+    via the batched ``ThreeStageGuardrail.validate``).
+
+    ``GuardrailOutput`` mapping:
+        - ``valid`` is ``False`` when OpenAI flags the content **or** when the
+          maximum per-category score exceeds ``threshold`` (otherwise ``True``).
+        - ``score`` is the maximum per-category probability (higher = riskier).
+        - ``categories`` is the full per-category breakdown: each
+          ``CategoryResult`` carries the calibrated ``score`` and a ``triggered``
+          flag (set when OpenAI flagged that category or its score exceeds
+          ``threshold``).
+        - ``raw`` is the full OpenAI SDK moderation response object.
 
     The current ``omni-moderation`` model is a GPT-4o-derived multimodal
     classifier; the original methodology (taxonomy, active-learning loop,
-    calibration) is described in Markov et al. 2023,
-    [A Holistic Approach to Undesired Content Detection in the Real World](https://arxiv.org/abs/2208.03274)
-    (AAAI 2023). See the
-    [omni-moderation announcement](https://openai.com/index/upgrading-the-moderation-api-with-our-new-multimodal-moderation-model/)
-    for the multimodal upgrade and the
-    [moderation guide](https://platform.openai.com/docs/guides/moderation)
-    for usage details. The Moderation API is free and does not count toward
-    standard usage quotas.
+    calibration) is described in Markov et al. 2023 (AAAI 2023). The Moderation
+    API is free and does not count toward standard usage quotas.
+
+    For more information, see:
+
+    - [Moderation guide (usage)](https://platform.openai.com/docs/guides/moderation)
+    - [Upgrading the Moderation API with our new multimodal moderation model](https://openai.com/index/upgrading-the-moderation-api-with-our-new-multimodal-moderation-model/)
+    - [A Holistic Approach to Undesired Content Detection in the Real World (arXiv:2208.03274)](https://arxiv.org/abs/2208.03274)
 
     """
 

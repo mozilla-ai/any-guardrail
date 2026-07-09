@@ -8,10 +8,10 @@ Create a guardrail instance.
 
 **Parameters**
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `guardrail_name` | `GuardrailName` | Yes | — |
-| `provider` | `Provider[Any, Any] | None` | No | `None` |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `guardrail_name` | `GuardrailName` | Yes | — | The name of the guardrail to use. |
+| `provider` | `Provider[Any, Any] | None` | No | `None` | Optional provider instance to use for model loading and inference. |
 
 **Returns:** `Guardrail`
 

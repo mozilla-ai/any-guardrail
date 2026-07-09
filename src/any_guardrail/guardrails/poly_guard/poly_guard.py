@@ -58,24 +58,42 @@ def _field(pattern: re.Pattern[str], text: str) -> bool | None:
 
 
 class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceData]):
-    """PolyGuard — multilingual safety moderation judge (17 languages).
+    """PolyGuard — multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.
 
-    Generative classifier reporting request harmfulness, response refusal, response
-    harmfulness, and the MLCommons policy categories violated. ``valid`` is ``False``
-    when the request or response is harmful; violated S-codes and the boolean signals
-    are surfaced as ``categories``. Fails closed (``valid=False`` with
-    ``extra={"parse_failure": True}``) when no harmfulness field parses.
+    Generative classifier (fine-tuned Ministral / Qwen decoder LLMs) that, given a human request
+    and an optional assistant response, reports three boolean signals — whether the request is
+    harmful, whether the response is a refusal, and whether the response is harmful — plus the
+    MLCommons hazard categories (``S1`` ... ``S14``) violated. Trained for moderation across 17
+    languages.
+
+    Verdict mapping onto ``GuardrailOutput``:
+
+    - ``valid`` is ``False`` when the request or the response is judged harmful.
+    - ``categories`` carries the three boolean signals (``harmful_request``, ``harmful_response``,
+      ``response_refusal``) plus one ``CategoryResult`` per violated hazard code (``name`` = ``Sx``,
+      ``description`` = the taxonomy label, ``triggered=True``), deduplicated in order of appearance.
+    - ``explanation`` is the raw generation.
+    - ``usage`` carries the prompt / completion token counts. No canonical ``score`` or ``spans``
+      are produced.
+    - Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when neither
+      harmfulness field parses.
+
+    Expected inputs: a single ``input_text`` string (the human request) plus an optional
+    ``output_text`` string (the assistant response). The prompt template always carries both slots,
+    so ``output_text`` defaults to an empty response when omitted; supply it to have the response
+    judged for harm and refusal. Single strings only — passing a list raises ``TypeError``.
 
     For more information, see the model cards:
 
-    - [PolyGuard-Ministral](https://huggingface.co/ToxicityPrompts/PolyGuard-Ministral) (default).
-    - [PolyGuard-Qwen](https://huggingface.co/ToxicityPrompts/PolyGuard-Qwen).
-    - [PolyGuard-Qwen-Smol](https://huggingface.co/ToxicityPrompts/PolyGuard-Qwen-Smol).
+    - [ToxicityPrompts/PolyGuard-Ministral](https://huggingface.co/ToxicityPrompts/PolyGuard-Ministral) (default).
+    - [ToxicityPrompts/PolyGuard-Qwen](https://huggingface.co/ToxicityPrompts/PolyGuard-Qwen).
+    - [ToxicityPrompts/PolyGuard-Qwen-Smol](https://huggingface.co/ToxicityPrompts/PolyGuard-Qwen-Smol).
 
     Args:
-        model_id: Optional HuggingFace model ID. Defaults to ``ToxicityPrompts/PolyGuard-Ministral``.
-        provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
-            loading a causal LM.
+        model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to
+            ``ToxicityPrompts/PolyGuard-Ministral``.
+        provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading a
+            causal LM.
 
     """
 
@@ -86,7 +104,18 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
     ]
 
     def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
-        """Initialize the PolyGuard guardrail."""
+        """Initialize the PolyGuard guardrail.
+
+        Args:
+            model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults
+                to ``ToxicityPrompts/PolyGuard-Ministral``; ``ToxicityPrompts/PolyGuard-Qwen`` and
+                ``ToxicityPrompts/PolyGuard-Qwen-Smol`` are the Qwen-based alternatives.
+            provider: Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is
+                built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A
+                supplied ``HuggingFaceProvider`` is corrected to those classes at load time; any
+                other provider is used as-is.
+
+        """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         load_kwargs: AnyDict = {}
         if provider is not None:
@@ -104,7 +133,24 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
     def validate(  # type: ignore[override]
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailOutput:
-        """Classify ``input_text`` (and optionally an assistant ``output_text``)."""
+        """Classify ``input_text`` and, optionally, an assistant ``output_text``.
+
+        Args:
+            input_text: The human request to moderate. Single string only.
+            output_text: Optional assistant response, judged for harm and refusal alongside the
+                request. When omitted, the response slot is left empty.
+            **kwargs: Forwarded to the underlying three-stage pipeline; unused by this guardrail.
+
+        Returns:
+            GuardrailOutput with ``valid=False`` when the request or response is harmful,
+            ``categories`` holding the ``harmful_request`` / ``harmful_response`` /
+            ``response_refusal`` booleans and any violated hazard codes, and ``explanation`` set to
+            the raw generation.
+
+        Raises:
+            TypeError: If a list input is supplied — only single strings are supported.
+
+        """
         result = super().validate(input_text, output_text=output_text, **kwargs)
         if isinstance(result, list):
             msg = "PolyGuard.validate received a list input but only supports single strings."
@@ -114,6 +160,18 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
     ) -> GuardrailPreprocessOutput[PolyGuardPreprocessData]:
+        """Build the system + user chat messages for the classifier.
+
+        Args:
+            input_text: The human request, formatted into the ``Human user`` slot.
+            output_text: Optional assistant response, formatted into the ``AI assistant`` slot;
+                defaults to an empty string when omitted.
+            **kwargs: Ignored (discarded via ``del kwargs``).
+
+        Returns:
+            GuardrailPreprocessOutput wrapping ``{"messages": ...}``.
+
+        """
         del kwargs
         user = POLYGUARD_USER_TEMPLATE.format(prompt=input_text, response=output_text or "")
         messages: ChatMessages = [

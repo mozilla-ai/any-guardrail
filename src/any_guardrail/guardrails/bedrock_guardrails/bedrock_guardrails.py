@@ -7,7 +7,7 @@ _VALID_SOURCES = ("INPUT", "OUTPUT")
 
 
 class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
-    """Guardrail wrapping the AWS Bedrock ``ApplyGuardrail`` API.
+    """AWS Bedrock Guardrails — hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding (Amazon).
 
     Provides a uniform interface to AWS Bedrock Guardrails — a unified, FM-agnostic
     policy platform covering content moderation, prompt-injection / denied-topic
@@ -16,6 +16,14 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
     configuration. The underlying call is the ``ApplyGuardrail`` action on the
     ``bedrock-runtime`` boto3 client, which is independent of any foundation model
     and can be applied to inputs or outputs.
+
+    The policy itself lives in AWS: create a Guardrail in the Bedrock console (its
+    content filters, denied topics, PII entities, word lists, and grounding
+    thresholds are all configured there), then hand its ``guardrail_identifier``
+    and ``guardrail_version`` to this class. The ``source`` set on the constructor
+    decides whether the screened text is treated as a user ``"INPUT"`` prompt or a
+    model ``"OUTPUT"`` response; there is no separate prompt-vs-response argument on
+    the call itself.
 
     The most distinctive capability surfaced here is Bedrock's **Automated
     Reasoning checks**: an SMT-solver-driven hallucination verification pipeline
@@ -26,26 +34,34 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
     descends from the AWS Automated Reasoning Group's research lineage of 100+
     peer-reviewed papers (CAV, POPL, and adjacent venues).
 
-    Research and documentation references:
-        - AWS blog (GA announcement): Automated Reasoning checks deliver up to
-          99% verification accuracy via SMT solvers —
-          https://aws.amazon.com/blogs/aws/minimize-ai-hallucinations-and-deliver-up-to-99-verification-accuracy-with-automated-reasoning-checks-now-available/
-        - AWS docs: Bedrock Guardrails Automated Reasoning concepts (policy
-          authoring, schema extraction, SMT-based verification) —
-          https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html
-        - AWS docs: Use ApplyGuardrail independently of any FM —
-          https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html
-        - AWS Automated Reasoning Group research lineage (100+ peer-reviewed
-          CAV/POPL papers backing the formal-methods techniques).
+    Expected input: a single string (or a list of strings, screened one at a time
+    via the batched ``ThreeStageGuardrail.validate``).
+
+    ``GuardrailOutput`` mapping:
+        - ``valid`` is ``True`` when Bedrock's ``action`` is ``"NONE"`` (no policy
+          intervened); ``False`` otherwise (e.g. ``"GUARDRAIL_INTERVENED"``).
+        - ``action`` carries Bedrock's native verdict string.
+        - ``score`` is a binary severity proxy for that action: ``1.0`` when the
+          guardrail intervened, ``0.0`` when it did not (higher = riskier). Bedrock
+          returns a categorical action rather than a continuous risk probability.
+        - ``categories`` and ``spans`` are not populated. The full per-policy
+          breakdown (topic, content, word, sensitive-information, contextual
+          grounding, and Automated Reasoning assessments) is preserved in
+          ``extra["assessments"]``, the modified / anonymized text in
+          ``extra["outputs"]``, and the untouched boto3 response in ``raw``.
 
     Authentication uses the standard AWS SigV4 credential chain (environment
     variables, IAM role, AWS config file); credentials can also be passed
-    explicitly or via a custom ``boto3.Session``. The Guardrail itself must be
-    created out-of-band in the AWS console; the constructor takes its
-    ``guardrail_identifier`` and ``guardrail_version``.
+    explicitly or via a custom ``boto3.Session``.
 
     Billing is pay-per-text-unit on the ApplyGuardrail call; Automated Reasoning
     checks are a premium tier.
+
+    For more information, see:
+
+    - [Use ApplyGuardrail independently of any FM](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html)
+    - [Automated Reasoning checks (policy authoring, schema extraction, SMT-based verification)](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html)
+    - [AWS blog: minimize AI hallucinations with Automated Reasoning checks (up to 99% verification accuracy)](https://aws.amazon.com/blogs/aws/minimize-ai-hallucinations-and-deliver-up-to-99-verification-accuracy-with-automated-reasoning-checks-now-available/)
 
     """
 

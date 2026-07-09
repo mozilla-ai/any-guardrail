@@ -19,11 +19,28 @@ StsbInferenceData = Any  # Model output tensor
 
 
 class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
-    """Wrapper for off-topic detection model from govtech.
+    """Off-Topic (STSB cross-encoder) — GovTech off-topic relevance detector using a fine-tuned stsb-roberta-base cross-encoder.
 
-    For more information, please see the model card:
+    The cross-encoder implementation dispatched by ``OffTopic`` for
+    ``mozilla-ai/stsb-roberta-base-off-topic`` (the ``OffTopic`` default). It
+    concatenates ``input_text`` and ``comparison_text`` into a single sequence and scores
+    them jointly with a fine-tuned stsb-roberta-base, capturing the interaction between
+    the two texts directly. Inputs are truncated to 514 tokens (a ``warnings.warn`` fires
+    when this happens). Output maps to ``GuardrailOutput`` exactly as ``OffTopic``
+    documents: ``valid`` is ``True`` on-topic, ``score`` is ``P(off-topic)`` (higher =
+    riskier), and ``categories`` reports both class probabilities. English-language model.
 
-    - [govtech/stsb-roberta-base-off-topic model](https://huggingface.co/govtech/stsb-roberta-base-off-topic).
+    For more information, see:
+
+    - [Off-Topic (STSB cross-encoder) model card](https://huggingface.co/mozilla-ai/stsb-roberta-base-off-topic).
+    - [govtech/stsb-roberta-base-off-topic](https://huggingface.co/govtech/stsb-roberta-base-off-topic) (upstream).
+
+    Args:
+        model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+            defaults to ``mozilla-ai/stsb-roberta-base-off-topic``.
+        provider: Reserved for future extensibility; currently unused. The model is loaded
+            directly via ``transformers``.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/stsb-roberta-base-off-topic"]
@@ -33,7 +50,18 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
         model_id: str | None = None,
         provider: StandardProvider | None = None,  # Reserved for future extensibility
     ) -> None:
-        """Initialize the OffTopicStsb guardrail."""
+        """Initialize the OffTopicStsb guardrail.
+
+        Args:
+            model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+                defaults to ``mozilla-ai/stsb-roberta-base-off-topic``.
+            provider: Reserved for future extensibility; currently unused. The
+                cross-encoder is loaded directly via ``transformers``.
+
+        Raises:
+            ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
+
+        """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.provider = provider  # Reserved for future extensibility
 
@@ -45,6 +73,18 @@ class OffTopicStsb(ThreeStageGuardrail[StsbPreprocessData, StsbInferenceData]):
     def _pre_processing(
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailPreprocessOutput[StsbPreprocessData]:
+        """Tokenize both texts as a single concatenated sequence for the cross-encoder.
+
+        Args:
+            input_text: The text being classified; the first segment of the pair.
+            comparison_text: The reference topic; the second segment of the pair. The two
+                are encoded together (truncated / padded to 514 tokens).
+
+        Returns:
+            GuardrailPreprocessOutput wrapping the ``input_ids`` and ``attention_mask``
+            tensors the cross-encoder consumes.
+
+        """
         warnings.warn("Truncating text to a maximum length of 514 tokens.", stacklevel=2)
         encoding = self.tokenizer(
             input_text,
