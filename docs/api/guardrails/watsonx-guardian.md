@@ -1,6 +1,6 @@
 # WatsonxGuardian
 
-Wraps IBM watsonx.ai's Text Detection / ``Guardian`` moderation API.
+watsonx Guardian — hosted text-detection moderation API running configurable Granite Guardian detectors (IBM).
 
 This is the hosted, pay-per-use counterpart to the locally-run
 :class:`~any_guardrail.guardrails.granite_guardian.granite_guardian.GraniteGuardian`
@@ -32,25 +32,22 @@ available.
       offsets (watsonx detections locate the flagged substring).
     - ``raw`` is the full response dict from ``Guardian.detect``.
 
+Expected input: ``validate`` takes a single string, ``content``, and screens it
+against the configured detectors. There is no separate prompt-vs-response
+argument; RAG groundedness / relevance are enabled by adding the corresponding
+detector to ``detectors`` rather than by passing extra arguments here.
+
 Research backing:
     - Padhi et al., *Granite Guardian* (https://arxiv.org/abs/2412.07724, 2024).
     - IBM tutorial: https://www.ibm.com/think/tutorials/llm-safeguards-granite-guardian-risk-detection
     - SDK reference: https://ibm.github.io/watsonx-ai-python-sdk/fm_text_detection.html
 
-Args:
-    api_key (str | None): IBM Cloud IAM API key. Falls back to ``WATSONX_APIKEY``.
-    url (str | None): watsonx.ai region endpoint (e.g.
-        ``https://us-south.ml.cloud.ibm.com``). Falls back to ``WATSONX_URL``.
-    project_id (str | None): watsonx project ID. Falls back to
-        ``WATSONX_PROJECT_ID``. One of ``project_id`` / ``space_id`` is required.
-    space_id (str | None): watsonx deployment space ID. Falls back to
-        ``WATSONX_SPACE_ID``.
-    detectors (dict | None): Detector configuration forwarded to ``Guardian``.
-        Defaults to ``{"granite_guardian": {}}``. Pass e.g.
-        ``{"granite_guardian": {"threshold": 0.6}, "pii": {}}`` to tune it.
-    api_client (APIClient | None): A pre-built ``ibm_watsonx_ai.APIClient``.
-        When supplied, the credential arguments above are ignored and the
-        client is used as-is (useful for shared clients or testing).
+For more information, see:
+
+- [watsonx.ai platform (API key / project, free Lite plan)](https://dataplatform.cloud.ibm.com/)
+- [IBM tutorial: LLM safeguards with Granite Guardian risk detection](https://www.ibm.com/think/tutorials/llm-safeguards-granite-guardian-risk-detection)
+- [watsonx.ai Python SDK: foundation-model text detection](https://ibm.github.io/watsonx-ai-python-sdk/fm_text_detection.html)
+- [Granite Guardian (arXiv:2412.07724)](https://arxiv.org/abs/2412.07724)
 
 ## Supported Models
 
@@ -58,14 +55,14 @@ Args:
 
 ## Constructor
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `api_key` | `str | None` | No | `None` |
-| `url` | `str | None` | No | `None` |
-| `project_id` | `str | None` | No | `None` |
-| `space_id` | `str | None` | No | `None` |
-| `detectors` | `dict[str, Any] | None` | No | `None` |
-| `api_client` | `APIClient | None` | No | `None` |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `api_key` | `str | None` | No | `None` | IBM Cloud IAM API key. If ``None``, it is read from the ``WATSONX_APIKEY`` environment variable. Ignored when ``api_client`` is supplied. |
+| `url` | `str | None` | No | `None` | watsonx.ai region endpoint, e.g. ``https://us-south.ml.cloud.ibm.com``. If ``None``, it is read from ``WATSONX_URL``. Ignored when ``api_client`` is supplied. |
+| `project_id` | `str | None` | No | `None` | watsonx project ID. If ``None``, it is read from ``WATSONX_PROJECT_ID``. One of ``project_id`` / ``space_id`` is required (unless ``api_client`` is supplied). |
+| `space_id` | `str | None` | No | `None` | watsonx deployment space ID. If ``None``, it is read from ``WATSONX_SPACE_ID``. Alternative to ``project_id``. |
+| `detectors` | `dict[str, Any] | None` | No | `None` | Detector configuration forwarded to ``Guardian``. Defaults to ``{"granite_guardian": {}}``; pass e.g. ``{"granite_guardian": {"threshold": 0.6}, "pii": {}}`` to tune thresholds or add the ``hap`` / ``pii`` detectors. |
+| `api_client` | `APIClient | None` | No | `None` | A pre-built ``ibm_watsonx_ai.APIClient``. When supplied, the credential arguments above are ignored and the client is used as-is (useful for shared clients or testing). |
 
 Initialize the guardrail and build the watsonx ``Guardian`` client.
 
@@ -79,8 +76,8 @@ Screen ``content`` against the configured watsonx detectors.
 
 **Parameters**
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `content` | `str` | Yes | — |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `content` | `str` | Yes | — | The text to screen. |
 
 **Returns:** `GuardrailOutput`

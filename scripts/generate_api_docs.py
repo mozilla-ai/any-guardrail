@@ -80,13 +80,52 @@ def _format_default(default: Any) -> str:
     return repr(default)
 
 
-def _sig_table(func: Any, skip_self: bool = True) -> str:
+def _parse_args_section(doc: str | None) -> dict[str, str]:
+    """Extract per-parameter descriptions from a Google-style ``Args:`` section.
+
+    Returns a mapping of parameter name to its full (continuation-joined)
+    description, so the signature tables can carry the documented input space
+    instead of dropping it.
+    """
+    if not doc:
+        return {}
+    text = textwrap.dedent(doc)
+    match = re.search(
+        r"\n\s*Args\s*:\s*\n(.*?)(?=\n\s*(?:Returns|Raises|Note|Example|Examples|Yields|Attributes)\s*:|\Z)",
+        text,
+        re.DOTALL,
+    )
+    if not match:
+        return {}
+    block = textwrap.dedent(match.group(1))
+    params: dict[str, str] = {}
+    current: str | None = None
+    for line in block.splitlines():
+        entry = (
+            re.match(r"^(\*{0,2}\w+)\s*(?:\([^)]*\))?\s*:\s+(.*)$", line) if not line.startswith((" ", "\t")) else None
+        )
+        if entry:
+            current = entry.group(1).lstrip("*")
+            params[current] = entry.group(2).strip()
+        elif current and line.strip():
+            params[current] += " " + line.strip()
+    return params
+
+
+def _table_cell(text: str) -> str:
+    """Collapse whitespace and escape pipes so text fits in one Markdown table cell."""
+    return " ".join(text.split()).replace("|", "\\|")
+
+
+def _sig_table(func: Any, skip_self: bool = True, param_docs: dict[str, str] | None = None) -> str:
     try:
         sig = inspect.signature(func)
     except (ValueError, TypeError):
         return ""
 
+    param_docs = param_docs or {}
     rows = []
+    documented = False
     for name, param in sig.parameters.items():
         if skip_self and name in ("self", "cls"):
             continue
@@ -97,12 +136,20 @@ def _sig_table(func: Any, skip_self: bool = True) -> str:
         required = "Yes" if param.default is inspect.Parameter.empty else "No"
         default_cell = f"`{default}`" if default else "—"
         ann_cell = f"`{ann}`" if ann else "—"
-        rows.append(f"| `{name}` | {ann_cell} | {required} | {default_cell} |")
+        doc_cell = _table_cell(param_docs.get(name, "")) or "—"
+        documented = documented or doc_cell != "—"
+        rows.append((f"| `{name}` | {ann_cell} | {required} | {default_cell} |", f" {doc_cell} |"))
 
     if not rows:
         return ""
+    if documented:
+        header = (
+            "| Parameter | Type | Required | Default | Description |\n"
+            "|-----------|------|----------|---------|-------------|\n"
+        )
+        return header + "\n".join(base + desc for base, desc in rows)
     header = "| Parameter | Type | Required | Default |\n|-----------|------|----------|---------|\n"
-    return header + "\n".join(rows)
+    return header + "\n".join(base for base, _ in rows)
 
 
 def _return_annotation(func: Any) -> str:
@@ -136,6 +183,22 @@ def _doc_summary(doc: str | None) -> str:
     return summary.strip()
 
 
+def _strip_args_section(doc: str) -> str:
+    """Remove only the ``Args:`` block from a docstring, keeping every other section.
+
+    Class docstrings that document constructor args render next to the generated
+    constructor table (which now carries those descriptions), so the raw block
+    would be duplicated.
+    """
+    stripped = re.sub(
+        r"\n\s*Args\s*:\s*\n.*?(?=\n\s*(?:Returns|Raises|Note|Example|Examples|Yields|Attributes)\s*:|\Z)",
+        "\n",
+        doc,
+        flags=re.DOTALL,
+    )
+    return stripped.strip()
+
+
 def _section(title: str, level: int = 2) -> str:
     return f"{'#' * level} {title}\n"
 
@@ -154,8 +217,9 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
     lines: list[str] = [f"# {class_name}\n"]
 
     class_doc = _clean_docstring(inspect.getdoc(cls))
+    class_args = _parse_args_section(class_doc)
     if class_doc:
-        lines.append(class_doc + "\n")
+        lines.append(_strip_args_section(class_doc) + "\n")
 
     supported = getattr(cls, "SUPPORTED_MODELS", [])
     if supported:
@@ -168,7 +232,8 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
     if init:
         init_doc = _doc_summary(inspect.getdoc(init))
         lines.append(_section("Constructor"))
-        table = _sig_table(init)
+        # Constructor args may be documented on the class docstring, __init__, or both.
+        table = _sig_table(init, param_docs={**class_args, **_parse_args_section(inspect.getdoc(init))})
         if table:
             lines.append(table + "\n")
         if init_doc and init_doc != class_doc:
@@ -180,7 +245,7 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
         val_doc = _doc_summary(inspect.getdoc(validate))
         if val_doc:
             lines.append(val_doc + "\n")
-        table = _sig_table(validate)
+        table = _sig_table(validate, param_docs=_parse_args_section(inspect.getdoc(validate)))
         if table:
             lines.append("**Parameters**\n")
             lines.append(table + "\n")
@@ -225,14 +290,15 @@ def _provider_page(module_path: str, class_name: str) -> str:
     lines: list[str] = [f"# {class_name}\n"]
 
     class_doc = _clean_docstring(inspect.getdoc(cls))
+    class_args = _parse_args_section(class_doc)
     if class_doc:
-        lines.append(class_doc + "\n")
+        lines.append(_strip_args_section(class_doc) + "\n")
 
     init = getattr(cls, "__init__", None)
     if init:
         init_doc = _doc_summary(inspect.getdoc(init))
         lines.append(_section("Constructor"))
-        table = _sig_table(init)
+        table = _sig_table(init, param_docs={**class_args, **_parse_args_section(inspect.getdoc(init))})
         if table:
             lines.append(table + "\n")
         if init_doc and init_doc != class_doc:
@@ -246,7 +312,7 @@ def _provider_page(module_path: str, class_name: str) -> str:
         method_doc = _doc_summary(inspect.getdoc(method))
         if method_doc:
             lines.append(method_doc + "\n")
-        table = _sig_table(method)
+        table = _sig_table(method, param_docs=_parse_args_section(inspect.getdoc(method)))
         if table:
             lines.append("**Parameters**\n")
             lines.append(table + "\n")
@@ -273,7 +339,7 @@ def _any_guardrail_page() -> str:
         lines.append(_section(method_name))
         if doc:
             lines.append(doc + "\n")
-        table = _sig_table(method)
+        table = _sig_table(method, param_docs=_parse_args_section(inspect.getdoc(method)))
         if table:
             lines.append("**Parameters**\n")
             lines.append(table + "\n")

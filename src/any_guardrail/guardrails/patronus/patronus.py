@@ -9,7 +9,7 @@ from any_guardrail.types import AnyDict, CategoryResult
 
 
 class Patronus(Guardrail):
-    """Wraps the Patronus AI Evaluate API for managed LLM evaluation / guardrailing.
+    """Patronus — hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI).
 
     This is the hosted, pay-per-use counterpart to the locally-run
     :class:`~any_guardrail.guardrails.glider.glider.Glider` (GLIDER) judge and the
@@ -43,12 +43,25 @@ class Patronus(Guardrail):
         - Fails closed (``valid=False``, ``extra={"parse_failure": True}``) when
           the response has no ``results``.
 
+    Expected input: ``validate`` takes ``input_text`` (the model input / user
+    prompt) plus optional ``output_text`` (the model response, required by
+    evaluators that judge a response, e.g. hallucination or answer relevance) and
+    optional ``retrieved_context`` (RAG document(s) as a str or list[str], required
+    by grounding / hallucination evaluators).
+
     Research backing:
         - Deshpande et al., *GLIDER: Grading LLM Interactions and Decisions using
           Explainable Ranking* (https://arxiv.org/abs/2412.14140, 2024).
         - Ravi et al., *Lynx: An Open Source Hallucination Evaluation Model*
           (https://arxiv.org/abs/2407.08488, 2024).
         - Docs: https://docs.patronus.ai/
+
+    For more information, see:
+
+    - [Patronus platform (API keys, free Developer tier)](https://app.patronus.ai/)
+    - [Patronus documentation](https://docs.patronus.ai/)
+    - [GLIDER: Grading LLM Interactions and Decisions using Explainable Ranking (arXiv:2412.14140)](https://arxiv.org/abs/2412.14140)
+    - [Lynx: An Open Source Hallucination Evaluation Model (arXiv:2407.08488)](https://arxiv.org/abs/2407.08488)
 
     Args:
         evaluators (list[dict]): The evaluators to run, each a dict with at least
@@ -79,6 +92,28 @@ class Patronus(Guardrail):
 
         Does not perform any network I/O — the API is only contacted on
         ``validate()``.
+
+        Args:
+            evaluators: The evaluators to run, each a dict with at least an
+                ``"evaluator"`` key plus optional ``"criteria"`` /
+                ``"explain_strategy"``. Example:
+                ``[{"evaluator": "judge", "criteria": "patronus:prompt-injection"}]``.
+                Must be non-empty.
+            api_key: Patronus API key. If ``None``, it is read from the
+                ``PATRONUS_API_KEY`` environment variable. Obtain one at
+                https://app.patronus.ai/ (free Developer tier with starter credit).
+            endpoint: Evaluate API endpoint URL. Defaults to
+                ``https://api.patronus.ai/v1/evaluate``.
+            success_strategy: How to combine multiple evaluators into the overall
+                ``valid`` verdict — ``"all_pass"`` (every evaluator must pass) or
+                ``"any_pass"`` (at least one must). Defaults to ``"all_pass"``.
+            tags: Optional tags forwarded with each request for observability,
+                e.g. ``{"env": "prod"}``.
+
+        Raises:
+            ValueError: If no API key is provided and ``PATRONUS_API_KEY`` is not
+                set, or if ``evaluators`` is empty.
+
         """
         if api_key:
             self.api_key = api_key
@@ -134,6 +169,24 @@ class Patronus(Guardrail):
         output_text: str | None,
         retrieved_context: str | list[str] | None,
     ) -> AnyDict:
+        """Build the JSON payload for the Patronus Evaluate API request.
+
+        Args:
+            input_text: The model input (user prompt), mapped to the
+                ``evaluated_model_input`` field, e.g. ``"What is the capital of
+                France?"``.
+            output_text: Optional model response, mapped to
+                ``evaluated_model_output``. Include it for evaluators that judge a
+                response (hallucination, answer relevance, toxicity of an answer).
+            retrieved_context: Optional RAG context — a single string or a list of
+                strings — mapped to ``evaluated_model_retrieved_context``. Include
+                it for grounding / hallucination evaluators.
+
+        Returns:
+            The request payload, including the configured ``evaluators`` and any
+            constructor-level ``tags``.
+
+        """
         body: AnyDict = {
             "evaluators": self.evaluators,
             "evaluated_model_input": input_text,

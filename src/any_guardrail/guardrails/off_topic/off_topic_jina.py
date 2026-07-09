@@ -19,11 +19,29 @@ JinaInferenceData = Any  # Model output tensor
 
 
 class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData]):
-    """Wrapper for off-topic detection model from govtech.
+    """Off-Topic (Jina bi-encoder) — GovTech off-topic relevance detector using dual jina-embeddings-v2-small-en encoders.
 
-    For more information, please see the model card:
+    The bi-encoder implementation dispatched by ``OffTopic`` for
+    ``mozilla-ai/jina-embeddings-v2-small-en-off-topic``. It embeds ``input_text`` and
+    ``comparison_text`` separately with a shared jina-embeddings-v2-small-en base, then
+    learns their relationship through cross-attention layers before a 2-class head. Both
+    inputs are truncated to 1024 tokens; ``_pre_processing`` emits a ``warnings.warn`` about
+    this limit on every call, regardless of whether the input is long enough to be truncated.
+    Output maps to ``GuardrailOutput`` exactly as ``OffTopic`` documents: ``valid`` is
+    ``True`` on-topic, ``score`` is ``P(off-topic)`` (higher = riskier), and
+    ``categories`` reports both class probabilities. English-language model.
 
-    - [govtech/jina-embeddings-v2-small-en-off-topic](https://huggingface.co/govtech/jina-embeddings-v2-small-en-off-topic).
+    For more information, see:
+
+    - [Off-Topic (Jina bi-encoder) model card](https://huggingface.co/mozilla-ai/jina-embeddings-v2-small-en-off-topic).
+    - [govtech/jina-embeddings-v2-small-en-off-topic](https://huggingface.co/govtech/jina-embeddings-v2-small-en-off-topic) (upstream).
+
+    Args:
+        model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+            defaults to ``mozilla-ai/jina-embeddings-v2-small-en-off-topic``.
+        provider: Reserved for future extensibility; currently unused. The model is loaded
+            directly via ``transformers``.
+
     """
 
     SUPPORTED_MODELS: ClassVar = ["mozilla-ai/jina-embeddings-v2-small-en-off-topic"]
@@ -33,7 +51,18 @@ class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData]):
         model_id: str | None = None,
         provider: StandardProvider | None = None,  # Reserved for future extensibility
     ) -> None:
-        """Initialize the OffTopicJina guardrail."""
+        """Initialize the OffTopicJina guardrail.
+
+        Args:
+            model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
+                defaults to ``mozilla-ai/jina-embeddings-v2-small-en-off-topic``.
+            provider: Reserved for future extensibility; currently unused. The
+                cross-encoder is loaded directly via ``transformers``.
+
+        Raises:
+            ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
+
+        """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.provider = provider  # Reserved for future extensibility
 
@@ -45,6 +74,19 @@ class OffTopicJina(ThreeStageGuardrail[JinaPreprocessData, JinaInferenceData]):
     def _pre_processing(
         self, input_text: str, comparison_text: str | None = None
     ) -> GuardrailPreprocessOutput[JinaPreprocessData]:
+        """Tokenize both texts separately for the bi-encoder.
+
+        Args:
+            input_text: The text being classified; tokenized as the first sequence
+                (truncated / padded to 1024 tokens).
+            comparison_text: The reference topic; tokenized as the second sequence
+                (truncated / padded to 1024 tokens).
+
+        Returns:
+            GuardrailPreprocessOutput wrapping the four tensors
+            (``input_ids`` / ``attention_mask`` for each text) the bi-encoder consumes.
+
+        """
         warnings.warn("Truncating input text to a max length of 1024 tokens.", stacklevel=2)
         inputs1 = self.tokenizer(
             input_text, return_tensors="pt", truncation=True, padding="max_length", max_length=1024

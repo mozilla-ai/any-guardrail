@@ -10,11 +10,25 @@ DEEPSET_INJECTION_LABEL = "INJECTION"
 
 
 class Deepset(StandardGuardrail):
-    """Wrapper for prompt injection detection model from Deepset.
+    """Deepset — binary prompt-injection classifier built on DeBERTa-v3-base (deepset).
 
-    For more information, please see the model card:
+    Encoder sequence classifier that labels a text as ``LEGIT`` or ``INJECTION``.
+    Feed it the raw user prompt (or any untrusted text such as retrieved snippets);
+    no model response or extra context is involved. ``validate`` accepts a single
+    string or a ``list[str]``, in which case the whole list runs as one true
+    batched inference call and a list of outputs is returned in the same order.
 
-    - [Deepset](https://huggingface.co/deepset/deberta-v3-base-injection).
+    Verdict mapping onto ``GuardrailOutput``:
+
+    - ``valid`` is ``True`` when the predicted label is not ``INJECTION``.
+    - ``score`` is the probability of the ``INJECTION`` class (canonical risk
+      direction: higher = riskier), regardless of which label won the argmax.
+    - ``categories`` holds the full label distribution — one entry per class with
+      its probability; the predicted class is marked ``triggered=True``.
+
+    For more information, see:
+
+    - [deepset/deberta-v3-base-injection model card](https://huggingface.co/deepset/deberta-v3-base-injection).
     """
 
     SUPPORTED_MODELS: ClassVar = ["deepset/deberta-v3-base-injection"]

@@ -23,11 +23,14 @@ _CONFIDENCE_SCORES: dict[str, float] = {
 
 
 class LakeraGuard(Guardrail):
-    """Wraps the Lakera Guard REST API for prompt-injection, jailbreak, content-moderation, and PII detection.
+    """Lakera Guard — hosted API for prompt-injection, jailbreak, content-moderation, and PII detection (Lakera).
 
     Lakera Guard exposes a single ``/v2/guard`` endpoint that returns whether a message (or message list)
-    was flagged. By default this guardrail also opts into the endpoint's richer outputs so callers get the
-    full picture of *why* something was flagged:
+    was flagged. ``validate(content)`` accepts either a plain string (wrapped as a single user-role
+    message) or a pre-formed chat-message list (``[{"role": "user", "content": "..."}]``), so both
+    prompts and full conversations (including assistant turns) can be screened. By default this
+    guardrail also opts into the endpoint's richer outputs so callers get the full picture of *why*
+    something was flagged:
 
     - ``breakdown`` (requested via ``breakdown=True``): one entry per detector the policy ran, with its
       ``detector_type``, whether it ``detected`` a threat, and an ordinal confidence ``result``
@@ -41,9 +44,9 @@ class LakeraGuard(Guardrail):
     ``GuardrailOutput`` mapping:
         - ``valid = not flagged``.
         - ``score`` is the highest detector confidence among *detected* threats, mapped from the ordinal
-          level to a float (``l1_confident`` → ``1.0`` … ``l5_unlikely`` → ``0.2``); ``0.0`` when nothing
-          was detected. If ``breakdown`` is disabled, ``score`` falls back to ``1.0`` when flagged else
-          ``0.0``.
+          level to a float (``l1_confident`` → ``1.0`` … ``l5_unlikely`` → ``0.2``, higher = riskier);
+          ``0.0`` when nothing was detected. If ``breakdown`` is disabled, ``score`` falls back to
+          ``1.0`` when flagged else ``0.0``.
         - ``categories`` lists one ``CategoryResult`` per ``breakdown`` entry (``name`` =
           ``detector_type``, ``triggered`` = whether it detected, ``score`` = the mapped confidence).
         - ``extra`` carries the ``flagged`` flag, the ``payload`` list, the request ``metadata``
@@ -59,8 +62,14 @@ class LakeraGuard(Guardrail):
           Gandalf-derived training data: 1M+ players and 80M+ adversarial prompts collected via
           Lakera's public Gandalf challenge platform. The Gandalf paper shows OSS detectors
           underperform on adaptive attacks at scale.
-        - Product overview: https://www.lakera.ai/prompt-defense
-        - API docs: https://docs.lakera.ai/docs/api/guard
+
+    For more information, see:
+
+    - [Lakera platform (API keys, free Community tier)](https://platform.lakera.ai/)
+    - [Product overview: prompt defense](https://www.lakera.ai/prompt-defense)
+    - [API docs: Guard](https://docs.lakera.ai/docs/api/guard)
+    - [API reference: screen content (`/v2/guard`)](https://docs.lakera.ai/api-reference/lakera-api/guard/screen-content)
+    - [Gandalf the Red: Adaptive Security for LLMs (arXiv:2501.07927)](https://arxiv.org/abs/2501.07927)
 
     Brand transition note:
         Lakera was acquired by Cisco in 2025 and is being folded into Cisco AI Defense. The
@@ -101,6 +110,33 @@ class LakeraGuard(Guardrail):
         """Initialize the Lakera Guard guardrail with the provided configuration.
 
         Does not perform any network I/O — the API is only contacted when ``validate()`` is called.
+
+        Args:
+            api_key: API key for authenticating with the Lakera Guard API. If not provided,
+                it is read from the ``LAKERA_API_KEY`` environment variable. Obtain one at
+                https://platform.lakera.ai/ (free Community tier: 10k requests/month).
+            endpoint: Lakera Guard API endpoint URL. Defaults to the v2 endpoint at
+                ``https://api.lakera.ai/v2/guard``; override for self-hosted or regional
+                deployments.
+            project_id: Optional Lakera project ID (e.g. ``"project-1234"``). Projects carry
+                per-project policy configuration (which detectors run, severity thresholds,
+                custom rules); when supplied, it is forwarded with each request so that
+                project's policy is applied.
+            breakdown: If ``True`` (default), request the per-detector ``breakdown`` list, which
+                also enables the graded ``score`` / ``categories`` mapping. If ``False``,
+                ``score`` degrades to ``1.0``/``0.0`` and ``categories`` is empty.
+            payload: If ``True`` (default), request the ``payload`` list locating PII /
+                profanity / custom-regex matches (``start`` / ``end`` offsets, matched ``text``,
+                ``labels``), surfaced in ``extra["payload"]``.
+            dev_info: If ``True``, request Lakera build information (git revision, model
+                version) in the response, surfaced in ``extra["dev_info"]``. Defaults to
+                ``False``.
+            metadata: Optional request metadata forwarded to Lakera for observability, e.g.
+                ``{"user_id": "u-42", "session_id": "s-1"}``.
+
+        Raises:
+            ValueError: If no API key is provided and ``LAKERA_API_KEY`` is not set.
+
         """
         if api_key:
             self.api_key = api_key
@@ -129,15 +165,22 @@ class LakeraGuard(Guardrail):
 
         Args:
             content (str | list[dict[str, str]]): Either a plain string (wrapped as a single
-                user-role message) or a pre-formed list of chat messages following the
-                ``[{"role": "user", "content": "..."}]`` shape.
+                user-role message, the common prompt-screening case) or a pre-formed list of
+                chat messages following the ``[{"role": "user", "content": "..."}]`` shape.
+                Pass the message-list form to screen a whole conversation, e.g.
+                ``[{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "..."}]``.
 
         Returns:
             ``GuardrailOutput`` with ``valid = not flagged``, ``score`` derived from the highest
-            detected-detector confidence level, ``categories`` (one per ``breakdown`` entry), and
-            ``extra`` carrying the ``flagged`` flag, ``payload``, ``metadata``,
-            ``detected_detector_types``, and (when requested) ``dev_info``. ``raw`` holds the full
-            response body (including the per-detector ``breakdown``).
+            detected-detector confidence level (higher = riskier), ``categories`` (one per
+            ``breakdown`` entry), and ``extra`` carrying the ``flagged`` flag, ``payload``,
+            ``metadata``, ``detected_detector_types``, and (when requested) ``dev_info``.
+            ``raw`` holds the full response body (including the per-detector ``breakdown``).
+            ``usage.latency_ms`` records the round-trip time.
+
+        Raises:
+            ValueError: If ``content`` is neither a string nor a list of message dicts, or if
+                the API responds with a non-200 status code.
 
         """
         start = time.perf_counter()

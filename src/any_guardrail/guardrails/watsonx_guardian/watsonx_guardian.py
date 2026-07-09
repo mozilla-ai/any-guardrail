@@ -15,7 +15,7 @@ _IMPORT_ERROR_HINT = (
 
 
 class WatsonxGuardian(Guardrail):
-    """Wraps IBM watsonx.ai's Text Detection / ``Guardian`` moderation API.
+    """watsonx Guardian — hosted text-detection moderation API running configurable Granite Guardian detectors (IBM).
 
     This is the hosted, pay-per-use counterpart to the locally-run
     :class:`~any_guardrail.guardrails.granite_guardian.granite_guardian.GraniteGuardian`
@@ -47,10 +47,22 @@ class WatsonxGuardian(Guardrail):
           offsets (watsonx detections locate the flagged substring).
         - ``raw`` is the full response dict from ``Guardian.detect``.
 
+    Expected input: ``validate`` takes a single string, ``content``, and screens it
+    against the configured detectors. There is no separate prompt-vs-response
+    argument; RAG groundedness / relevance are enabled by adding the corresponding
+    detector to ``detectors`` rather than by passing extra arguments here.
+
     Research backing:
         - Padhi et al., *Granite Guardian* (https://arxiv.org/abs/2412.07724, 2024).
         - IBM tutorial: https://www.ibm.com/think/tutorials/llm-safeguards-granite-guardian-risk-detection
         - SDK reference: https://ibm.github.io/watsonx-ai-python-sdk/fm_text_detection.html
+
+    For more information, see:
+
+    - [watsonx.ai platform (API key / project, free Lite plan)](https://dataplatform.cloud.ibm.com/)
+    - [IBM tutorial: LLM safeguards with Granite Guardian risk detection](https://www.ibm.com/think/tutorials/llm-safeguards-granite-guardian-risk-detection)
+    - [watsonx.ai Python SDK: foundation-model text detection](https://ibm.github.io/watsonx-ai-python-sdk/fm_text_detection.html)
+    - [Granite Guardian (arXiv:2412.07724)](https://arxiv.org/abs/2412.07724)
 
     Args:
         api_key (str | None): IBM Cloud IAM API key. Falls back to ``WATSONX_APIKEY``.
@@ -85,6 +97,32 @@ class WatsonxGuardian(Guardrail):
         Building the client performs IAM authentication, so unlike the pure-REST
         API guardrails this constructor does contact IBM Cloud (unless a
         pre-built ``api_client`` is supplied).
+
+        Args:
+            api_key: IBM Cloud IAM API key. If ``None``, it is read from the
+                ``WATSONX_APIKEY`` environment variable. Ignored when ``api_client``
+                is supplied.
+            url: watsonx.ai region endpoint, e.g.
+                ``https://us-south.ml.cloud.ibm.com``. If ``None``, it is read from
+                ``WATSONX_URL``. Ignored when ``api_client`` is supplied.
+            project_id: watsonx project ID. If ``None``, it is read from
+                ``WATSONX_PROJECT_ID``. One of ``project_id`` / ``space_id`` is
+                required (unless ``api_client`` is supplied).
+            space_id: watsonx deployment space ID. If ``None``, it is read from
+                ``WATSONX_SPACE_ID``. Alternative to ``project_id``.
+            detectors: Detector configuration forwarded to ``Guardian``. Defaults
+                to ``{"granite_guardian": {}}``; pass e.g.
+                ``{"granite_guardian": {"threshold": 0.6}, "pii": {}}`` to tune
+                thresholds or add the ``hap`` / ``pii`` detectors.
+            api_client: A pre-built ``ibm_watsonx_ai.APIClient``. When supplied, the
+                credential arguments above are ignored and the client is used as-is
+                (useful for shared clients or testing).
+
+        Raises:
+            ValueError: If ``api_client`` is not supplied and a required credential
+                is missing (no API key, no URL, or neither project nor space).
+            ImportError: If the ``ibm-watsonx-ai`` package is not installed.
+
         """
         self.model_id = "granite_guardian"
         self.detectors = detectors if detectors is not None else {"granite_guardian": {}}
