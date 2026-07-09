@@ -18,42 +18,18 @@ Outside a ``with`` block the provider still cleans up via ``atexit`` on
 interpreter exit, so notebook and REPL usage works without explicit
 teardown. Call ``provider.close()`` directly to release the port early.
 
-Args:
-    binary_path: Path to a pre-built ``.encoderfile``. If omitted, the
-        platform-appropriate artifact is auto-downloaded from
-        ``mozilla-ai/encoderfile`` using the model_id passed to
-        ``load_model``. Mutually exclusive with ``base_url``.
-    base_url: External-server mode. Point at an encoderfile server you spun
-        up yourself (e.g. ``"http://localhost:9999"``). When set, the
-        provider skips download + subprocess spawn entirely; ``load_model``
-        only polls the server for readiness, and ``close()`` is a no-op.
-        Mutually exclusive with ``binary_path``, ``port``, and a
-        non-default ``encoderfile_repo``. Must start with ``http://`` or
-        ``https://``.
-    port: TCP port to bind the encoderfile HTTP server. Defaults to a
-        kernel-chosen free port. Mutually exclusive with ``base_url``.
-    host: Bind address. Defaults to ``"127.0.0.1"``.
-    startup_timeout: Seconds to wait for the server to become ready. Also
-        applies to external-server readiness polling.
-    request_timeout: Per-request timeout for ``/predict`` calls.
-    cache_dir: Directory passed to ``hf_hub_download`` for auto-downloaded
-        binaries.
-    encoderfile_repo: Override the source HF repo. Defaults to
-        ``mozilla-ai/encoderfile``. Mutually exclusive with ``base_url``
-        when set to a non-default value.
-
 ## Constructor
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `binary_path` | `str | None` | No | `None` |
-| `base_url` | `str | None` | No | `None` |
-| `port` | `int | None` | No | `None` |
-| `host` | `str` | No | `"127.0.0.1"` |
-| `startup_timeout` | `float` | No | `60.0` |
-| `request_timeout` | `float` | No | `60.0` |
-| `cache_dir` | `str | None` | No | `None` |
-| `encoderfile_repo` | `str` | No | `"mozilla-ai/encoderfile"` |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `binary_path` | `str | None` | No | `None` | Path to a pre-built ``.encoderfile``. If omitted, the platform-appropriate artifact is auto-downloaded from ``mozilla-ai/encoderfile`` using the model_id passed to ``load_model``. Mutually exclusive with ``base_url``. |
+| `base_url` | `str | None` | No | `None` | External-server mode. Point at an encoderfile server you spun up yourself (e.g. ``"http://localhost:9999"``). When set, the provider skips download + subprocess spawn entirely; ``load_model`` only polls the server for readiness, and ``close()`` is a no-op. Mutually exclusive with ``binary_path``, ``port``, and a non-default ``encoderfile_repo``. Must start with ``http://`` or ``https://``. |
+| `port` | `int | None` | No | `None` | TCP port to bind the encoderfile HTTP server. Defaults to a kernel-chosen free port. Mutually exclusive with ``base_url``. |
+| `host` | `str` | No | `"127.0.0.1"` | Bind address. Defaults to ``"127.0.0.1"``. |
+| `startup_timeout` | `float` | No | `60.0` | Seconds to wait for the server to become ready. Also applies to external-server readiness polling. |
+| `request_timeout` | `float` | No | `60.0` | Per-request timeout for ``/predict`` calls. |
+| `cache_dir` | `str | None` | No | `None` | Directory passed to ``hf_hub_download`` for auto-downloaded binaries. |
+| `encoderfile_repo` | `str` | No | `"mozilla-ai/encoderfile"` | Override the source HF repo. Defaults to ``mozilla-ai/encoderfile``. Mutually exclusive with ``base_url`` when set to a non-default value. |
 
 Initialize the encoderfile provider.
 
@@ -74,9 +50,9 @@ only polls the user's server for readiness.
 
 **Parameters**
 
-| Parameter | Type | Required | Default |
-|-----------|------|----------|---------|
-| `model_id` | `str` | Yes | — |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `model_id` | `str` | Yes | — | any-guardrail model identifier. Used to look up the right encoderfile artifact when auto-downloading. In external-server mode this is recorded as metadata only. |
 
 **Returns:** `None`
 
