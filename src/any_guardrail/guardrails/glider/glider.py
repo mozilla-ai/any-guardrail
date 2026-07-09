@@ -3,9 +3,11 @@ from typing import ClassVar
 
 from transformers import pipeline
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
 from any_guardrail.providers.base import StandardProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 SCORE_PATTERN = re.compile(r"<score>\s*(\d+)\s*</score>")
@@ -120,6 +122,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
     """
 
     SUPPORTED_MODELS: ClassVar = ["PatronusAI/glider"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GLIDER]
 
     def __init__(
         self,

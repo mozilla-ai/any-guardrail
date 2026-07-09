@@ -6,6 +6,7 @@ from typing import Any, ClassVar, Generic, overload
 from any_guardrail.types import (
     AnyDict,
     GuardrailInferenceOutput,
+    GuardrailMetadata,
     GuardrailOutput,
     GuardrailPreprocessOutput,
     GuardrailUsage,
@@ -68,6 +69,14 @@ class Guardrail(ABC):
     """Base class for all guardrails."""
 
     SUPPORTED_MODELS: ClassVar[list[str]] = []
+
+    METADATA: ClassVar[GuardrailMetadata]
+    """Static taxonomy/capability metadata for this guardrail.
+
+    Every concrete guardrail sets this to its entry in
+    ``any_guardrail.registry.GUARDRAIL_METADATA`` (enforced by a parity test).
+    Declared here as an annotation only so the base class stays import-light.
+    """
 
     @abstractmethod
     def validate(self, *args: Any, **kwargs: Any) -> GuardrailOutput:

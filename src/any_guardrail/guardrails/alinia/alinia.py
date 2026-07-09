@@ -1,9 +1,12 @@
 import os
 import time
+from typing import ClassVar
 
 import requests
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import AnyDict, CategoryResult, GuardrailUsage
 
 
@@ -52,6 +55,8 @@ class Alinia(Guardrail):
         stream (bool): Whether to request a streaming API response. Defaults to ``False``.
 
     """
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.ALINIA]
 
     def __init__(
         self,

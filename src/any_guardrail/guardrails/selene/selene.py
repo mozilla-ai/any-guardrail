@@ -1,10 +1,12 @@
 import re
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import (
     AnyDict,
     ChatMessages,
@@ -97,6 +99,8 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
     """
 
     SUPPORTED_MODELS: ClassVar = ["AtlaAI/Selene-1-Mini-Llama-3.1-8B"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SELENE]
 
     def __init__(
         self,

@@ -1,9 +1,11 @@
 from typing import ClassVar
 
-from any_guardrail.base import GuardrailOutput, StandardGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, StandardGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import (
     AnyDict,
     GuardrailPreprocessOutput,
@@ -79,6 +81,8 @@ class ShieldGemma(StandardGuardrail):
         "google/shieldgemma-9b",
         "google/shieldgemma-27b",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SHIELD_GEMMA]
 
     def __init__(
         self,

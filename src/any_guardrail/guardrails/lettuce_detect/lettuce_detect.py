@@ -1,6 +1,10 @@
 import time
 from typing import Any, ClassVar
 
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
+
 try:
     from lettucedetect.models.inference import HallucinationDetector
 
@@ -58,6 +62,8 @@ class LettuceDetect(Guardrail):
         "KRLabsOrg/lettucedect-base-modernbert-en-v1",
         "KRLabsOrg/lettucedect-large-modernbert-en-v1",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.LETTUCE_DETECT]
 
     def __init__(self, model_id: str | None = None, method: str = "transformer") -> None:
         """Initialize the LettuceDetect guardrail.

@@ -1,10 +1,12 @@
 import re
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import (
     AnyDict,
     CategoryResult,
@@ -179,6 +181,8 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
     SUPPORTED_MODELS: ClassVar = [
         "ibm-granite/granite-guardian-4.1-8b",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GRANITE_GUARDIAN]
 
     def __init__(
         self,

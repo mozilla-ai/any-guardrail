@@ -1,10 +1,12 @@
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from any_llm import completion
 from pydantic import BaseModel, ValidationError
 
-from any_guardrail.base import Guardrail, GuardrailOutput
+from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import GuardrailUsage
 
 if TYPE_CHECKING:
@@ -65,6 +67,8 @@ class AnyLlm(Guardrail):
 
     - [any-llm on GitHub](https://github.com/mozilla-ai/any-llm).
     """
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.ANYLLM]
 
     def validate(
         self,

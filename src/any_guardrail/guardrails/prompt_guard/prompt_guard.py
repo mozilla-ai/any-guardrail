@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from any_guardrail.base import StandardGuardrail
+from any_guardrail.base import GuardrailName, StandardGuardrail
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import CategoryResult, GuardrailOutput, StandardInferenceOutput, StandardPreprocessOutput
 
 # Llama Prompt Guard 2 is a binary classifier: index 0 = benign, index 1 = malicious
@@ -69,6 +71,8 @@ class PromptGuard(StandardGuardrail):
         "meta-llama/Llama-Prompt-Guard-2-86M",
         "meta-llama/Llama-Prompt-Guard-2-22M",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PROMPT_GUARD]
 
     def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
         """Initialize the Prompt Guard 2 guardrail.

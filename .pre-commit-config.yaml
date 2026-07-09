@@ -45,6 +45,20 @@ repos:
         pass_filenames: false
         files: ^(src/any_guardrail/types\.py|scripts/generate_json_schema\.py|schemas/guardrail_output\.schema\.json)$
 
+      - id: guardrail-metadata-json
+        name: check guardrail metadata JSON is up to date
+        entry: "uv run python scripts/generate_metadata_json.py --check"
+        language: system
+        pass_filenames: false
+        files: ^(src/any_guardrail/(taxonomy|registry|base)\.py|scripts/generate_metadata_json\.py|schemas/guardrail_metadata\.json)$
+
+      - id: guardrail-summary-nav
+        name: check guardrail SUMMARY navigation is up to date
+        entry: "uv run python scripts/generate_summary.py --check"
+        language: system
+        pass_filenames: false
+        files: ^(src/any_guardrail/(taxonomy|registry|base)\.py|scripts/generate_summary\.py|docs/SUMMARY\.md)$
+
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.4.2"
     hooks:

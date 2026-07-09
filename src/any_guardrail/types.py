@@ -8,6 +8,40 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+# Re-export the dependency-free taxonomy so callers can reach the capability
+# metadata model and its enums from ``any_guardrail.types`` alongside
+# ``GuardrailOutput``. ``taxonomy`` is a leaf module (imports only pydantic), so
+# this does not create an import cycle.
+from any_guardrail.taxonomy import (
+    BackendType,
+    GuardrailCategory,
+    GuardrailMetadata,
+    GuardrailStage,
+    OutputShape,
+)
+
+__all__ = [
+    "AnyDict",
+    "BackendType",
+    "CategoryResult",
+    "ChatMessage",
+    "ChatMessages",
+    "GuardrailCategory",
+    "GuardrailInferenceOutput",
+    "GuardrailMetadata",
+    "GuardrailOutput",
+    "GuardrailPreprocessOutput",
+    "GuardrailStage",
+    "GuardrailUsage",
+    "InferenceT",
+    "OutputShape",
+    "PreprocessT",
+    "SpanResult",
+    "StandardInferenceOutput",
+    "StandardPreprocessOutput",
+    "TokenizerDict",
+]
+
 # Type variables for generic stages
 PreprocessT = TypeVar("PreprocessT")
 """Type variable for preprocessing output data."""

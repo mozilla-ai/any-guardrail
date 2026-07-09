@@ -1,6 +1,8 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import AnyDict, GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 _VALID_SOURCES = ("INPUT", "OUTPUT")
@@ -66,6 +68,8 @@ class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
     """
 
     SUPPORTED_MODELS: ClassVar = ["bedrock-guardrails"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.BEDROCK_GUARDRAILS]
 
     def __init__(
         self,

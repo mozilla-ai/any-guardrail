@@ -1,10 +1,12 @@
 from typing import Any, ClassVar
 
-from any_guardrail.base import GuardrailOutput, ThreeStageGuardrail
+from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.off_topic.off_topic_jina import OffTopicJina
 from any_guardrail.guardrails.off_topic.off_topic_stsb import OffTopicStsb
 from any_guardrail.guardrails.utils import default
 from any_guardrail.providers.base import StandardProvider
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
@@ -61,6 +63,8 @@ class OffTopic(ThreeStageGuardrail[Any, Any]):
         "mozilla-ai/jina-embeddings-v2-small-en-off-topic",
         "mozilla-ai/stsb-roberta-base-off-topic",
     ]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.OFFTOPIC]
 
     implementation: OffTopicJina | OffTopicStsb
 

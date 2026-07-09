@@ -331,7 +331,15 @@ def _any_guardrail_page() -> str:
     if class_doc:
         lines.append(class_doc + "\n")
 
-    for method_name in ("create", "get_supported_guardrails", "get_supported_model", "get_all_supported_models"):
+    for method_name in (
+        "create",
+        "metadata",
+        "list_guardrails",
+        "group_by",
+        "get_supported_guardrails",
+        "get_supported_model",
+        "get_all_supported_models",
+    ):
         method = getattr(AnyGuardrail, method_name, None)
         if method is None:
             continue
@@ -389,21 +397,57 @@ def _types_page() -> str:
     return "\n".join(lines)
 
 
+_CATEGORY_TITLES = {
+    "prompt_injection": "Prompt Injection",
+    "content_safety": "Content Safety",
+    "toxicity": "Toxicity",
+    "pii": "PII",
+    "hallucination": "Hallucination",
+    "off_topic": "Off-Topic",
+    "bias": "Bias",
+    "tool_use": "Tool Use",
+    "general_judge": "General Judge",
+}
+
+
 def _guardrails_index_page() -> str:
+    """Render the guardrail index grouped by primary category with flavor text.
+
+    Both the grouping and the descriptions come from the import-free metadata
+    registry, so this page stays in sync with the taxonomy automatically.
+    """
     from any_guardrail.base import GuardrailName
+    from any_guardrail.registry import GUARDRAIL_METADATA
+    from any_guardrail.taxonomy import GuardrailCategory
 
     lines: list[str] = [
         "# Guardrails\n",
-        "Available guardrails and their parameters. Select a guardrail to view its API details.\n",
-        "| Name | `GuardrailName` value |",
-        "|------|-----------------------|",
+        "Available guardrails, grouped by primary category. Select a guardrail to view its API details.\n",
+        "Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and "
+        "`AnyGuardrail.group_by(...)` — see the [AnyGuardrail reference](../any_guardrail.md).\n",
     ]
+    by_primary: dict[GuardrailCategory, list[GuardrailName]] = {}
     for name in GuardrailName:
-        title = name.name.capitalize()
-        page = name.value.replace("_", "-")
-        lines.append(f"| [{title}]({page}.md) | `GuardrailName.{name.name}` |")
-    lines.append("")
+        by_primary.setdefault(GUARDRAIL_METADATA[name].primary_category, []).append(name)
+
+    for category in GuardrailCategory:
+        names = by_primary.get(category, [])
+        if not names:
+            continue
+        lines.append(_section(_CATEGORY_TITLES.get(category.value, category.value.title())))
+        lines.append("| Guardrail | Description |")
+        lines.append("|-----------|-------------|")
+        for name in sorted(names, key=lambda n: GUARDRAIL_METADATA[n].display_name.lower()):
+            meta = GUARDRAIL_METADATA[name]
+            page = f"{name.value.replace('_', '-')}.md"
+            lines.append(f"| [{meta.display_name}]({page}) | {_table_cell(meta.description)} |")
+        lines.append("")
     return "\n".join(lines)
+
+
+def _pascal_class_name(value: str) -> str:
+    """PascalCase a GuardrailName value the same way the factory resolves classes."""
+    return "".join(part.capitalize() for part in re.split(r"[^A-Za-z0-9]+", value) if part)
 
 
 # ---------------------------------------------------------------------------
@@ -416,78 +460,26 @@ PROVIDERS = [
 ]
 
 
-GUARDRAILS = [
-    ("any_guardrail.guardrails.alinia.alinia", "Alinia", "alinia.md"),
-    ("any_guardrail.guardrails.any_llm.any_llm", "AnyLlm", "any-llm.md"),
-    (
-        "any_guardrail.guardrails.azure_content_safety.azure_content_safety",
-        "AzureContentSafety",
-        "azure-content-safety.md",
-    ),
-    (
-        "any_guardrail.guardrails.azure_prompt_shields.azure_prompt_shields",
-        "AzurePromptShields",
-        "azure-prompt-shields.md",
-    ),
-    (
-        "any_guardrail.guardrails.bedrock_guardrails.bedrock_guardrails",
-        "BedrockGuardrails",
-        "bedrock-guardrails.md",
-    ),
-    ("any_guardrail.guardrails.deepset.deepset", "Deepset", "deepset.md"),
-    ("any_guardrail.guardrails.duo_guard.duo_guard", "DuoGuard", "duo-guard.md"),
-    ("any_guardrail.guardrails.flowjudge.flowjudge", "Flowjudge", "flowjudge.md"),
-    ("any_guardrail.guardrails.glider.glider", "Glider", "glider.md"),
-    (
-        "any_guardrail.guardrails.granite_guardian.granite_guardian",
-        "GraniteGuardian",
-        "granite-guardian.md",
-    ),
-    ("any_guardrail.guardrails.harm_guard.harm_guard", "HarmGuard", "harm-guard.md"),
-    ("any_guardrail.guardrails.injec_guard.injec_guard", "InjecGuard", "injec-guard.md"),
-    ("any_guardrail.guardrails.jasper.jasper", "Jasper", "jasper.md"),
-    ("any_guardrail.guardrails.lakera_guard.lakera_guard", "LakeraGuard", "lakera-guard.md"),
-    ("any_guardrail.guardrails.llama_guard.llama_guard", "LlamaGuard", "llama-guard.md"),
-    ("any_guardrail.guardrails.off_topic.off_topic", "OffTopic", "off-topic.md"),
-    (
-        "any_guardrail.guardrails.openai_moderation.openai_moderation",
-        "OpenaiModeration",
-        "openai-moderation.md",
-    ),
-    ("any_guardrail.guardrails.pangolin.pangolin", "Pangolin", "pangolin.md"),
-    ("any_guardrail.guardrails.patronus.patronus", "Patronus", "patronus.md"),
-    ("any_guardrail.guardrails.protectai.protectai", "Protectai", "protectai.md"),
-    ("any_guardrail.guardrails.sentinel.sentinel", "Sentinel", "sentinel.md"),
-    ("any_guardrail.guardrails.shield_gemma.shield_gemma", "ShieldGemma", "shield-gemma.md"),
-    ("any_guardrail.guardrails.prompt_guard.prompt_guard", "PromptGuard", "prompt-guard.md"),
-    ("any_guardrail.guardrails.bielik_guard.bielik_guard", "BielikGuard", "bielik-guard.md"),
-    ("any_guardrail.guardrails.wild_guard.wild_guard", "WildGuard", "wild-guard.md"),
-    ("any_guardrail.guardrails.dyna_guard.dyna_guard", "DynaGuard", "dyna-guard.md"),
-    (
-        "any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety",
-        "NemotronContentSafety",
-        "nemotron-content-safety.md",
-    ),
-    ("any_guardrail.guardrails.poly_guard.poly_guard", "PolyGuard", "poly-guard.md"),
-    ("any_guardrail.guardrails.kanana_safeguard.kanana_safeguard", "KananaSafeguard", "kanana-safeguard.md"),
-    ("any_guardrail.guardrails.gpt_oss_safeguard.gpt_oss_safeguard", "GptOssSafeguard", "gpt-oss-safeguard.md"),
-    ("any_guardrail.guardrails.prometheus.prometheus", "Prometheus", "prometheus.md"),
-    ("any_guardrail.guardrails.compass_judger.compass_judger", "CompassJudger", "compass-judger.md"),
-    ("any_guardrail.guardrails.selene.selene", "Selene", "selene.md"),
-    ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "LettuceDetect", "lettuce-detect.md"),
-    ("any_guardrail.guardrails.gli_guard.gli_guard", "GliGuard", "gli-guard.md"),
-    (
-        "any_guardrail.guardrails.watsonx_guardian.watsonx_guardian",
-        "WatsonxGuardian",
-        "watsonx-guardian.md",
-    ),
-    ("any_guardrail.guardrails.qwen3_guard.qwen3_guard", "Qwen3Guard", "qwen3-guard.md"),
-    (
-        "any_guardrail.guardrails.qwen3_guard_stream.qwen3_guard_stream",
-        "Qwen3GuardStream",
-        "qwen3-guard-stream.md",
-    ),
-]
+def _guardrail_registry() -> list[tuple[str, str, str]]:
+    """Derive (module_path, ClassName, filename) for every guardrail from ``GuardrailName``.
+
+    The naming convention matches ``AnyGuardrail._get_guardrail_class`` (snake_case
+    value → module + PascalCase class) and the docs filename convention (dashes), so
+    this list never has to be hand-maintained as guardrails are added.
+    """
+    from any_guardrail.base import GuardrailName
+
+    return [
+        (
+            f"any_guardrail.guardrails.{name.value}.{name.value}",
+            _pascal_class_name(name.value),
+            f"{name.value.replace('_', '-')}.md",
+        )
+        for name in GuardrailName
+    ]
+
+
+GUARDRAILS = _guardrail_registry()
 
 
 # ---------------------------------------------------------------------------

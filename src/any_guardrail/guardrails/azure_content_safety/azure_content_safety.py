@@ -3,6 +3,10 @@ import os
 from collections.abc import Callable
 from typing import Any, ClassVar, TypeVar
 
+from any_guardrail.base import GuardrailName
+from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailMetadata
+
 try:
     from azure.ai.contentsafety import BlocklistClient, ContentSafetyClient
     from azure.ai.contentsafety.models import (
@@ -88,6 +92,8 @@ class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutp
     """
 
     SUPPORTED_MODELS: ClassVar = ["azure-content-safety"]
+
+    METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.AZURE_CONTENT_SAFETY]
 
     def __init__(
         self,
