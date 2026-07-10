@@ -1,6 +1,6 @@
 # Guardrails
 
-Available guardrails, grouped by primary category. Select a guardrail to view its API details.
+Available guardrails, grouped by primary category. Select a guardrail to view its API details. See the [Taxonomy reference](../taxonomy.md) for what each category means.
 
 Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and `AnyGuardrail.group_by(...)` — see the [AnyGuardrail reference](../any_guardrail.md).
 
@@ -10,6 +10,7 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 |-----------|-------------|
 | [Azure Prompt Shields](azure-prompt-shields.md) | Azure AI Prompt Shields — hosted detector for direct (user prompt) and indirect (document-borne) prompt-injection and jailbreak attacks (Microsoft). |
 | [Deepset](deepset.md) | Deepset — binary prompt-injection classifier built on DeBERTa-v3-base (deepset). |
+| [HarmAug-Guard](harm-guard.md) | HarmAug-Guard — binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair. |
 | [Jasper](jasper.md) | Jasper — binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base (JasperLS). |
 | [Lakera Guard](lakera-guard.md) | Lakera Guard — hosted API for prompt-injection, jailbreak, content-moderation, and PII detection (Lakera). |
 | [Pangolin Guard](pangolin.md) | Pangolin Guard — binary prompt-injection classifier built on ModernBERT (dcarpintero). |
@@ -29,8 +30,6 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | [DuoGuard](duo-guard.md) | DuoGuard — multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts. |
 | [GLiGuard](gli-guard.md) | GLiGuard — schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2 (Fastino). |
 | [gpt-oss-safeguard](gpt-oss-safeguard.md) | gpt-oss-safeguard — policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy (OpenAI). |
-| [Granite Guardian](granite-guardian.md) | Granite Guardian — hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria (IBM). |
-| [HarmAug-Guard](harm-guard.md) | HarmAug-Guard — binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair. |
 | [Kanana Safeguard](kanana-safeguard.md) | Kanana Safeguard — Korean safety decoder models covering harmful content, legal risk, and prompt attacks (Kakao). |
 | [Llama Guard](llama-guard.md) | Llama Guard — decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy (Meta). |
 | [Nemotron Content Safety](nemotron-content-safety.md) | Nemotron Content Safety — 4B reasoning safety classifier covering a 22-category content-safety taxonomy (NVIDIA). |
@@ -47,7 +46,6 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | Guardrail | Description |
 |-----------|-------------|
 | [LettuceDetect](lettuce-detect.md) | LettuceDetect — token/span-level RAG hallucination detector built on ModernBERT (KRLabs). |
-| [Patronus](patronus.md) | Patronus — hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI). |
 
 ## Off-Topic
 
@@ -64,5 +62,7 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | [DynaGuard](dyna-guard.md) | DynaGuard — dynamic guardian model evaluating conversation compliance with user-defined policies. |
 | [Flow Judge](flowjudge.md) | Flow Judge — local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library (Flow AI). |
 | [GLIDER](glider.md) | GLIDER — prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases (Patronus AI). |
+| [Granite Guardian](granite-guardian.md) | Granite Guardian — hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria (IBM). |
+| [Patronus](patronus.md) | Patronus — hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI). |
 | [Prometheus](prometheus.md) | Prometheus — open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval). |
 | [Selene 1 Mini](selene.md) | Selene 1 Mini — general-purpose LLM judge grading a response against a user-defined 1-5 rubric (Atla). |

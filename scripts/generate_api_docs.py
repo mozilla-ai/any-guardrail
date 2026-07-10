@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import inspect
 import re
 import sys
@@ -397,6 +398,78 @@ def _types_page() -> str:
     return "\n".join(lines)
 
 
+def _enum_member_docs(source: str) -> dict[str, list[tuple[str, str]]]:
+    """Map each enum class in ``source`` to its ordered ``(value, description)`` members.
+
+    StrEnum member docstrings are attribute docstrings (a string literal following the
+    assignment), not present on the member's ``__doc__``, so we read them from source.
+    """
+    result: dict[str, list[tuple[str, str]]] = {}
+    tree = ast.parse(source)
+    for node in tree.body:
+        if not (isinstance(node, ast.ClassDef) and any(_is_str_enum_base(b) for b in node.bases)):
+            continue
+        members: list[tuple[str, str]] = []
+        body = node.body
+        for i, stmt in enumerate(body):
+            # `NAME = "value"` optionally followed by a docstring expression.
+            if (
+                isinstance(stmt, ast.Assign)
+                and isinstance(stmt.value, ast.Constant)
+                and isinstance(stmt.value.value, str)
+            ):
+                value = stmt.value.value
+                doc = ""
+                nxt = body[i + 1] if i + 1 < len(body) else None
+                if (
+                    isinstance(nxt, ast.Expr)
+                    and isinstance(nxt.value, ast.Constant)
+                    and isinstance(nxt.value.value, str)
+                ):
+                    doc = " ".join(nxt.value.value.split())
+                members.append((value, doc))
+        if members:
+            result[node.name] = members
+    return result
+
+
+def _is_str_enum_base(base: Any) -> bool:
+    return isinstance(base, ast.Name) and base.id == "StrEnum"
+
+
+def _taxonomy_page() -> str:
+    """Render a human-readable dictionary of the guardrail taxonomy enums.
+
+    Values and their meanings come from ``taxonomy.py`` (the enum member docstrings),
+    so this page stays in sync with the taxonomy automatically.
+    """
+    import any_guardrail.taxonomy as taxonomy_mod
+
+    source = Path(taxonomy_mod.__file__).read_text(encoding="utf-8")
+    member_docs = _enum_member_docs(source)
+
+    lines: list[str] = [
+        "# Taxonomy\n",
+        "The vocabulary behind guardrail metadata (see the [AnyGuardrail reference](any_guardrail.md) "
+        "for the `list_guardrails` / `group_by` query API and "
+        "[Guardrails](guardrails/index.md) for the catalog grouped by primary category).\n",
+        "A machine-readable export of every guardrail's metadata is published at "
+        "<https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_metadata.json>.\n",
+    ]
+
+    for enum_name in ("GuardrailCategory", "GuardrailStage", "OutputShape", "BackendType"):
+        cls = getattr(taxonomy_mod, enum_name)
+        lines.append(_section(enum_name))
+        doc = _clean_docstring(inspect.getdoc(cls))
+        if doc:
+            lines.append(doc + "\n")
+        rows = [f"| `{value}` | {_table_cell(desc)} |" for value, desc in member_docs.get(enum_name, [])]
+        if rows:
+            lines.append("| Value | Meaning |\n|-------|---------|\n" + "\n".join(rows) + "\n")
+
+    return "\n".join(lines)
+
+
 _CATEGORY_TITLES = {
     "prompt_injection": "Prompt Injection",
     "content_safety": "Content Safety",
@@ -422,7 +495,8 @@ def _guardrails_index_page() -> str:
 
     lines: list[str] = [
         "# Guardrails\n",
-        "Available guardrails, grouped by primary category. Select a guardrail to view its API details.\n",
+        "Available guardrails, grouped by primary category. Select a guardrail to view its API details. "
+        "See the [Taxonomy reference](../taxonomy.md) for what each category means.\n",
         "Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and "
         "`AnyGuardrail.group_by(...)` — see the [AnyGuardrail reference](../any_guardrail.md).\n",
     ]
@@ -500,6 +574,10 @@ def main(out_dir: Path | None = None) -> None:
 
     path = api_dir / "types.md"
     path.write_text(_types_page(), encoding="utf-8")
+    print(f"  {path}")
+
+    path = api_dir / "taxonomy.md"
+    path.write_text(_taxonomy_page(), encoding="utf-8")
     print(f"  {path}")
 
     path = guardrails_dir / "index.md"
