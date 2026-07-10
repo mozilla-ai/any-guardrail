@@ -5,6 +5,8 @@ from transformers import pipeline
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import GuardrailMetadata
@@ -14,56 +16,14 @@ SCORE_PATTERN = re.compile(r"<score>\s*(\d+)\s*</score>")
 REASONING_PATTERN = re.compile(r"<reasoning>\s*(.*?)\s*</reasoning>", re.DOTALL)
 HIGHLIGHT_PATTERN = re.compile(r"<highlight>\s*(.*?)\s*</highlight>", re.DOTALL)
 
-SYSTEM_PROMPT_GLIDER = """
-Analyze the following pass criteria carefully and score the text based on the rubric defined below.
+SYSTEM_PROMPT_GLIDER = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve().segments["system"]
+"""GLIDER evaluation prompt (registry-sourced); fills ``{data}`` / ``{pass_criteria}`` / ``{rubric}``."""
 
-To perform this evaluation, you must:
+INPUT_OUTPUT_DATA_FORMAT = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve().segments["input_output"]
+"""GLIDER input+output data wrapper (registry-sourced); fills ``{input_text}`` / ``{output_text}``."""
 
-1. Understand the text tags, pass criteria and rubric thoroughly.
-2. Review the finer details of the text and the rubric.
-3. Compare the tags to be evaluated to the score descriptions in the rubric.
-4. Pay close attention to small details that might impact the final score and form accurate associations between tags and pass criteria.
-5. Write a detailed reasoning justifying your evaluation in a bullet point format.
-6. The reasoning must summarize the overall strengths and weaknesses of the output while quoting exact phrases from the output wherever required.
-7. Output a list of words or phrases that you believe are the most important in determining the score.
-8. Assign a final score based on the scoring rubric.
-
-Data to evaluate:
-{data}
-
-Pass Criteria:
-{pass_criteria}
-
-Rubric:
-{rubric}
-
-Your output must be in the following format:
-<reasoning>
-[Detailed reasoning justifying your evaluation in a bullet point format according to the specifics defined above]
-</reasoning>
-<highlight>
-[List of words or phrases that you believe are the most important in determining the score]
-</highlight>
-<score>
-[The final integer score assigned based on the scoring rubric]
-</score>
-"""
-
-INPUT_OUTPUT_DATA_FORMAT = """
-<INPUT>
-{input_text}
-</INPUT>
-
-<OUTPUT>
-{output_text}
-</OUTPUT>
-"""
-
-INPUT_DATA_FORMAT = """
-<INPUT>
-{input_text}
-</INPUT>
-"""
+INPUT_DATA_FORMAT = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve().segments["input"]
+"""GLIDER input-only data wrapper (registry-sourced); fills ``{input_text}``."""
 
 
 class Glider(ThreeStageGuardrail[ChatMessages, str]):
@@ -125,6 +85,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GLIDER]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.GLIDER]
+
     def __init__(
         self,
         pass_criteria: str,
@@ -134,6 +96,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         provider: StandardProvider | None = None,  # Reserved for future extensibility
         higher_is_better: bool = True,
         score_range: tuple[int, int] | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the GLIDER guardrail.
 
@@ -156,6 +120,12 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
                 ``(0, 1)`` or ``(1, 5)``. Supplying it enables the normalized canonical
                 risk in ``GuardrailOutput.score``; when omitted, ``score`` is ``None``
                 and the raw rubric value is still available in ``extra["rubric_score"]``.
+            prompt: Optional prompt-template override, used as-is (system prompt filling ``{data}`` /
+                ``{pass_criteria}`` / ``{rubric}`` plus the ``input`` / ``input_output`` data
+                wrappers). Defaults to ``None`` — the registry default, or the version named by
+                ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
@@ -167,7 +137,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
         self.score_range = score_range
-        self.system_prompt = SYSTEM_PROMPT_GLIDER
+        self._prompt = resolve_prompt(GuardrailName.GLIDER, prompt, prompt_version)
         self.provider = provider  # Reserved for future extensibility
         self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
 
@@ -209,10 +179,10 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
 
         """
         if output_text is None:
-            data = INPUT_DATA_FORMAT.format(input_text=input_text)
+            data = self._prompt.segments["input"].format(input_text=input_text)
         else:
-            data = INPUT_OUTPUT_DATA_FORMAT.format(input_text=input_text, output_text=output_text)
-        prompt = self.system_prompt.format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
+            data = self._prompt.segments["input_output"].format(input_text=input_text, output_text=output_text)
+        prompt = self._prompt.segments["system"].format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return GuardrailPreprocessOutput(data=[{"role": "user", "content": prompt}])
 
     def _inference(self, message: GuardrailPreprocessOutput[ChatMessages]) -> GuardrailInferenceOutput[str]:

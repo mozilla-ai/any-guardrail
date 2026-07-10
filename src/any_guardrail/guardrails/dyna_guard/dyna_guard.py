@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -19,22 +21,10 @@ from any_guardrail.types import (
 DynaGuardPreprocessData = AnyDict
 DynaGuardInferenceData = AnyDict
 
-DYNAGUARD_SYSTEM_PROMPT = (
-    "You are a guardian model evaluating the compliance of an agent with a list of rules.\n"
-    "The rules will be provided in a numbered format, starting with a <rules> tag and ending "
-    "with a </rules> tag.\n"
-    "You will be given the transcript that contains output from the agent, starting with a "
-    "<transcript> tag and ending with a </transcript> tag.\n\n"
-    "Your job is to evaluate the agent's output in the transcript and determine if any of the "
-    "rules have been violated.\n\n"
-    "If a <think> or an <explanation> tag is present, provide a few sentences of reasoning about "
-    "the compliance for each rule before determining whether it has been violated.\n"
-    "If no rules were violated by the agent, output PASS as the final answer. Otherwise, if any "
-    "rules were violated, output FAIL.\n\n"
-    "Respond in the following format:\n"
-    "<answer>\nPASS/FAIL\n</answer>"
-)
-DYNAGUARD_USER_TEMPLATE = "<rules>\n{policy}\n</rules>\n<transcript>\n{transcript}\n</transcript>"
+DYNAGUARD_SYSTEM_PROMPT = PROMPT_REGISTRY[GuardrailName.DYNA_GUARD].resolve().segments["system"]
+"""DynaGuard guardian system prompt (registry-sourced)."""
+DYNAGUARD_USER_TEMPLATE = PROMPT_REGISTRY[GuardrailName.DYNA_GUARD].resolve().segments["user"]
+"""DynaGuard user template (registry-sourced); fills ``{policy}`` / ``{transcript}``."""
 
 # DynaGuard reasons inside a <think> block before emitting <answer>PASS/FAIL</answer> even in
 # "fast" mode (we don't prime the response with <answer>), so the budget must be large enough to
@@ -112,12 +102,16 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.DYNA_GUARD]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.DYNA_GUARD]
+
     def __init__(
         self,
         policy: str,
         think: bool = False,
         model_id: str | None = None,
         provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the DynaGuard guardrail.
 
@@ -135,6 +129,11 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
                 ``HuggingFaceProvider`` loading the model as a causal LM. When a
                 ``HuggingFaceProvider`` is supplied, it is loaded with
                 ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer``.
+            prompt: Optional prompt-template override, used as-is (system prompt plus a user
+                template filling ``{policy}`` / ``{transcript}``). Defaults to ``None`` — the
+                registry default, or the version named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
@@ -143,6 +142,7 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.policy = policy
         self.think = think
+        self._prompt = resolve_prompt(GuardrailName.DYNA_GUARD, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
@@ -208,9 +208,9 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         """
         del kwargs
         transcript = f"User: {input_text}\nAgent: {output_text}" if output_text is not None else input_text
-        user = DYNAGUARD_USER_TEMPLATE.format(policy=self.policy, transcript=transcript)
+        user = self._prompt.segments["user"].format(policy=self.policy, transcript=transcript)
         messages: ChatMessages = [
-            {"role": "system", "content": DYNAGUARD_SYSTEM_PROMPT},
+            {"role": "system", "content": self._prompt.segments["system"]},
             {"role": "user", "content": user},
         ]
         return GuardrailPreprocessOutput(data={"messages": messages})

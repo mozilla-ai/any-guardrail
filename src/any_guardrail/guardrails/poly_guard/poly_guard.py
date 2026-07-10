@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -37,14 +39,10 @@ POLYGUARD_CATEGORIES = {
     "S14": "Code Interpreter Abuse",
 }
 
-POLYGUARD_SYSTEM_PROMPT = (
-    "You are a classifier for analyzing interactions between humans and LLMs. Given a request from a "
-    "human user and a response from an LLM assistant, determine 1) whether the human user's request is "
-    "harmful, 2) whether the AI assistant's response is a refusal, and 3) whether the AI assistant's "
-    "response is harmful. In addition, identify the policies violated if the interaction is unsafe and "
-    "harmful according to the safety policy with the below categories."
-)
-POLYGUARD_USER_TEMPLATE = "Human user:\n{prompt}\n\nAI assistant:\n{response}"
+POLYGUARD_SYSTEM_PROMPT = PROMPT_REGISTRY[GuardrailName.POLY_GUARD].resolve().segments["system"]
+"""PolyGuard moderation system prompt (registry-sourced)."""
+POLYGUARD_USER_TEMPLATE = PROMPT_REGISTRY[GuardrailName.POLY_GUARD].resolve().segments["user"]
+"""PolyGuard user template (registry-sourced); fills ``{prompt}`` / ``{response}``."""
 
 MAX_NEW_TOKENS = 100
 
@@ -107,7 +105,15 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.POLY_GUARD]
 
-    def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.POLY_GUARD]
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
+    ) -> None:
         """Initialize the PolyGuard guardrail.
 
         Args:
@@ -118,9 +124,15 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
                 built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A
                 supplied ``HuggingFaceProvider`` is corrected to those classes at load time; any
                 other provider is used as-is.
+            prompt: Optional prompt-template override, used as-is (system prompt plus a user
+                template filling ``{prompt}`` / ``{response}``). Defaults to ``None`` — the registry
+                default, or the version named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self._prompt = resolve_prompt(GuardrailName.POLY_GUARD, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
@@ -177,9 +189,9 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
 
         """
         del kwargs
-        user = POLYGUARD_USER_TEMPLATE.format(prompt=input_text, response=output_text or "")
+        user = self._prompt.segments["user"].format(prompt=input_text, response=output_text or "")
         messages: ChatMessages = [
-            {"role": "system", "content": POLYGUARD_SYSTEM_PROMPT},
+            {"role": "system", "content": self._prompt.segments["system"]},
             {"role": "user", "content": user},
         ]
         return GuardrailPreprocessOutput(data={"messages": messages})
