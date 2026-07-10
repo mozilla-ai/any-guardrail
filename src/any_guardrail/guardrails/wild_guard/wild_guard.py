@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -21,20 +23,8 @@ WildGuardInferenceData = AnyDict  # provider.generate_chat output
 # WildGuard ships its own instruction wrapper (it is not a chat-template model), so the
 # prompt is fed verbatim via ``apply_chat_template=False``. The leading ``<s>`` is omitted
 # because the tokenizer adds the BOS token itself.
-WILDGUARD_FORMAT = """<|user|>
-[INST] You are a classifier for analyzing interactions between humans and LLMs. Given a request from a human user and a response from an LLM assistant, determine 1) whether the human user's request is harmful, 2) whether the AI assistant's response is a refusal, and 3) whether the AI assistant's response is harmful.
-
-Human user:
-{prompt}
-
-AI assistant:
-{response}
-
----
-
-Answers: [/INST]
-<|assistant|>
-"""
+WILDGUARD_FORMAT = PROMPT_REGISTRY[GuardrailName.WILD_GUARD].resolve().segments["prompt"]
+"""WildGuard's instruction wrapper (registry-sourced); fills ``{prompt}`` / ``{response}``, fed verbatim."""
 
 MAX_NEW_TOKENS = 64
 
@@ -99,7 +89,15 @@ class WildGuard(ThreeStageGuardrail[WildGuardPreprocessData, WildGuardInferenceD
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.WILD_GUARD]
 
-    def __init__(self, model_id: str | None = None, provider: StandardProvider | None = None) -> None:
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.WILD_GUARD]
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
+    ) -> None:
         """Initialize the WildGuard guardrail.
 
         Args:
@@ -110,12 +108,18 @@ class WildGuard(ThreeStageGuardrail[WildGuardPreprocessData, WildGuardInferenceD
                 ``HuggingFaceProvider`` is supplied, it is loaded with
                 ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer``
                 so its default sequence-classification loader is corrected.
+            prompt: Optional prompt-template override, used as-is (must fill ``{prompt}`` /
+                ``{response}``). Defaults to ``None`` — the registry default, or the version named
+                by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
 
         """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        self._prompt = resolve_prompt(GuardrailName.WILD_GUARD, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
@@ -181,7 +185,7 @@ class WildGuard(ThreeStageGuardrail[WildGuardPreprocessData, WildGuardInferenceD
 
         """
         del kwargs
-        prompt = WILDGUARD_FORMAT.format(prompt=input_text, response=output_text or "")
+        prompt = self._prompt.segments["prompt"].format(prompt=input_text, response=output_text or "")
         return GuardrailPreprocessOutput(
             data={"messages": [{"role": "user", "content": prompt}], "has_response": output_text is not None}
         )

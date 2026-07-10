@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -23,21 +25,8 @@ CompassJudgerInferenceData = AnyDict
 SCORE_MIN = 1
 SCORE_MAX = 10
 
-POINTWISE_PROMPT = """You are an impartial judge. Rate the response below against the criteria and rubric on an integer scale from 1 to 10.
-
-Criteria:
-{criteria}
-
-Rubric:
-{rubric}
-
-Instruction:
-{instruction}
-
-Response:
-{response}
-
-First give a brief justification, then end your reply with the rating in the exact format: Rating: [[X]] where X is an integer from 1 to 10."""
+POINTWISE_PROMPT = PROMPT_REGISTRY[GuardrailName.COMPASS_JUDGER].resolve().segments["user"]
+"""Default CompassJudger pointwise 1-10 template (registry-sourced); fills criteria/rubric/instruction/response."""
 
 MAX_NEW_TOKENS = 1024
 _RATING_PATTERN = re.compile(r"\[\[\s*(\d{1,2})\s*\]\]")
@@ -109,6 +98,8 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.COMPASS_JUDGER]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.COMPASS_JUDGER]
+
     def __init__(
         self,
         criteria: str,
@@ -117,6 +108,8 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
         higher_is_better: bool = True,
         model_id: str | None = None,
         provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the CompassJudger guardrail.
 
@@ -138,6 +131,11 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
                 ``HuggingFaceProvider`` loading a causal LM. HuggingFace-backed loads
                 force the SDPA attention kernel because CompassJudger-2's config
                 requests flash_attention_2, which is unavailable on CPU/MPS.
+            prompt: Optional prompt-template override, used as-is (must fill ``{criteria}`` /
+                ``{rubric}`` / ``{instruction}`` / ``{response}``). Defaults to ``None`` — the
+                registry default, or the version named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
@@ -148,6 +146,7 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
         self.rubric = rubric
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
+        self._prompt = resolve_prompt(GuardrailName.COMPASS_JUDGER, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         # CompassJudger-2's config requests flash_attention_2, which isn't available on
         # CPU/MPS (or any env without flash-attn installed). Force the portable SDPA kernel.
@@ -218,7 +217,7 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
 
         """
         del kwargs
-        prompt = POINTWISE_PROMPT.format(
+        prompt = self._prompt.segments["user"].format(
             criteria=self.criteria,
             rubric=self.rubric,
             instruction=input_text,

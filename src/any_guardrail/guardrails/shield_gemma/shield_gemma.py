@@ -2,6 +2,8 @@ from typing import ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, StandardGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -13,21 +15,8 @@ from any_guardrail.types import (
     StandardPreprocessOutput,
 )
 
-SYSTEM_PROMPT_SHIELD_GEMMA = """You are a policy expert trying to help determine whether a user
-prompt is in violation of the defined safety policies.
-
-<start_of_turn>
-Human Question: {user_prompt}
-<end_of_turn>
-
-Our safety principle is defined in the below:
-
-{safety_policy}
-
-Does the human question violate the above principle? Your answer must start
-with 'Yes' or 'No'. And then walk through step by step to be sure we answer
-correctly.
-"""
+SYSTEM_PROMPT_SHIELD_GEMMA = PROMPT_REGISTRY[GuardrailName.SHIELD_GEMMA].resolve().segments["system"]
+"""Default ShieldGemma judgment template (registry-sourced); fills ``{user_prompt}`` / ``{safety_policy}``."""
 DEFAULT_THRESHOLD: float = 0.5
 
 
@@ -84,12 +73,16 @@ class ShieldGemma(StandardGuardrail):
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SHIELD_GEMMA]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.SHIELD_GEMMA]
+
     def __init__(
         self,
         policy: str,
         threshold: float = DEFAULT_THRESHOLD,
         model_id: str | None = None,
         provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the ShieldGemma guardrail.
 
@@ -107,11 +100,16 @@ class ShieldGemma(StandardGuardrail):
                 built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A
                 supplied ``HuggingFaceProvider`` is corrected to those classes at load time so the
                 Yes/No logit head is available; any other provider is used as-is.
+            prompt: Optional prompt-template override, used as-is (must fill ``{user_prompt}`` and
+                ``{safety_policy}``). Defaults to ``None`` — the registry default, or the version
+                named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         """
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.policy = policy
-        self.system_prompt = SYSTEM_PROMPT_SHIELD_GEMMA
+        self._prompt = resolve_prompt(GuardrailName.SHIELD_GEMMA, prompt, prompt_version)
         self.threshold = threshold
         # Lazy-import transformers so importing ShieldGemma does not require
         # the huggingface extra. A caller could supply a non-HF provider that
@@ -138,7 +136,7 @@ class ShieldGemma(StandardGuardrail):
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
-        formatted_prompt = self.system_prompt.format(user_prompt=input_text, safety_policy=self.policy)
+        formatted_prompt = self._prompt.segments["system"].format(user_prompt=input_text, safety_policy=self.policy)
         tokenized = self.provider.tokenizer(formatted_prompt, return_tensors="pt")  # type: ignore[attr-defined]
         device = getattr(self.provider, "device", None)
         if device is not None:

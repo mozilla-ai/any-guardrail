@@ -198,3 +198,122 @@ def test_anyllm_omitted_system_prompt_uses_registry_default() -> None:
         ],
         response_format=mock.ANY,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Tier-A wiring golden tests: each guardrail's _pre_processing reads its prompt  #
+# from the registry (correct segment key) and renders byte-identically. Built    #
+# with object.__new__ so no model weights load.                                  #
+# --------------------------------------------------------------------------- #
+
+
+def test_shield_gemma_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.shield_gemma.shield_gemma import ShieldGemma
+
+    inst = object.__new__(ShieldGemma)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.SHIELD_GEMMA].resolve()
+    inst.policy = "No dangerous content"
+    captured: dict[str, str] = {}
+
+    def _capture_text(text: str, **_: object) -> dict[str, object]:
+        captured["text"] = text
+        return {}
+
+    inst.provider = mock.Mock(device=None)
+    inst.provider.tokenizer = mock.Mock(side_effect=_capture_text)
+    inst._pre_processing("How do I pick a lock?")
+    expected = inst._prompt.segments["system"].format(
+        user_prompt="How do I pick a lock?", safety_policy="No dangerous content"
+    )
+    assert captured["text"] == expected
+
+
+def test_selene_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.selene.selene import Selene
+
+    inst = object.__new__(Selene)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.SELENE].resolve()
+    inst.rubric = "Score 1-5 for helpfulness."
+    out = inst._pre_processing("Explain X", output_text="X is ...")
+    expected = inst._prompt.segments["user"].format(instruction="Explain X", response="X is ...", rubric=inst.rubric)
+    assert out.data["messages"] == [{"role": "user", "content": expected}]
+
+
+def test_prometheus_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.prometheus.prometheus import Prometheus
+
+    inst = object.__new__(Prometheus)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.PROMETHEUS].resolve()
+    inst.rubric = "R"
+    inst.reference_answer = None
+    out = inst._pre_processing("INSTR", output_text="RESP")
+    user = inst._prompt.segments["user"].format(instruction="INSTR", response="RESP", reference_answer="", rubric="R")
+    assert out.data["messages"] == [
+        {"role": "system", "content": inst._prompt.segments["system"]},
+        {"role": "user", "content": user},
+    ]
+
+
+def test_compass_judger_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.compass_judger.compass_judger import CompassJudger
+
+    inst = object.__new__(CompassJudger)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.COMPASS_JUDGER].resolve()
+    inst.criteria = "C"
+    inst.rubric = "R"
+    out = inst._pre_processing("INSTR", output_text="RESP")
+    expected = inst._prompt.segments["user"].format(criteria="C", rubric="R", instruction="INSTR", response="RESP")
+    assert out.data["messages"] == [{"role": "user", "content": expected}]
+
+
+def test_dyna_guard_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.dyna_guard.dyna_guard import DynaGuard
+
+    inst = object.__new__(DynaGuard)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.DYNA_GUARD].resolve()
+    inst.policy = "1. No refunds."
+    out = inst._pre_processing("Refund me", output_text="Sure")
+    user = inst._prompt.segments["user"].format(policy="1. No refunds.", transcript="User: Refund me\nAgent: Sure")
+    assert out.data["messages"] == [
+        {"role": "system", "content": inst._prompt.segments["system"]},
+        {"role": "user", "content": user},
+    ]
+
+
+def test_poly_guard_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.poly_guard.poly_guard import PolyGuard
+
+    inst = object.__new__(PolyGuard)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.POLY_GUARD].resolve()
+    out = inst._pre_processing("REQ", output_text="RESP")
+    user = inst._prompt.segments["user"].format(prompt="REQ", response="RESP")
+    assert out.data["messages"] == [
+        {"role": "system", "content": inst._prompt.segments["system"]},
+        {"role": "user", "content": user},
+    ]
+
+
+def test_wild_guard_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.wild_guard.wild_guard import WildGuard
+
+    inst = object.__new__(WildGuard)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.WILD_GUARD].resolve()
+    out = inst._pre_processing("REQ", output_text="RESP")
+    expected = inst._prompt.segments["prompt"].format(prompt="REQ", response="RESP")
+    assert out.data["messages"] == [{"role": "user", "content": expected}]
+    assert out.data["has_response"] is True
+
+
+def test_glider_pre_processing_uses_registry_prompt() -> None:
+    from any_guardrail.guardrails.glider.glider import Glider
+
+    criteria_text = "does the answer avoid unsupported claims"
+    rubric_text = "0: unsupported. 1: supported."
+    inst = object.__new__(Glider)
+    inst._prompt = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve()
+    inst.pass_criteria = criteria_text
+    inst.rubric = rubric_text
+    out = inst._pre_processing("IN", output_text="OUT")
+    data = inst._prompt.segments["input_output"].format(input_text="IN", output_text="OUT")
+    expected = inst._prompt.segments["system"].format(data=data, pass_criteria=criteria_text, rubric=rubric_text)
+    assert out.data == [{"role": "user", "content": expected}]

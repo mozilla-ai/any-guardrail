@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -18,31 +20,8 @@ from any_guardrail.types import (
 SelenePreprocessData = AnyDict
 SeleneInferenceData = AnyDict
 
-SELENE_PROMPT = """You are tasked with evaluating a response based on a given instruction (which may contain an Input) and a scoring rubric that serve as the evaluation standard. Provide a comprehensive feedback on the response quality strictly adhering to the scoring rubric, without any general evaluation. Follow this with a score between 1 and 5, referring to the scoring rubric. Avoid generating any additional opening, closing, or explanations.
-
-Here are some rules of the evaluation:
-(1) You should prioritize evaluating whether the response satisfies the provided rubric. The basis of your score should depend exactly on the rubric. However, the response does not need to explicitly address points raised in the rubric. Rather, evaluate the response based on the criteria outlined in the rubric.
-
-Your reply should strictly follow this format:
-**Reasoning:** <Your feedback>
-
-**Result:** <an integer between 1 and 5>
-
-Here is the data:
-
-Instruction:
-```
-{instruction}
-```
-
-Response:
-```
-{response}
-```
-
-Score Rubrics:
-{rubric}
-"""
+SELENE_PROMPT = PROMPT_REGISTRY[GuardrailName.SELENE].resolve().segments["user"]
+"""Default Selene absolute-scoring template (registry-sourced); fills ``{instruction}`` / ``{response}`` / ``{rubric}``."""
 
 SCORE_MIN = 1
 SCORE_MAX = 5
@@ -102,6 +81,8 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SELENE]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.SELENE]
+
     def __init__(
         self,
         rubric: str,
@@ -109,6 +90,8 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
         higher_is_better: bool = True,
         model_id: str | None = None,
         provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the Selene guardrail.
 
@@ -126,6 +109,11 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
                 ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` /
                 ``AutoTokenizer`` (transformers is imported lazily here). Pass a
                 ``LlamafileProvider`` to run a GGUF build without the huggingface extra.
+            prompt: Optional prompt-template override, used as-is (must fill ``{instruction}`` /
+                ``{response}`` / ``{rubric}``). Defaults to ``None`` — the registry default, or the
+                version named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
@@ -135,6 +123,7 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
         self.rubric = rubric
         self.pass_threshold = pass_threshold
         self.higher_is_better = higher_is_better
+        self._prompt = resolve_prompt(GuardrailName.SELENE, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
@@ -195,7 +184,7 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
 
         """
         del kwargs
-        prompt = SELENE_PROMPT.format(
+        prompt = self._prompt.segments["user"].format(
             instruction=input_text,
             response=output_text if output_text is not None else input_text,
             rubric=self.rubric,

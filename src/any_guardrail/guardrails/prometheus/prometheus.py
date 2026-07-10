@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -18,31 +20,11 @@ from any_guardrail.types import (
 PrometheusPreprocessData = AnyDict
 PrometheusInferenceData = AnyDict
 
-ABS_SYSTEM_PROMPT = (
-    "You are a fair judge assistant tasked with providing clear, objective feedback based on specific "
-    "criteria, ensuring each assessment reflects the absolute standards set for performance."
-)
+ABS_SYSTEM_PROMPT = PROMPT_REGISTRY[GuardrailName.PROMETHEUS].resolve().segments["system"]
+"""Prometheus absolute-grading system prompt (registry-sourced)."""
 
-ABSOLUTE_PROMPT = """###Task Description:
-An instruction (might include an Input inside it), a response to evaluate, a reference answer that gets a score of 5, and a score rubric representing a evaluation criteria are given.
-1. Write a detailed feedback that assess the quality of the response strictly based on the given score rubric, not evaluating in general.
-2. After writing a feedback, write a score that is an integer between 1 and 5. You should refer to the score rubric.
-3. The output format should look as follows: "Feedback: (write a feedback for criteria) [RESULT] (an integer number between 1 and 5)"
-4. Please do not generate any other opening, closing, and explanations.
-
-###The instruction to evaluate:
-{instruction}
-
-###Response to evaluate:
-{response}
-
-###Reference Answer (Score 5):
-{reference_answer}
-
-###Score Rubrics:
-{rubric}
-
-###Feedback: """
+ABSOLUTE_PROMPT = PROMPT_REGISTRY[GuardrailName.PROMETHEUS].resolve().segments["user"]
+"""Prometheus absolute-grading user template (registry-sourced); fills instruction/response/reference_answer/rubric."""
 
 SCORE_MIN = 1
 SCORE_MAX = 5
@@ -113,6 +95,8 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PROMETHEUS]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.PROMETHEUS]
+
     def __init__(
         self,
         rubric: str,
@@ -121,6 +105,8 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         higher_is_better: bool = True,
         model_id: str | None = None,
         provider: StandardProvider | None = None,
+        prompt: PromptTemplate | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         """Initialize the Prometheus guardrail.
 
@@ -142,6 +128,11 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
                 ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` /
                 ``AutoTokenizer`` (transformers is imported lazily here). Pass a
                 ``LlamafileProvider`` to run a GGUF build without the huggingface extra.
+            prompt: Optional prompt-template override, used as-is (must fill ``{instruction}`` /
+                ``{response}`` / ``{reference_answer}`` / ``{rubric}``). Defaults to ``None`` — the
+                registry default, or the version named by ``prompt_version``.
+            prompt_version: Registered prompt version to use when ``prompt`` is not given. Defaults
+                to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
@@ -152,6 +143,7 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         self.pass_threshold = pass_threshold
         self.reference_answer = reference_answer
         self.higher_is_better = higher_is_better
+        self._prompt = resolve_prompt(GuardrailName.PROMETHEUS, prompt, prompt_version)
         load_kwargs: AnyDict = {}
         if provider is not None:
             self.provider = provider
@@ -213,14 +205,14 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
 
         """
         del kwargs
-        user = ABSOLUTE_PROMPT.format(
+        user = self._prompt.segments["user"].format(
             instruction=input_text,
             response=output_text if output_text is not None else input_text,
             reference_answer=self.reference_answer or "",
             rubric=self.rubric,
         )
         messages: ChatMessages = [
-            {"role": "system", "content": ABS_SYSTEM_PROMPT},
+            {"role": "system", "content": self._prompt.segments["system"]},
             {"role": "user", "content": user},
         ]
         return GuardrailPreprocessOutput(data={"messages": messages})
