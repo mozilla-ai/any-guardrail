@@ -8,6 +8,11 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+# Re-export the leaf prompt models so callers can reach them from
+# ``any_guardrail.types`` alongside ``GuardrailOutput``. ``prompts`` is a leaf
+# module (imports only the stdlib + pydantic), so this does not create a cycle.
+from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
+
 # Re-export the dependency-free taxonomy so callers can reach the capability
 # metadata model and its enums from ``any_guardrail.types`` alongside
 # ``GuardrailOutput``. ``taxonomy`` is a leaf module (imports only pydantic), so
@@ -36,6 +41,9 @@ __all__ = [
     "InferenceT",
     "OutputShape",
     "PreprocessT",
+    "PromptAssembly",
+    "PromptSpec",
+    "PromptTemplate",
     "SpanResult",
     "StandardInferenceOutput",
     "StandardPreprocessOutput",

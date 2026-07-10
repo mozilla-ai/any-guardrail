@@ -5,6 +5,9 @@ from collections.abc import Iterable
 from typing import Any
 
 from any_guardrail.base import Guardrail, GuardrailName
+from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
+from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
+from any_guardrail.prompts import PromptTemplate
 from any_guardrail.providers.base import Provider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import (
@@ -148,6 +151,33 @@ class AnyGuardrail:
             msg = f"Unknown grouping dimension {dimension!r}; expected one of {supported}."
             raise ValueError(msg)
         return {key: groups[key] for key in sorted(groups)}
+
+    @classmethod
+    def get_prompt(cls, guardrail_name: GuardrailName, version: str | None = None) -> PromptTemplate:
+        """Return a guardrail's default (or a named) prompt template.
+
+        Args:
+            guardrail_name: The prompt-bearing guardrail to look up.
+            version: A specific prompt version key; ``None`` selects the guardrail's default.
+
+        Returns:
+            The :class:`~any_guardrail.prompts.PromptTemplate`. Reads the import-free prompt
+            registry and does not import the guardrail implementation or any model backend.
+
+        Raises:
+            KeyError: If the guardrail has no registered prompt, or ``version`` is unknown.
+
+        """
+        return _registry_get_prompt(guardrail_name, version)
+
+    @classmethod
+    def list_prompt_versions(cls, guardrail_name: GuardrailName) -> list[str]:
+        """Return the registered prompt version keys for a guardrail.
+
+        Returns an empty list for guardrails that have no registered prompt (e.g. encoder
+        classifiers). Reads the import-free prompt registry; no backend is loaded.
+        """
+        return _registry_list_prompt_versions(guardrail_name)
 
     @classmethod
     def get_supported_model(cls, guardrail_name: GuardrailName) -> list[str]:
