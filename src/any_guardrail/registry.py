@@ -110,15 +110,15 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         display_name="Granite Guardian",
         categories=frozenset(
             {
+                GuardrailCategory.GENERAL_JUDGE,
                 GuardrailCategory.CONTENT_SAFETY,
                 GuardrailCategory.HALLUCINATION,
                 GuardrailCategory.BIAS,
                 GuardrailCategory.TOOL_USE,
-                GuardrailCategory.GENERAL_JUDGE,
                 GuardrailCategory.PROMPT_INJECTION,
             }
         ),
-        primary_category=GuardrailCategory.CONTENT_SAFETY,
+        primary_category=GuardrailCategory.GENERAL_JUDGE,
         stages=frozenset({GuardrailStage.INPUT, GuardrailStage.OUTPUT, GuardrailStage.RAG_CONTEXT}),
         output_shapes=frozenset({OutputShape.CATEGORICAL, OutputShape.SCORE}),
         backend=BackendType.LOCAL_DECODER,
@@ -129,8 +129,8 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
     GuardrailName.HARMGUARD: GuardrailMetadata(
         description="HarmAug-Guard — binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.",
         display_name="HarmAug-Guard",
-        categories=frozenset({GuardrailCategory.CONTENT_SAFETY, GuardrailCategory.PROMPT_INJECTION}),
-        primary_category=GuardrailCategory.CONTENT_SAFETY,
+        categories=frozenset({GuardrailCategory.PROMPT_INJECTION, GuardrailCategory.CONTENT_SAFETY}),
+        primary_category=GuardrailCategory.PROMPT_INJECTION,
         stages=frozenset({GuardrailStage.INPUT, GuardrailStage.OUTPUT}),
         output_shapes=frozenset({OutputShape.BINARY, OutputShape.SCORE}),
         backend=BackendType.LOCAL_ENCODER,
@@ -281,6 +281,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
                 GuardrailCategory.TOXICITY,
                 GuardrailCategory.PII,
                 GuardrailCategory.HALLUCINATION,
+                GuardrailCategory.PROMPT_INJECTION,
             }
         ),
         primary_category=GuardrailCategory.CONTENT_SAFETY,
@@ -492,14 +493,14 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         display_name="Patronus",
         categories=frozenset(
             {
-                GuardrailCategory.HALLUCINATION,
                 GuardrailCategory.GENERAL_JUDGE,
+                GuardrailCategory.HALLUCINATION,
                 GuardrailCategory.TOXICITY,
                 GuardrailCategory.PII,
                 GuardrailCategory.PROMPT_INJECTION,
             }
         ),
-        primary_category=GuardrailCategory.HALLUCINATION,
+        primary_category=GuardrailCategory.GENERAL_JUDGE,
         stages=frozenset({GuardrailStage.INPUT, GuardrailStage.OUTPUT, GuardrailStage.RAG_CONTEXT}),
         output_shapes=frozenset({OutputShape.CATEGORICAL, OutputShape.SCORE}),
         backend=BackendType.HOSTED_API,
