@@ -36,6 +36,7 @@ Validate the `input_text` against the given `policy`.
 | `input_text` | `str` | Yes | — | The text to validate (a single string; sent as the user message). |
 | `policy` | `str` | Yes | — | Natural-language policy to validate against, e.g. ``"The text must not request or contain personal data."``. Substituted into the system prompt's ``{policy}`` placeholder. |
 | `model_id` | `str` | No | `"openai:gpt-5-nano"` | The judge model in any-llm's ``provider:model`` format, e.g. ``"openai:gpt-5-nano"`` (default) or ``"mistral:mistral-small-latest"``. The model must support structured output. |
-| `system_prompt` | `str` | No | `"You are a guardrail designed to ensure that the input text …"` | The system prompt to use. Expected to have a `{policy}` placeholder and to instruct the model to return the ``valid`` / ``explanation`` / ``risk_score`` fields of :class:`GuardrailOutputAnyLLM`. |
+| `system_prompt` | `str | None` | No | `None` | Override the system prompt. Defaults to ``None``, which uses the registry default (:data:`DEFAULT_SYSTEM_PROMPT`) — or the version selected by ``prompt_version``. A supplied prompt should have a ``{policy}`` placeholder and instruct the model to return the ``valid`` / ``explanation`` / ``risk_score`` fields of :class:`GuardrailOutputAnyLLM`. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``system_prompt`` is not given. Defaults to ``None`` (the default version). See :meth:`any_guardrail.AnyGuardrail.list_prompt_versions`. |
 
 **Returns:** `GuardrailOutput`
