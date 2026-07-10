@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from any_guardrail.base import GuardrailName
+from any_guardrail.prompt_registry import PROMPT_REGISTRY
+from any_guardrail.prompts import PromptSpec
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import GuardrailMetadata
 
@@ -95,6 +97,10 @@ class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
     """
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.FLOWJUDGE]
+
+    # Reference-only: flow_judge applies its own default templates around the user's metric; the
+    # registry mirrors those defaults for discovery/pinning (not user-overridable).
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.FLOWJUDGE]
 
     def __init__(
         self,

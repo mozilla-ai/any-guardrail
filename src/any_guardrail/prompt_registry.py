@@ -12,6 +12,12 @@ the import-free guarantee. ``(guardrail, version)`` is the pinnable prompt ident
 that benchmark tooling (issue #194) records alongside each score.
 """
 
+from any_guardrail._flowjudge_default_prompt import (
+    USER_PROMPT_NO_INPUTS_TEMPLATE as _FLOWJUDGE_USER_NO_INPUTS,
+)
+from any_guardrail._flowjudge_default_prompt import (
+    USER_PROMPT_TEMPLATE as _FLOWJUDGE_USER,
+)
 from any_guardrail.base import GuardrailName
 from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
 
@@ -434,6 +440,18 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
                 provenance="adapted",
                 source="https://huggingface.co/ibm-granite/granite-guardian-4.1-8b",
                 description="Reference: judge-agent instruction blocks (think / no-think) wrapped around the user criteria inside the <guardian> block.",
+            ),
+        },
+    ),
+    GuardrailName.FLOWJUDGE: PromptSpec(
+        versions={
+            "default": PromptTemplate(
+                segments={"user": _FLOWJUDGE_USER, "user_no_inputs": _FLOWJUDGE_USER_NO_INPUTS},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source="https://github.com/flowaicom/flow-judge/blob/main/flow_judge/utils/prompt_formatter.py",
+                description="Reference: flow_judge's default judge user-prompt templates (with / without inputs) that the flow_judge library applies around the user's metric.",
             ),
         },
     ),

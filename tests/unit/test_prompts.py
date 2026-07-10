@@ -352,3 +352,13 @@ def test_granite_reference_matches_module_constants() -> None:
     assert template.overridable is False
     assert template.segments["judge_think"] == GUARDIAN_JUDGE_THINK
     assert template.segments["judge_nothink"] == GUARDIAN_JUDGE_NOTHINK
+
+
+def test_flowjudge_reference_matches_library() -> None:
+    pytest.importorskip("flow_judge")
+    from flow_judge.utils.prompt_formatter import USER_PROMPT_NO_INPUTS_TEMPLATE, USER_PROMPT_TEMPLATE
+
+    template = PROMPT_REGISTRY[GuardrailName.FLOWJUDGE].resolve()
+    assert template.overridable is False
+    assert template.segments["user"] == USER_PROMPT_TEMPLATE
+    assert template.segments["user_no_inputs"] == USER_PROMPT_NO_INPUTS_TEMPLATE
