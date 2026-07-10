@@ -68,6 +68,15 @@ result = guardrail.validate(
 )
 ```
 
+## Reference-only prompts
+
+Some guardrails carry a **reference-only** entry (`overridable=False`): the prompt is assembled
+imperatively at runtime (Nemotron, gpt-oss-safeguard, Granite Guardian) or applied by an upstream
+library (Flow Judge). These are exposed via `get_prompt(...)` for discovery and pinning, but not
+swappable. Guardrails whose prompt lives entirely in the model's tokenizer chat template (e.g.
+Llama Guard, Kanana, Qwen3Guard) are intentionally not registered — the chat template *is* the
+prompt, applied at inference, so there is no in-repo policy or deviation to catalog.
+
 The full catalog is exported to
 [`schemas/guardrail_prompts.json`](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_prompts.json)
 so external tooling can read every guardrail's prompts (and their provenance) without importing
