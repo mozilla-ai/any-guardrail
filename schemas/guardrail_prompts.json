@@ -82,6 +82,55 @@
       }
     }
   },
+  "gpt_oss_safeguard": {
+    "default_version": "default",
+    "versions": {
+      "default": {
+        "assembly": "assembled",
+        "description": "Reference: output-format suffix appended to the user-supplied policy so the model ends with SAFE/VIOLATION (the policy is bring-your-own).",
+        "overridable": false,
+        "provenance": "adapted",
+        "segments": {
+          "output_instruction": "After your analysis, end your reply with a final line containing exactly one word: VIOLATION if the content violates the policy, or SAFE if it does not."
+        },
+        "source": "https://cookbook.openai.com/articles/gpt-oss-safeguard-guide",
+        "variables": []
+      }
+    }
+  },
+  "granite_guardian": {
+    "default_version": "default",
+    "versions": {
+      "default": {
+        "assembly": "assembled",
+        "description": "Reference: judge-agent instruction blocks (think / no-think) wrapped around the user criteria inside the <guardian> block.",
+        "overridable": false,
+        "provenance": "adapted",
+        "segments": {
+          "judge_nothink": "<no-think>As a judge agent, assess whether the provided text meets the given judging criteria using all available information, including conversations, documents, and tools. Provide your score immediately without explanation. Output empty <think>\n</think> tags followed by your score in <score></score> tags.",
+          "judge_think": "<think>As a judge agent, carefully analyze whether the provided text meets the given judging criteria. Use all available information, including conversations, documents, and tools. Reason through the evidence step by step before providing your score. Wrap your reasoning in <think></think> tags, then provide your score in <score></score> tags."
+        },
+        "source": "https://huggingface.co/ibm-granite/granite-guardian-4.1-8b",
+        "variables": []
+      }
+    }
+  },
+  "nemotron_content_safety": {
+    "default_version": "default",
+    "versions": {
+      "default": {
+        "assembly": "assembled",
+        "description": "Reference: 22-category (S1-S22) content-safety instruction; the guardrail appends the prompt/response and a /think directive at runtime.",
+        "overridable": false,
+        "provenance": "adapted",
+        "segments": {
+          "instruction": "You are a content safety classifier. Using the safety categories below, decide whether the user prompt and (if present) the AI response are harmful.\n\nSafety categories:\nS1: Violence\nS2: Sexual\nS3: Criminal Planning/Confessions\nS4: Guns and Illegal Weapons\nS5: Controlled/Regulated Substances\nS6: Suicide and Self Harm\nS7: Sexual (minor)\nS8: Hate/Identity Hate\nS9: PII/Privacy\nS10: Harassment\nS11: Threat\nS12: Profanity\nS13: Needs Caution\nS14: Manipulation\nS15: Fraud/Deception\nS16: Malware\nS17: High Risk Gov Decision Making\nS18: Political/Misinformation/Conspiracy\nS19: Copyright/Trademark/Plagiarism\nS20: Unauthorized Advice\nS21: Illegal Activity\nS22: Immoral/Unethical\n\nRespond with exactly:\nPrompt harm: harmful/unharmful\nResponse Harm: harmful/unharmful"
+        },
+        "source": "https://huggingface.co/nvidia/Nemotron-Content-Safety-Reasoning-4B",
+        "variables": []
+      }
+    }
+  },
   "poly_guard": {
     "default_version": "default",
     "versions": {

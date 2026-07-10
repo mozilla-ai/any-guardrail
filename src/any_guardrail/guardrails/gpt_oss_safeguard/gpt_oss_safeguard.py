@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY
+from any_guardrail.prompts import PromptSpec
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -74,6 +76,10 @@ class GptOssSafeguard(ThreeStageGuardrail[GptOssSafeguardPreprocessData, GptOssS
     ]
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GPT_OSS_SAFEGUARD]
+
+    # Reference-only: the policy is bring-your-own and OUTPUT_INSTRUCTION is appended at runtime;
+    # the registry entry captures that fixed suffix for discovery/pinning (not user-overridable).
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.GPT_OSS_SAFEGUARD]
 
     def __init__(
         self,
