@@ -43,6 +43,7 @@
     "multimodal": false,
     "optional_validate_kwargs": [
       "model_id",
+      "prompt_version",
       "system_prompt"
     ],
     "output_shapes": [

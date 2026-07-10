@@ -5,6 +5,8 @@ from any_llm import completion
 from pydantic import BaseModel, ValidationError
 
 from any_guardrail.base import Guardrail, GuardrailName, GuardrailOutput
+from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
+from any_guardrail.prompts import PromptSpec
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import GuardrailUsage
@@ -13,25 +15,11 @@ if TYPE_CHECKING:
     from any_llm.types.completion import ChatCompletion
 
 
-DEFAULT_SYSTEM_PROMPT = """
-You are a guardrail designed to ensure that the input text adheres to a specific policy.
-Your only task is to validate the input_text, don't try to answer the user query.
-
-Here is the policy: {policy}
-
-You must return the following:
-
-- valid: bool
-    If the input text provided by the user doesn't adhere to the policy, you must reject it (mark it as valid=False).
-
-- explanation: str
-    A clear explanation of why the input text was rejected or not.
-
-- risk_score: float (0-1)
-    How likely the input text is to violate the policy: 0.0 means clearly compliant,
-    1.0 means clearly violating.
-"""
-"""Will be used as default argument for `system_prompt`"""
+# The default system prompt now lives in the import-free prompt registry so it is
+# discoverable via ``AnyGuardrail.get_prompt`` and pinnable for benchmarking (#194). This
+# alias keeps the public ``DEFAULT_SYSTEM_PROMPT`` name and its text byte-identical.
+DEFAULT_SYSTEM_PROMPT = PROMPT_REGISTRY[GuardrailName.ANYLLM].resolve().segments["system"]
+"""The any-guardrail policy-judge system prompt (registry default for ``system_prompt``)."""
 
 DEFAULT_MODEL_ID = "openai:gpt-5-nano"
 """Will be used as default argument for `model_id`"""
@@ -70,12 +58,15 @@ class AnyLlm(Guardrail):
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.ANYLLM]
 
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.ANYLLM]
+
     def validate(
         self,
         input_text: str,
         policy: str,
         model_id: str = DEFAULT_MODEL_ID,
-        system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+        system_prompt: str | None = None,
+        prompt_version: str | None = None,
         **kwargs: Any,
     ) -> GuardrailOutput:
         """Validate the `input_text` against the given `policy`.
@@ -88,10 +79,14 @@ class AnyLlm(Guardrail):
             model_id (str, optional): The judge model in any-llm's ``provider:model`` format,
                 e.g. ``"openai:gpt-5-nano"`` (default) or ``"mistral:mistral-small-latest"``.
                 The model must support structured output.
-            system_prompt (str, optional): The system prompt to use. Expected to have a
-                `{policy}` placeholder and to instruct the model to return the
-                ``valid`` / ``explanation`` / ``risk_score`` fields of
-                :class:`GuardrailOutputAnyLLM`.
+            system_prompt (str, optional): Override the system prompt. Defaults to ``None``,
+                which uses the registry default (:data:`DEFAULT_SYSTEM_PROMPT`) — or the version
+                selected by ``prompt_version``. A supplied prompt should have a ``{policy}``
+                placeholder and instruct the model to return the ``valid`` / ``explanation`` /
+                ``risk_score`` fields of :class:`GuardrailOutputAnyLLM`.
+            prompt_version (str, optional): Registered prompt version to use when ``system_prompt``
+                is not given. Defaults to ``None`` (the default version). See
+                :meth:`any_guardrail.AnyGuardrail.list_prompt_versions`.
             **kwargs: Additional keyword arguments passed through to the `any_llm.completion`
                 function (e.g. ``api_key``, ``temperature``).
 
@@ -102,6 +97,8 @@ class AnyLlm(Guardrail):
             ``extra={"parse_failure": True}``).
 
         """
+        if system_prompt is None:
+            system_prompt = resolve_prompt(GuardrailName.ANYLLM, version=prompt_version).segments["system"]
         start = time.perf_counter()
         result: ChatCompletion = completion(  # type: ignore[assignment]
             model=model_id,

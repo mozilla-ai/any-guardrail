@@ -1,5 +1,6 @@
 from .api import AnyGuardrail
 from .base import Guardrail, GuardrailName, ThreeStageGuardrail
+from .prompt_registry import PROMPT_REGISTRY
 from .providers import HuggingFaceProvider, Provider
 from .registry import GUARDRAIL_METADATA
 from .taxonomy import (
@@ -19,12 +20,16 @@ from .types import (
     GuardrailUsage,
     InferenceT,
     PreprocessT,
+    PromptAssembly,
+    PromptSpec,
+    PromptTemplate,
     SpanResult,
     TokenizerDict,
 )
 
 __all__ = [
     "GUARDRAIL_METADATA",
+    "PROMPT_REGISTRY",
     "AnyGuardrail",
     "BackendType",
     "CategoryResult",
@@ -43,6 +48,9 @@ __all__ = [
     "InferenceT",
     "OutputShape",
     "PreprocessT",
+    "PromptAssembly",
+    "PromptSpec",
+    "PromptTemplate",
     "Provider",
     "SpanResult",
     "ThreeStageGuardrail",
