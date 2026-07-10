@@ -56,6 +56,8 @@ For more information, see:
 | `higher_is_better` | `bool` | No | `True` | Whether higher ratings mean better text. Defaults to ``True``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``opencompass/CompassJudger-2-7B-Instruct``. |
 | `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Optional pre-configured provider (e.g. a ``LlamafileProvider`` or a customized ``HuggingFaceProvider``). Defaults to a ``HuggingFaceProvider`` loading a causal LM. HuggingFace-backed loads force the SDPA attention kernel because CompassJudger-2's config requests flash_attention_2, which is unavailable on CPU/MPS. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{criteria}`` / ``{rubric}`` / ``{instruction}`` / ``{response}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the CompassJudger guardrail.
 

@@ -45,6 +45,8 @@ For more information, see:
 | `higher_is_better` | `bool` | No | `True` | Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse. Defaults to ``True``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``AtlaAI/Selene-1-Mini-Llama-3.1-8B``. |
 | `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` / ``AutoTokenizer`` (transformers is imported lazily here). Pass a ``LlamafileProvider`` to run a GGUF build without the huggingface extra. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{instruction}`` / ``{response}`` / ``{rubric}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the Selene guardrail.
 

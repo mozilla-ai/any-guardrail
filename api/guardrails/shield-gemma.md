@@ -44,6 +44,8 @@ For more information, see:
 | `threshold` | `float` | No | `0.5` | Decision threshold on the ``Yes`` (violation) probability. ``valid`` is ``score < threshold``; raise it to flag only higher-confidence violations, lower it to be stricter. Defaults to ``0.5``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``google/shieldgemma-2b``. |
 | `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A supplied ``HuggingFaceProvider`` is corrected to those classes at load time so the Yes/No logit head is available; any other provider is used as-is. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{user_prompt}`` and ``{safety_policy}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the ShieldGemma guardrail.
 

@@ -54,6 +54,8 @@ Raises:
 | `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Reserved for future extensibility; currently unused. GLIDER runs through a ``transformers`` text-generation pipeline instead. |
 | `higher_is_better` | `bool` | No | `True` | Whether higher rubric scores mean better/passing text. Set to ``False`` for rubrics where higher scores mean worse text (e.g. a severity scale). |
 | `score_range` | `tuple[int, int] | None` | No | `None` | Optional ``(min, max)`` bounds of the rubric scale, e.g. ``(0, 1)`` or ``(1, 5)``. Supplying it enables the normalized canonical risk in ``GuardrailOutput.score``; when omitted, ``score`` is ``None`` and the raw rubric value is still available in ``extra["rubric_score"]``. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (system prompt filling ``{data}`` / ``{pass_criteria}`` / ``{rubric}`` plus the ``input`` / ``input_output`` data wrappers). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the GLIDER guardrail.
 

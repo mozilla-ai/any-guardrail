@@ -47,6 +47,8 @@ For more information, see:
 |-----------|------|----------|---------|-------------|
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``allenai/wildguard``. |
 | `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading the model as a causal LM. When a ``HuggingFaceProvider`` is supplied, it is loaded with ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer`` so its default sequence-classification loader is corrected. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{prompt}`` / ``{response}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the WildGuard guardrail.
 
