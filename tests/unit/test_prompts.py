@@ -317,3 +317,48 @@ def test_glider_pre_processing_uses_registry_prompt() -> None:
     data = inst._prompt.segments["input_output"].format(input_text="IN", output_text="OUT")
     expected = inst._prompt.segments["system"].format(data=data, pass_criteria=criteria_text, rubric=rubric_text)
     assert out.data == [{"role": "user", "content": expected}]
+
+
+# --------------------------------------------------------------------------- #
+# Tier-B reference entries (overridable=False): the registry copy stays          #
+# byte-identical to the guardrail's in-repo constant — the runtime still          #
+# assembles its own prompt, so this drift test is the sync guarantee.             #
+# --------------------------------------------------------------------------- #
+
+
+def test_nemotron_reference_matches_module_constant() -> None:
+    from any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety import NEMOTRON_INSTRUCTION
+
+    template = PROMPT_REGISTRY[GuardrailName.NEMOTRON_CONTENT_SAFETY].resolve()
+    assert template.overridable is False
+    assert template.segments["instruction"] == NEMOTRON_INSTRUCTION
+
+
+def test_gpt_oss_reference_matches_module_constant() -> None:
+    from any_guardrail.guardrails.gpt_oss_safeguard.gpt_oss_safeguard import OUTPUT_INSTRUCTION
+
+    template = PROMPT_REGISTRY[GuardrailName.GPT_OSS_SAFEGUARD].resolve()
+    assert template.overridable is False
+    assert template.segments["output_instruction"] == OUTPUT_INSTRUCTION
+
+
+def test_granite_reference_matches_module_constants() -> None:
+    from any_guardrail.guardrails.granite_guardian.granite_guardian import (
+        GUARDIAN_JUDGE_NOTHINK,
+        GUARDIAN_JUDGE_THINK,
+    )
+
+    template = PROMPT_REGISTRY[GuardrailName.GRANITE_GUARDIAN].resolve()
+    assert template.overridable is False
+    assert template.segments["judge_think"] == GUARDIAN_JUDGE_THINK
+    assert template.segments["judge_nothink"] == GUARDIAN_JUDGE_NOTHINK
+
+
+def test_flowjudge_reference_matches_library() -> None:
+    pytest.importorskip("flow_judge")
+    from flow_judge.utils.prompt_formatter import USER_PROMPT_NO_INPUTS_TEMPLATE, USER_PROMPT_TEMPLATE
+
+    template = PROMPT_REGISTRY[GuardrailName.FLOWJUDGE].resolve()
+    assert template.overridable is False
+    assert template.segments["user"] == USER_PROMPT_TEMPLATE
+    assert template.segments["user_no_inputs"] == USER_PROMPT_NO_INPUTS_TEMPLATE

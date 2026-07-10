@@ -3,6 +3,8 @@ from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default
+from any_guardrail.prompt_registry import PROMPT_REGISTRY
+from any_guardrail.prompts import PromptSpec
 from any_guardrail.providers.base import StandardProvider
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
@@ -183,6 +185,10 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
     ]
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.GRANITE_GUARDIAN]
+
+    # Reference-only: the guardian block is assembled at runtime from these judge instructions
+    # plus the user criteria; the registry entry is for discovery/pinning (not user-overridable).
+    PROMPT: ClassVar[PromptSpec] = PROMPT_REGISTRY[GuardrailName.GRANITE_GUARDIAN]
 
     def __init__(
         self,
