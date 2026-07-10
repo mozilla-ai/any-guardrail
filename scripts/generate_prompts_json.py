@@ -7,8 +7,8 @@ URL). The document is committed at ``schemas/guardrail_prompts.json`` so externa
 tooling — notably the benchmark harness (issue #194) — can pin exactly which prompt
 produced a score without importing the package or any model backend.
 
-Only prompt-bearing guardrails appear (the ``PROMPT_REGISTRY`` keys); custom prompts
-registered at runtime are never exported.
+Only prompt-bearing guardrails appear (the ``PROMPT_REGISTRY`` keys); inline prompt
+overrides passed to a guardrail at construction/call time are not stored and never exported.
 
 Dict keys are sorted so the on-disk form is deterministic and ``--check`` diffs are
 stable. This script is wired into pre-commit, so CI regenerates the file and fails if

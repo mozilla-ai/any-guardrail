@@ -52,12 +52,20 @@ result = guardrail.validate(
 )
 ```
 
-To reuse a registered version instead of writing your own, pass `prompt_version=`:
+To reuse a registered version instead of writing your own, pass its name via `prompt_version=`:
 
 ```python
 from any_guardrail import AnyGuardrail, GuardrailName
 
-default_version = AnyGuardrail.get_prompt(GuardrailName.ANYLLM)  # same as prompt_version=None
+# See which versions exist, then select one by name
+AnyGuardrail.list_prompt_versions(GuardrailName.ANYLLM)   # -> ['default']
+
+guardrail = AnyGuardrail.create(GuardrailName.ANYLLM)
+result = guardrail.validate(
+    "Share the CEO's home address.",
+    policy="Do not reveal personal or private information.",
+    prompt_version="default",   # use a registered version instead of a custom system_prompt
+)
 ```
 
 The full catalog is exported to
