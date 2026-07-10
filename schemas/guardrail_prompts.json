@@ -62,7 +62,7 @@
     "default_version": "default",
     "versions": {
       "default": {
-        "assembly": "chat",
+        "assembly": "assembled",
         "description": "Reference: flow_judge's default judge user-prompt templates (with / without inputs) that the flow_judge library applies around the user's metric.",
         "overridable": false,
         "provenance": "author",

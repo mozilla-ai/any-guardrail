@@ -2,9 +2,11 @@
 
 This module is the single source of truth for the default/author-published prompts of
 prompt-bearing guardrails. It imports only :mod:`any_guardrail.base` (for
-``GuardrailName``) and :mod:`any_guardrail.prompts` (leaf models) — never a guardrail
-implementation — so prompt discovery never pulls in ``torch``/``transformers`` or spins
-up a backend. Each prompt-bearing guardrail class mirrors its entry here as ``PROMPT``.
+``GuardrailName``), :mod:`any_guardrail.prompts` (leaf models), and the stdlib-only
+``any_guardrail._flowjudge_default_prompt`` (mirrored flow_judge template constants) —
+never a guardrail implementation — so prompt discovery never pulls in
+``torch``/``transformers`` or spins up a backend. Each prompt-bearing guardrail class
+mirrors its entry here as ``PROMPT``.
 
 The prompt *text* lives here (moved out of the guardrail modules), and each guardrail
 imports its default from here — a one-way dependency (guardrail → registry) that keeps
@@ -447,7 +449,7 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
         versions={
             "default": PromptTemplate(
                 segments={"user": _FLOWJUDGE_USER, "user_no_inputs": _FLOWJUDGE_USER_NO_INPUTS},
-                assembly=PromptAssembly.CHAT,
+                assembly=PromptAssembly.ASSEMBLED,
                 overridable=False,
                 provenance="author",
                 source="https://github.com/flowaicom/flow-judge/blob/main/flow_judge/utils/prompt_formatter.py",
