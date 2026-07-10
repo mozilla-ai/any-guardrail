@@ -5,6 +5,7 @@
       "content_safety",
       "hallucination",
       "pii",
+      "prompt_injection",
       "toxicity"
     ],
     "default_license": "proprietary",
@@ -382,7 +383,7 @@
       "categorical",
       "score"
     ],
-    "primary_category": "content_safety",
+    "primary_category": "general_judge",
     "required_validate_kwargs": [],
     "requires_api_key": false,
     "stages": [
@@ -410,7 +411,7 @@
       "binary",
       "score"
     ],
-    "primary_category": "content_safety",
+    "primary_category": "prompt_injection",
     "required_validate_kwargs": [],
     "requires_api_key": false,
     "stages": [
@@ -689,7 +690,7 @@
       "categorical",
       "score"
     ],
-    "primary_category": "hallucination",
+    "primary_category": "general_judge",
     "required_validate_kwargs": [],
     "requires_api_key": true,
     "stages": [
