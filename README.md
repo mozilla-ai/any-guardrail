@@ -88,6 +88,27 @@ A machine-readable [JSON Schema](schemas/guardrail_output.schema.json) for this 
 https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json
 ```
 
+### Prompts, policies & rubrics
+
+Generative and judge guardrails run against a **prompt template** and often need a **policy**,
+**rubric**, or **criteria**. any-guardrail lets you discover and override the default prompt, and
+fetch author-published policies/rubrics/criteria — all without loading a model:
+
+```python
+from any_guardrail import AnyGuardrail, GuardrailName
+
+# Inspect a guardrail's default prompt template
+AnyGuardrail.get_prompt(GuardrailName.SELENE).segments["user"]
+
+# Fetch a ready-made author-published policy and use it directly
+policy = AnyGuardrail.get_policy(GuardrailName.SHIELD_GEMMA, "dangerous_content")
+guard = AnyGuardrail.create(GuardrailName.SHIELD_GEMMA, policy=policy)
+```
+
+See the [Prompts & content guide](docs/prompts.md). The catalogs are exported to
+[`schemas/guardrail_prompts.json`](schemas/guardrail_prompts.json) and
+[`schemas/guardrail_content.json`](schemas/guardrail_content.json).
+
 ## Documentation
 Full guides at [docs link](https://docs.mozilla.ai/any-guardrail)
 
