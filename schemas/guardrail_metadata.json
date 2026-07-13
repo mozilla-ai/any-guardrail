@@ -524,7 +524,7 @@
       "hallucination"
     ],
     "default_license": "mit",
-    "description": "Token/span-level RAG hallucination detector built on ModernBERT.",
+    "description": "Token/span-level RAG hallucination detector.",
     "display_name": "LettuceDetect",
     "multilingual": false,
     "multimodal": false,

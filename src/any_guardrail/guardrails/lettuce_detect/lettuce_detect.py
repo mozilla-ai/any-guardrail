@@ -18,7 +18,7 @@ from any_guardrail.types import CategoryResult, GuardrailOutput, GuardrailUsage,
 
 
 class LettuceDetect(Guardrail):
-    """Token/span-level RAG hallucination detector built on ModernBERT.
+    """Token/span-level RAG hallucination detector.
 
     Wraps the ``lettucedetect`` library to flag spans of an answer that are not supported
     by the provided context. Token classification over the (context, question, answer)

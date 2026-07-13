@@ -443,7 +443,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.LETTUCE_DETECT: GuardrailMetadata(
-        description="Token/span-level RAG hallucination detector built on ModernBERT.",
+        description="Token/span-level RAG hallucination detector.",
         display_name="LettuceDetect",
         categories=frozenset({GuardrailCategory.HALLUCINATION}),
         primary_category=GuardrailCategory.HALLUCINATION,
