@@ -695,8 +695,8 @@ def resolve_prompt(
         msg = (
             f"{name.value!r} prompt version {version!r} is reference-only (overridable=False) and "
             f"cannot be used as a runtime override. Inspect it with "
-            f"AnyGuardrail.get_prompt({name.value!r}, {version!r}), or pass prompt=... to run a "
-            f"custom template."
+            f"AnyGuardrail.get_prompt(GuardrailName.{name.name}, {version!r}), or pass prompt=... to "
+            f"run a custom template."
         )
         raise ValueError(msg)
     return template

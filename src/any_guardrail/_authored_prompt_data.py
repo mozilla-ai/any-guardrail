@@ -2,9 +2,10 @@
 
 Byte-exact copies of the alternate prompt templates each model's authors publish, harvested
 from their raw sources (the source URL is recorded next to each version in prompt_registry).
-Stored json-encoded (double-quoted, newline-escaped) so author whitespace — including intentional
-trailing spaces — survives the trailing-whitespace pre-commit hook. Stdlib-only leaf: imported by
-prompt_registry and imports nothing itself.
+Stored as single-line escaped string literals (newlines and any trailing spaces escaped) so no
+author whitespace sits at a physical line end — that is what lets intentional trailing spaces
+survive the trailing-whitespace pre-commit hook. Stdlib-only leaf: imported by prompt_registry and
+imports nothing itself.
 
 These sources are not pip-installed, so there is no live drift test (this mirrors the static author
 content in _authored_content_data); byte-exactness was verified against the raw sources when
