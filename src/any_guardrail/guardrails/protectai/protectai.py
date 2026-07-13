@@ -12,7 +12,7 @@ PROTECTAI_INJECTION_LABEL = "INJECTION"
 
 
 class Protectai(StandardGuardrail):
-    """Binary prompt-injection classifiers built on DeBERTa-v3 and DistilRoBERTa.
+    """Binary prompt-injection classifiers.
 
     Runs one of ProtectAI's encoder classifiers over a single user prompt and reports whether the
     text is a prompt-injection / jailbreak attempt. Each model is a two-class sequence classifier

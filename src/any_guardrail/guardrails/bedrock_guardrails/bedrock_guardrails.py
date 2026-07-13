@@ -9,7 +9,7 @@ _VALID_SOURCES = ("INPUT", "OUTPUT")
 
 
 class BedrockGuardrails(ThreeStageGuardrail[AnyDict, AnyDict]):
-    """Hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding.
+    """Hosted, configurable moderation covering content filters, denied topics, PII, word filters, and contextual grounding.
 
     Provides a uniform interface to AWS Bedrock Guardrails — a unified, FM-agnostic
     policy platform covering content moderation, prompt-injection / denied-topic

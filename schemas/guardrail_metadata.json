@@ -120,7 +120,7 @@
       "pii"
     ],
     "default_license": "proprietary",
-    "description": "Hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding.",
+    "description": "Hosted, configurable moderation covering content filters, denied topics, PII, word filters, and contextual grounding.",
     "display_name": "Bedrock Guardrails",
     "multilingual": true,
     "multimodal": false,
@@ -193,7 +193,7 @@
       "prompt_injection"
     ],
     "default_license": "cc-by-4.0",
-    "description": "Binary prompt-injection classifier built on DeBERTa-v3-base.",
+    "description": "Binary prompt-injection classifier.",
     "display_name": "Deepset",
     "multilingual": false,
     "multimodal": false,
@@ -268,7 +268,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "Local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library.",
+    "description": "Local LLM judge scoring text against user-defined criteria, metrics, and rubrics.",
     "display_name": "Flow Judge",
     "multilingual": false,
     "multimodal": false,
@@ -295,7 +295,7 @@
       "toxicity"
     ],
     "default_license": "apache-2.0",
-    "description": "Schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2.",
+    "description": "Schema-driven safety, toxicity, jailbreak, and refusal detector.",
     "display_name": "GLiGuard",
     "multilingual": false,
     "multimodal": false,
@@ -401,7 +401,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.",
+    "description": "Binary safety and jailbreak classifier, scoring a prompt or prompt-response pair.",
     "display_name": "HarmAug-Guard",
     "multilingual": false,
     "multimodal": false,
@@ -427,7 +427,7 @@
       "prompt_injection"
     ],
     "default_license": "mit",
-    "description": "Binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense.",
+    "description": "Binary prompt-injection classifier trained to mitigate over-defense.",
     "display_name": "PIGuard",
     "multilingual": false,
     "multimodal": false,
@@ -450,7 +450,7 @@
       "prompt_injection"
     ],
     "default_license": "mit",
-    "description": "Binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base.",
+    "description": "Binary prompt-injection classifiers.",
     "display_name": "Jasper",
     "multilingual": false,
     "multimodal": false,
@@ -577,7 +577,7 @@
       "content_safety"
     ],
     "default_license": "nvidia-open-model",
-    "description": "4B reasoning safety classifier covering a 22-category content-safety taxonomy.",
+    "description": "Reasoning safety classifier covering a 22-category content-safety taxonomy.",
     "display_name": "Nemotron Content Safety",
     "multilingual": false,
     "multimodal": false,
@@ -652,7 +652,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Binary prompt-injection classifier built on ModernBERT.",
+    "description": "Binary prompt-injection classifier.",
     "display_name": "Pangolin Guard",
     "multilingual": false,
     "multimodal": false,
@@ -779,7 +779,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Binary prompt-injection classifiers built on DeBERTa-v3 and DistilRoBERTa.",
+    "description": "Binary prompt-injection classifiers.",
     "display_name": "ProtectAI",
     "multilingual": false,
     "multimodal": false,
@@ -878,7 +878,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Binary prompt-injection classifier built on DeBERTa.",
+    "description": "Binary prompt-injection classifier.",
     "display_name": "Sentinel",
     "multilingual": false,
     "multimodal": false,

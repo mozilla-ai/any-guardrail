@@ -12,7 +12,7 @@ DEEPSET_INJECTION_LABEL = "INJECTION"
 
 
 class Deepset(StandardGuardrail):
-    """Binary prompt-injection classifier built on DeBERTa-v3-base.
+    """Binary prompt-injection classifier.
 
     Encoder sequence classifier that labels a text as ``LEGIT`` or ``INJECTION``.
     Feed it the raw user prompt (or any untrusted text such as retrieved snippets);

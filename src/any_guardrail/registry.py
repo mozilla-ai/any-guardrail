@@ -37,7 +37,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.BEDROCK_GUARDRAILS: GuardrailMetadata(
-        description="Hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding.",
+        description="Hosted, configurable moderation covering content filters, denied topics, PII, word filters, and contextual grounding.",
         display_name="Bedrock Guardrails",
         categories=frozenset(
             {
@@ -57,7 +57,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="proprietary",
     ),
     GuardrailName.DEEPSET: GuardrailMetadata(
-        description="Binary prompt-injection classifier built on DeBERTa-v3-base.",
+        description="Binary prompt-injection classifier.",
         display_name="Deepset",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -82,7 +82,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.FLOWJUDGE: GuardrailMetadata(
-        description="Local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library.",
+        description="Local LLM judge scoring text against user-defined criteria, metrics, and rubrics.",
         display_name="Flow Judge",
         categories=frozenset({GuardrailCategory.GENERAL_JUDGE}),
         primary_category=GuardrailCategory.GENERAL_JUDGE,
@@ -127,7 +127,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.HARMGUARD: GuardrailMetadata(
-        description="Binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.",
+        description="Binary safety and jailbreak classifier, scoring a prompt or prompt-response pair.",
         display_name="HarmAug-Guard",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION, GuardrailCategory.CONTENT_SAFETY}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -139,7 +139,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.INJECGUARD: GuardrailMetadata(
-        description="Binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense.",
+        description="Binary prompt-injection classifier trained to mitigate over-defense.",
         display_name="PIGuard",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -150,7 +150,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="mit",
     ),
     GuardrailName.JASPER: GuardrailMetadata(
-        description="Binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base.",
+        description="Binary prompt-injection classifiers.",
         display_name="Jasper",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -187,7 +187,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="proprietary",
     ),
     GuardrailName.PANGOLIN: GuardrailMetadata(
-        description="Binary prompt-injection classifier built on ModernBERT.",
+        description="Binary prompt-injection classifier.",
         display_name="Pangolin Guard",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -198,7 +198,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.PROTECTAI: GuardrailMetadata(
-        description="Binary prompt-injection classifiers built on DeBERTa-v3 and DistilRoBERTa.",
+        description="Binary prompt-injection classifiers.",
         display_name="ProtectAI",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -209,7 +209,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.SENTINEL: GuardrailMetadata(
-        description="Binary prompt-injection classifier built on DeBERTa.",
+        description="Binary prompt-injection classifier.",
         display_name="Sentinel",
         categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.PROMPT_INJECTION,
@@ -358,7 +358,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.NEMOTRON_CONTENT_SAFETY: GuardrailMetadata(
-        description="4B reasoning safety classifier covering a 22-category content-safety taxonomy.",
+        description="Reasoning safety classifier covering a 22-category content-safety taxonomy.",
         display_name="Nemotron Content Safety",
         categories=frozenset({GuardrailCategory.CONTENT_SAFETY}),
         primary_category=GuardrailCategory.CONTENT_SAFETY,
@@ -456,7 +456,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="mit",
     ),
     GuardrailName.GLI_GUARD: GuardrailMetadata(
-        description="Schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2.",
+        description="Schema-driven safety, toxicity, jailbreak, and refusal detector.",
         display_name="GLiGuard",
         categories=frozenset(
             {GuardrailCategory.CONTENT_SAFETY, GuardrailCategory.TOXICITY, GuardrailCategory.PROMPT_INJECTION}
