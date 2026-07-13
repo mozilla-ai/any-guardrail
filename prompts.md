@@ -81,3 +81,37 @@ The full catalog is exported to
 [`schemas/guardrail_prompts.json`](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_prompts.json)
 so external tooling can read every guardrail's prompts (and their provenance) without importing
 the package.
+
+# Author-published policies, rubrics & criteria
+
+Where a *prompt template* is the scaffold a guardrail wraps around input, many guardrails also need
+you to supply the **fill-in content** — the `policy`, `rubric`, or `criteria`. Rather than write
+those from scratch, you can fetch the ones a guardrail's authors publish. These live in a separate,
+import-free **content registry** with a per-kind API:
+
+```python
+from any_guardrail import AnyGuardrail, GuardrailName
+
+# Discover what's available (no model loads)
+AnyGuardrail.list_policies(GuardrailName.SHIELD_GEMMA)     # -> ['dangerous_content', 'harassment', ...]
+AnyGuardrail.list_criteria(GuardrailName.GRANITE_GUARDIAN) # -> ['answer_relevance', 'harm', ...]
+AnyGuardrail.list_rubrics(GuardrailName.PROMETHEUS)        # -> ['factual_validity', 'helpfulness', ...]
+
+# Fetch a ready-to-use string and hand it straight to the guardrail
+policy = AnyGuardrail.get_policy(GuardrailName.SHIELD_GEMMA, "dangerous_content")
+guard = AnyGuardrail.create(GuardrailName.SHIELD_GEMMA, policy=policy)
+
+# Judges take a rubric or criteria the same way
+rubric = AnyGuardrail.get_rubric(GuardrailName.PROMETHEUS, "helpfulness")
+criteria = AnyGuardrail.get_criteria(GuardrailName.GRANITE_GUARDIAN, "harm")
+```
+
+Registered today: **ShieldGemma** harm-type policies, **Granite Guardian** risk criteria,
+**Flow Judge** preset criteria + rubrics, and **Prometheus** scoring rubrics. Content mirrored from
+a live source (Granite Guardian, Flow-Judge) is drift-tested to stay byte-identical; the rest is
+harvested verbatim from the model card / repo (each item carries a `source` URL and `provenance`).
+
+Guardrails whose policy/rubric is genuinely **bring-your-own** with no canonical author-published
+default (Selene, GLIDER, CompassJudger, DynaGuard, gpt-oss-safeguard, …) are intentionally not
+registered — you supply your own. The full catalog is exported to
+[`schemas/guardrail_content.json`](https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_content.json).
