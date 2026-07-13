@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Re-export the leaf prompt models so callers can reach them from
 # ``any_guardrail.types`` alongside ``GuardrailOutput``. ``prompts`` is a leaf
 # module (imports only the stdlib + pydantic), so this does not create a cycle.
+from any_guardrail.content import AuthoredContent, ContentKind
 from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
 
 # Re-export the dependency-free taxonomy so callers can reach the capability
@@ -27,10 +28,12 @@ from any_guardrail.taxonomy import (
 
 __all__ = [
     "AnyDict",
+    "AuthoredContent",
     "BackendType",
     "CategoryResult",
     "ChatMessage",
     "ChatMessages",
+    "ContentKind",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
     "GuardrailMetadata",

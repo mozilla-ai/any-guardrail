@@ -1,5 +1,6 @@
 from .api import AnyGuardrail
 from .base import Guardrail, GuardrailName, ThreeStageGuardrail
+from .content_registry import CONTENT_REGISTRY
 from .prompt_registry import PROMPT_REGISTRY
 from .providers import HuggingFaceProvider, Provider
 from .registry import GUARDRAIL_METADATA
@@ -11,9 +12,11 @@ from .taxonomy import (
     OutputShape,
 )
 from .types import (
+    AuthoredContent,
     CategoryResult,
     ChatMessage,
     ChatMessages,
+    ContentKind,
     GuardrailInferenceOutput,
     GuardrailOutput,
     GuardrailPreprocessOutput,
@@ -28,13 +31,16 @@ from .types import (
 )
 
 __all__ = [
+    "CONTENT_REGISTRY",
     "GUARDRAIL_METADATA",
     "PROMPT_REGISTRY",
     "AnyGuardrail",
+    "AuthoredContent",
     "BackendType",
     "CategoryResult",
     "ChatMessage",
     "ChatMessages",
+    "ContentKind",
     "Guardrail",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
