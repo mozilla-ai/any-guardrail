@@ -28,9 +28,31 @@ print(prompt.source)               # provenance URL, when the prompt comes from 
 
 A `PromptTemplate` carries its `segments` (the template text, keyed by role/fragment), the
 `variables` it expects, its `assembly` (`chat` / `raw` / `assembled`), whether it is
-`overridable`, and its provenance (`source` URL + `author`/`adapted`). Guardrails with several
-author-published variants (e.g. absolute vs. pairwise judging) expose each as a named version;
-pass it via `prompt_version=`.
+`overridable`, and its provenance (`source` URL + `author`/`adapted`).
+
+Beyond the runtime `default`, many judges carry the **author-published variants** their creators
+ship — Prometheus's relative / RAG grading modes, Selene's five judge templates, ShieldGemma's
+prompt-only vs. prompt+response guidelines, and more — each as a named version fetchable with
+`get_prompt(...)`. These are **reference-only** (`overridable=False`): stored verbatim (author
+quirks and all) for discovery, copy/adaptation, and benchmark pinning, but not drop-in runtime
+swaps, because their placeholder and output contract differs from the guardrail's default:
+
+```python
+from any_guardrail import AnyGuardrail, GuardrailName
+
+# All of Prometheus's registered prompts (default + author variants)
+AnyGuardrail.list_prompt_versions(GuardrailName.PROMETHEUS)
+# -> ['absolute-no-reference', 'absolute-rag', 'absolute-with-reference', 'default',
+#     'relative-no-reference', 'relative-rag', 'relative-with-reference']
+
+# Inspect the author's verbatim relative-grading template
+rel = AnyGuardrail.get_prompt(GuardrailName.PROMETHEUS, "relative-with-reference")
+print(rel.provenance, rel.overridable)   # author False
+print(sorted(rel.variables))             # ['instruction', 'reference_answer', 'response_A', ...]
+```
+
+Every browsable prompt (default text + author variants + policies/rubrics/criteria) is rendered in
+the [Prompt & content catalog](prompt_catalog.md).
 
 ## Bringing your own prompt
 
@@ -70,10 +92,12 @@ result = guardrail.validate(
 
 ## Reference-only prompts
 
-Some guardrails carry a **reference-only** entry (`overridable=False`): the prompt is assembled
-imperatively at runtime (Nemotron, gpt-oss-safeguard, Granite Guardian) or applied by an upstream
-library (Flow Judge). These are exposed via `get_prompt(...)` for discovery and pinning, but not
-swappable. Guardrails whose prompt lives entirely in the model's tokenizer chat template (e.g.
+Reference-only entries (`overridable=False`) come in two shapes: the **author variants** above, and
+a guardrail's own `default` when its prompt is assembled imperatively at runtime (Nemotron,
+gpt-oss-safeguard, Granite Guardian) or applied by an upstream library (Flow Judge). Both are
+exposed via `get_prompt(...)` for discovery and pinning; passing one to `prompt_version=` at runtime
+raises a `ValueError` (inspect or copy it instead, or supply your own inline `prompt=`). Guardrails
+whose prompt lives entirely in the model's tokenizer chat template (e.g.
 Llama Guard, Kanana, Qwen3Guard) are intentionally not registered — the chat template *is* the
 prompt, applied at inference, so there is no in-repo policy or deviation to catalog.
 
