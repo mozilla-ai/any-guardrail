@@ -14,7 +14,7 @@
 * [Azure Prompt Shields Guardrail Usage](cookbook/azure_prompt_shields_guardrail.md)
 * [Lakera Guard Guardrail Usage](cookbook/lakera_guard_guardrail.md)
 * [OpenAI Moderation Guardrail Usage](cookbook/openai_moderation_guardrail.md)
-* [Fetching Prompts, Policies & Rubrics](cookbook/fetching_prompts_and_content.md)
+* [Fetching Prompts, Policies, Rubrics & Criteria](cookbook/fetching_prompts_and_content.md)
 
 ## API Reference
 

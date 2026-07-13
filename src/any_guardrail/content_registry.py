@@ -153,10 +153,11 @@ def get_content(name: GuardrailName, kind: ContentKind, key: str) -> str:
         KeyError: If the guardrail has no content of that kind and key.
 
     """
-    for c in _items(name, kind):
+    items = _items(name, kind)
+    for c in items:
         if c.key == key:
             return c.content
-    available = sorted(c.key for c in _items(name, kind))
+    available = sorted(c.key for c in items)
     msg = f"{name.value!r} has no {kind.value} {key!r}; available {kind.value}: {available}."
     raise KeyError(msg)
 

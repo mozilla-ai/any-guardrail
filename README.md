@@ -88,7 +88,7 @@ A machine-readable [JSON Schema](schemas/guardrail_output.schema.json) for this 
 https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json
 ```
 
-### Prompts, policies & rubrics
+### Prompts, policies, rubrics & criteria
 
 Generative and judge guardrails run against a **prompt template** and often need a **policy**,
 **rubric**, or **criteria**. any-guardrail lets you discover and override the default prompt, and

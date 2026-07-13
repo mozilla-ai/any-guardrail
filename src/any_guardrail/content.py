@@ -6,7 +6,8 @@ ready-made **policies**, **rubrics**, and **criteria** each guardrail's authors 
 Google's ShieldGemma harm-type policies, Prometheus's grading rubrics, Granite Guardian's risk
 criteria). Storing them here means users can fetch a vetted policy/rubric instead of writing one:
 
-    ShieldGemma(policy=AnyGuardrail.get_policy(GuardrailName.SHIELD_GEMMA, "dangerous_content"))
+    policy = AnyGuardrail.get_policy(GuardrailName.SHIELD_GEMMA, "dangerous_content")
+    guard = AnyGuardrail.create(GuardrailName.SHIELD_GEMMA, policy=policy)
 
 This module is deliberately dependency-free (only the standard library and Pydantic) so content
 discovery never imports a guardrail implementation, ``torch``, or ``transformers``. The registry
