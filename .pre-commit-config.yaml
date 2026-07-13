@@ -59,6 +59,13 @@ repos:
         pass_filenames: false
         files: ^(src/any_guardrail/(prompts|prompt_registry|base)\.py|scripts/generate_prompts_json\.py|schemas/guardrail_prompts\.json)$
 
+      - id: guardrail-content-json
+        name: check guardrail content JSON is up to date
+        entry: "uv run python scripts/generate_content_json.py --check"
+        language: system
+        pass_filenames: false
+        files: ^(src/any_guardrail/(content|content_registry|_authored_content_data|base)\.py|scripts/generate_content_json\.py|schemas/guardrail_content\.json)$
+
       - id: guardrail-summary-nav
         name: check guardrail SUMMARY navigation is up to date
         entry: "uv run python scripts/generate_summary.py --check"
