@@ -1,6 +1,6 @@
 # PolyGuard
 
-PolyGuard — multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.
+Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.
 
 Generative classifier (fine-tuned Ministral / Qwen decoder LLMs) that, given a human request
 and an optional assistant response, reports three boolean signals — whether the request is

@@ -1,6 +1,6 @@
 # AnyLlm
 
-AnyLlm — policy-based LLM judge that grades text against a natural-language policy using any LLM provider supported by any-llm.
+Policy-based LLM judge that grades text against a natural-language policy using an LLM provider.
 
 Wraps ``any_llm.completion`` with structured output: the judge model receives your policy
 inside a system prompt and must return a boolean verdict, an explanation, and a risk score.

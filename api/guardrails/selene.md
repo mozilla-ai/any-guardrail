@@ -1,6 +1,6 @@
 # Selene
 
-Selene 1 Mini — general-purpose LLM judge grading a response against a user-defined 1-5 rubric (Atla).
+General-purpose LLM judge grading a response against a user-defined 1-5 rubric.
 
 Selene 1 Mini is an 8B evaluator LLM (fine-tuned from Llama 3.1 8B) specialized in
 scoring model outputs. This guardrail drives it in single-rubric absolute-grading mode:

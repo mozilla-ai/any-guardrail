@@ -1,6 +1,6 @@
 # Qwen3GuardStream
 
-Qwen3Guard-Stream — token-level streaming safety moderation with span output (Qwen).
+Token-level streaming safety moderation with span output.
 
 Classifier heads on a Qwen3 backbone (loaded as remote code) that judge the user
 prompt as a whole and every assistant response token individually, each with a

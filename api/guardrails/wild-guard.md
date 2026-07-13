@@ -1,6 +1,6 @@
 # WildGuard
 
-WildGuard — one-pass safety-moderation judge reporting prompt harm, response harm, and refusal (Allen Institute for AI).
+One-pass safety-moderation judge reporting prompt harm, response harm, and refusal.
 
 WildGuard is a generative safety classifier that evaluates a prompt-response
 interaction in a single forward pass, reporting three signals: (1) whether the

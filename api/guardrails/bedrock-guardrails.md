@@ -1,6 +1,6 @@
 # BedrockGuardrails
 
-AWS Bedrock Guardrails — hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding (Amazon).
+Hosted, configurable moderation covering content filters, denied topics, PII, word filters, and contextual grounding.
 
 Provides a uniform interface to AWS Bedrock Guardrails — a unified, FM-agnostic
 policy platform covering content moderation, prompt-injection / denied-topic

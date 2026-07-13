@@ -1,6 +1,6 @@
 # AzurePromptShields
 
-Azure AI Prompt Shields — hosted detector for direct (user prompt) and indirect (document-borne) prompt-injection and jailbreak attacks (Microsoft).
+Hosted detector for direct (user prompt) and indirect (document-borne) prompt-injection and jailbreak attacks.
 
 Prompt Shields is a service from Azure AI Content Safety that detects prompt-injection
 and jailbreak attacks against LLM applications. It supports two attack surfaces:

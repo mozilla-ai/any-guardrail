@@ -1,6 +1,6 @@
 # ShieldGemma
 
-ShieldGemma — policy-conditioned safety classifier that judges a prompt against a user-supplied policy via Yes/No token logits (Google).
+Policy-conditioned safety classifier that judges a prompt against a user-supplied policy via Yes/No token logits.
 
 ShieldGemma is Google's Gemma-2-based content-safety classifier. Rather than a fixed taxonomy,
 it is conditioned at construction on a free-text ``policy`` (a safety principle). Each call

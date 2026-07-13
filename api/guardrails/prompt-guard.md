@@ -1,6 +1,6 @@
 # PromptGuard
 
-Prompt Guard 2 — encoder classifier for prompt-injection and jailbreak detection (Meta).
+Encoder classifier for prompt-injection and jailbreak detection.
 
 Binary encoder classifier (mDeBERTa / DeBERTa) that labels a single prompt string
 ``benign`` (index 0) or ``malicious`` (index 1, i.e. a prompt-injection or jailbreak

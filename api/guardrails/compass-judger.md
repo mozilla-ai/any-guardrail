@@ -1,6 +1,6 @@
 # CompassJudger
 
-CompassJudger — generalist LLM judge that scores a response against user-defined criteria and rubric on a 1-10 scale (OpenCompass).
+Generalist LLM judge that scores a response against user-defined criteria and rubric on a 1-10 scale.
 
 Decoder-LLM judge from the OpenCompass evaluation ecosystem. CompassJudger has no
 canonical pointwise output format, so this guardrail wraps the inputs in a fixed

@@ -1,6 +1,6 @@
 # OpenaiModeration
 
-OpenAI Moderation — hosted moderation API flagging content across 13 harm categories with calibrated scores (OpenAI).
+Hosted moderation API flagging content across 13 harm categories with calibrated scores.
 
 Wraps OpenAI's hosted moderation classifier (default model:
 ``omni-moderation-latest``) to flag content across 13 harm
