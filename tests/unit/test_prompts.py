@@ -362,3 +362,72 @@ def test_flowjudge_reference_matches_library() -> None:
     assert template.overridable is False
     assert template.segments["user"] == USER_PROMPT_TEMPLATE
     assert template.segments["user_no_inputs"] == USER_PROMPT_NO_INPUTS_TEMPLATE
+
+
+# --------------------------------------------------------------------------- #
+# Author-published variants (overridable=False): additional named versions       #
+# holding the verbatim alternate templates a model's authors publish. They are    #
+# discoverable + pinnable but reference-only — resolve_prompt refuses to run them, #
+# and author quirks are preserved byte-for-byte (proof they are not cleaned up).   #
+# --------------------------------------------------------------------------- #
+
+
+def _nondefault_versions(name: GuardrailName) -> list[str]:
+    spec = PROMPT_REGISTRY[name]
+    return [v for v in spec.versions if v != spec.default_version]
+
+
+@pytest.mark.parametrize("name", PROMPT_NAMES, ids=lambda n: n.value)
+def test_author_variants_are_reference_only_with_source(name: GuardrailName) -> None:
+    """Every non-default (author-published) version is reference-only, author-provenance, sourced."""
+    spec = PROMPT_REGISTRY[name]
+    for version in _nondefault_versions(name):
+        template = spec.versions[version]
+        assert template.overridable is False, f"{name.value}:{version} should be reference-only"
+        assert template.provenance == "author", f"{name.value}:{version} should be author-provenance"
+        assert template.source, f"{name.value}:{version} must record a source URL"
+
+
+def test_resolve_prompt_rejects_reference_only_version() -> None:
+    """A reference-only variant is visible via get_prompt but cannot be selected at runtime."""
+    from any_guardrail.prompt_registry import resolve_prompt
+
+    # discoverable + inspectable
+    assert "prompt-response" in AnyGuardrail.list_prompt_versions(GuardrailName.SHIELD_GEMMA)
+    assert AnyGuardrail.get_prompt(GuardrailName.SHIELD_GEMMA, "prompt-response").overridable is False
+    # but not runnable as an override
+    with pytest.raises(ValueError, match="reference-only"):
+        resolve_prompt(GuardrailName.SHIELD_GEMMA, version="prompt-response")
+    # the default still resolves, and an explicit inline prompt is always honored
+    assert resolve_prompt(GuardrailName.SHIELD_GEMMA).overridable is True
+    custom = PromptTemplate(segments={"system": "{policy}"}, assembly=PromptAssembly.RAW)
+    assert resolve_prompt(GuardrailName.SHIELD_GEMMA, prompt=custom) is custom
+
+
+def test_authored_prompt_data_is_leaf() -> None:
+    """_authored_prompt_data holds only string constants and imports nothing."""
+    import any_guardrail._authored_prompt_data as data
+
+    tree = ast.parse(Path(data.__file__).read_text(encoding="utf-8"))
+    imports = [n for n in ast.walk(tree) if isinstance(n, (ast.Import, ast.ImportFrom))]
+    assert imports == [], "author prompt-variant data module must not import anything"
+
+
+def test_author_variants_preserve_verbatim_quirks() -> None:
+    """Author quirks are kept byte-for-byte — evidence the variants are verbatim, not tidied up."""
+    # GLIDER model card's original wording ("must in the following format") + a trailing space.
+    glider = PROMPT_REGISTRY[GuardrailName.GLIDER].versions["author-canonical"].segments["system"]
+    assert "Your output must in the following format:" in glider
+    assert any(line.endswith(" ") for line in glider.splitlines())
+    # ShieldGemma's prompt+response template has a double space ("be sure  we answer").
+    sg = PROMPT_REGISTRY[GuardrailName.SHIELD_GEMMA].versions["prompt-response"].segments["system"]
+    assert "be sure  we answer" in sg
+    # Prometheus's verbatim absolute template has NO "Feedback: " prefix in the output-format line;
+    # our adapted default added it — the divergence that makes the default "adapted".
+    prom = PROMPT_REGISTRY[GuardrailName.PROMETHEUS].versions["absolute-with-reference"].segments["user"]
+    assert '"(write a feedback for criteria) [RESULT]' in prom
+    assert '"Feedback: (write a feedback for criteria) [RESULT]' not in prom
+    # PolyGuard's author-full system embeds the S1-S14 taxonomy that the adapted default omits.
+    poly = PROMPT_REGISTRY[GuardrailName.POLY_GUARD].versions["author-full"].segments["system"]
+    assert "<BEGIN UNSAFE CONTENT CATEGORIES>" in poly
+    assert "S14: Code Interpreter Abuse." in poly

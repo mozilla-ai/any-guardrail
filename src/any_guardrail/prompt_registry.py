@@ -3,10 +3,18 @@
 This module is the single source of truth for the default/author-published prompts of
 prompt-bearing guardrails. It imports only :mod:`any_guardrail.base` (for
 ``GuardrailName``), :mod:`any_guardrail.prompts` (leaf models), and the stdlib-only
-``any_guardrail._flowjudge_default_prompt`` (mirrored flow_judge template constants) —
-never a guardrail implementation — so prompt discovery never pulls in
-``torch``/``transformers`` or spins up a backend. Each prompt-bearing guardrail class
-mirrors its entry here as ``PROMPT``.
+data modules ``any_guardrail._flowjudge_default_prompt`` (mirrored flow_judge template
+constants) and ``any_guardrail._authored_prompt_data`` (verbatim author-published
+prompt-variant text) — never a guardrail implementation — so prompt discovery never
+pulls in ``torch``/``transformers`` or spins up a backend. Each prompt-bearing guardrail
+class mirrors its entry here as ``PROMPT``.
+
+Besides each guardrail's runtime ``default`` prompt, a spec can carry additional named
+**author-published variants** (``overridable=False``, ``provenance="author"``): the exact
+alternate templates the model's authors publish (e.g. Prometheus's relative/RAG grading
+modes, Selene's five judge templates, ShieldGemma's prompt-only vs prompt+response). They
+are for discovery and #194 pinning — not drop-in runtime swaps — so ``resolve_prompt``
+refuses to select them at call time; ``get_prompt`` still returns them for inspection.
 
 The prompt *text* lives here (moved out of the guardrail modules), and each guardrail
 imports its default from here — a one-way dependency (guardrail → registry) that keeps
@@ -14,6 +22,9 @@ the import-free guarantee. ``(guardrail, version)`` is the pinnable prompt ident
 that benchmark tooling (issue #194) records alongside each score.
 """
 
+# ``_av`` holds the verbatim author-published prompt-variant text (byte-exact, stdlib-only leaf),
+# referenced as ``_av.<NAME>`` when building the reference-only versions below.
+import any_guardrail._authored_prompt_data as _av
 from any_guardrail._flowjudge_default_prompt import (
     USER_PROMPT_NO_INPUTS_TEMPLATE as _FLOWJUDGE_USER_NO_INPUTS,
 )
@@ -22,6 +33,18 @@ from any_guardrail._flowjudge_default_prompt import (
 )
 from any_guardrail.base import GuardrailName
 from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
+
+# Author source URLs for the reference-only variants (recorded on each variant's PromptTemplate).
+_PROMETHEUS_SRC = (
+    "https://github.com/prometheus-eval/prometheus-eval/blob/main/libs/prometheus-eval/prometheus_eval/prompts.py"
+)
+_SELENE_SRC = "https://github.com/atla-ai/selene-mini/blob/main/prompt-templates"
+_GLIDER_SRC = "https://huggingface.co/PatronusAI/glider"
+_POLYGUARD_SRC = "https://github.com/kpriyanshu256/polyguard/blob/main/inference.py"
+_DYNAGUARD_SRC = "https://github.com/montehoover/DynaGuard/blob/main/constants.py"
+_SHIELDGEMMA_SRC = (
+    "https://github.com/google-gemini/gemma-cookbook/blob/main/responsible/shieldgemma_on_huggingface.ipynb"
+)
 
 # ---------------------------------------------------------------------------
 # AnyLlm — the any-guardrail policy-judge protocol prompt. There is no external
@@ -329,6 +352,22 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
                 source="https://ai.google.dev/gemma/docs/shieldgemma/model_card",
                 description="Policy-conditioned Yes/No judgment scaffold (bring-your-own safety policy).",
             ),
+            "prompt-only": PromptTemplate(
+                segments={"system": _av.SHIELDGEMMA_PROMPT_ONLY},
+                assembly=PromptAssembly.RAW,
+                overridable=False,
+                provenance="author",
+                source=_SHIELDGEMMA_SRC,
+                description="Author reference: prompt-only guideline template (placeholders {user_content}/{harm_text}).",
+            ),
+            "prompt-response": PromptTemplate(
+                segments={"system": _av.SHIELDGEMMA_PROMPT_RESPONSE},
+                assembly=PromptAssembly.RAW,
+                overridable=False,
+                provenance="author",
+                source=_SHIELDGEMMA_SRC,
+                description="Author reference: prompt+response guideline template ({user_content}/{model_content}/{harm_text}).",
+            ),
         },
     ),
     GuardrailName.SELENE: PromptSpec(
@@ -340,6 +379,46 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
                 source="https://huggingface.co/AtlaAI/Selene-1-Mini-Llama-3.1-8B",
                 description="Single-rubric absolute-scoring template (1-5), one user turn.",
             ),
+            "absolute-scoring": PromptTemplate(
+                segments={"user": _av.SELENE_ABSOLUTE_SCORING},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=f"{_SELENE_SRC}/absolute-scoring.yaml",
+                description="Author reference: absolute 1-5 scoring template (per-score rubric descriptions).",
+            ),
+            "absolute-scoring-with-reference": PromptTemplate(
+                segments={"user": _av.SELENE_ABSOLUTE_SCORING_WITH_REFERENCE},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=f"{_SELENE_SRC}/absolute-scoring-with-reference.yaml",
+                description="Author reference: absolute 1-5 scoring template with a reference answer.",
+            ),
+            "classification": PromptTemplate(
+                segments={"user": _av.SELENE_CLASSIFICATION},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=f"{_SELENE_SRC}/classification.yaml",
+                description="Author reference: binary Yes/No classification template.",
+            ),
+            "classification-with-reference": PromptTemplate(
+                segments={"user": _av.SELENE_CLASSIFICATION_WITH_REFERENCE},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=f"{_SELENE_SRC}/classification-with-reference.yaml",
+                description="Author reference: binary Yes/No classification template with a reference answer.",
+            ),
+            "pairwise": PromptTemplate(
+                segments={"user": _av.SELENE_PAIRWISE},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=f"{_SELENE_SRC}/pairwise.yaml",
+                description="Author reference: pairwise A/B preference template.",
+            ),
         },
     ),
     GuardrailName.PROMETHEUS: PromptSpec(
@@ -347,9 +426,57 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
             "default": PromptTemplate(
                 segments={"system": _PROMETHEUS_SYSTEM, "user": _PROMETHEUS_USER},
                 assembly=PromptAssembly.CHAT,
-                provenance="author",
-                source="https://github.com/prometheus-eval/prometheus-eval/blob/main/libs/prometheus-eval/prometheus_eval/prompts.py",
+                provenance="adapted",
+                source=_PROMETHEUS_SRC,
                 description="Absolute-grading prompt (system + user), score 1-5 after a [RESULT] marker.",
+            ),
+            "absolute-with-reference": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_ABS_SYSTEM, "user": _av.PROMETHEUS_ABSOLUTE},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: absolute grading with a reference answer (verbatim ABSOLUTE_PROMPT).",
+            ),
+            "absolute-no-reference": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_ABS_SYSTEM, "user": _av.PROMETHEUS_ABSOLUTE_WO_REF},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: absolute grading without a reference answer.",
+            ),
+            "relative-with-reference": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_REL_SYSTEM, "user": _av.PROMETHEUS_RELATIVE},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: relative A/B grading with a reference answer.",
+            ),
+            "relative-no-reference": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_REL_SYSTEM, "user": _av.PROMETHEUS_RELATIVE_WO_REF},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: relative A/B grading without a reference answer.",
+            ),
+            "absolute-rag": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_ABS_SYSTEM, "user": _av.PROMETHEUS_ABSOLUTE_WO_REF_RAG},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: absolute grading with a relevant-context (RAG) block.",
+            ),
+            "relative-rag": PromptTemplate(
+                segments={"system": _av.PROMETHEUS_REL_SYSTEM, "user": _av.PROMETHEUS_RELATIVE_WO_REF_RAG},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_PROMETHEUS_SRC,
+                description="Author reference: relative A/B grading with a relevant-context (RAG) block.",
             ),
         },
     ),
@@ -369,9 +496,17 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
             "default": PromptTemplate(
                 segments={"system": _DYNAGUARD_SYSTEM, "user": _DYNAGUARD_USER},
                 assembly=PromptAssembly.CHAT,
-                provenance="author",
-                source="https://github.com/montehoover/DynaGuard/blob/main/constants.py",
+                provenance="adapted",
+                source=_DYNAGUARD_SRC,
                 description="<rules>/<transcript> guardian prompt; PASS/FAIL verdict inside <answer>.",
+            ),
+            "author-full": PromptTemplate(
+                segments={"system": _av.DYNAGUARD_SYSTEM_FULL, "user": _DYNAGUARD_USER},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_DYNAGUARD_SRC,
+                description="Author reference: full guardian system prompt with the optional <think>/<answer>/<explanation> reasoning format.",
             ),
         },
     ),
@@ -380,9 +515,17 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
             "default": PromptTemplate(
                 segments={"system": _POLYGUARD_SYSTEM, "user": _POLYGUARD_USER},
                 assembly=PromptAssembly.CHAT,
-                provenance="author",
+                provenance="adapted",
                 source="https://arxiv.org/abs/2504.04377",
-                description="Multilingual moderation prompt (system + user) over the MLCommons S1-S14 taxonomy.",
+                description="Multilingual moderation prompt (system + user); harm/refusal/harmful verdict over the MLCommons hazard taxonomy.",
+            ),
+            "author-full": PromptTemplate(
+                segments={"system": _av.POLYGUARD_SYSTEM_FULL, "user": _POLYGUARD_USER},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_POLYGUARD_SRC,
+                description="Author reference: full system prompt including the inline S1-S14 hazard category definitions.",
             ),
         },
     ),
@@ -405,6 +548,38 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
                 provenance="adapted",
                 source="https://huggingface.co/PatronusAI/glider",
                 description="Pass-criteria + rubric prompt with <reasoning>/<highlight>/<score> output.",
+            ),
+            "author-canonical": PromptTemplate(
+                segments={"system": _av.GLIDER_CANONICAL},
+                assembly=PromptAssembly.CHAT,
+                overridable=False,
+                provenance="author",
+                source=_GLIDER_SRC,
+                description="Author reference: canonical prompt ({data}/{pass_criteria}/{rubric}); preserves the card's original wording verbatim.",
+            ),
+            "data-conversational": PromptTemplate(
+                segments={"data": _av.GLIDER_DATA_CONVERSATIONAL},
+                assembly=PromptAssembly.ASSEMBLED,
+                overridable=False,
+                provenance="author",
+                source=_GLIDER_SRC,
+                description="Author reference: conversational data wrapper (<SYSTEM PROMPT>/<USER PROMPT>/<ASSISTANT REPLY>).",
+            ),
+            "data-rag": PromptTemplate(
+                segments={"data": _av.GLIDER_DATA_RAG},
+                assembly=PromptAssembly.ASSEMBLED,
+                overridable=False,
+                provenance="author",
+                source=_GLIDER_SRC,
+                description="Author reference: RAG data wrapper (<CONTEXT>/<USER INPUT>/<MODEL OUTPUT>).",
+            ),
+            "data-general": PromptTemplate(
+                segments={"data": _av.GLIDER_DATA_GENERAL},
+                assembly=PromptAssembly.ASSEMBLED,
+                overridable=False,
+                provenance="author",
+                source=_GLIDER_SRC,
+                description="Author reference: general data wrapper (<USER INPUT>/<MODEL OUTPUT>).",
             ),
         },
     ),
@@ -504,7 +679,24 @@ def resolve_prompt(
 
     Precedence: an explicit ``prompt`` (inline override) wins; otherwise the registered
     ``version`` (or the guardrail's default) is returned.
+
+    Raises:
+        KeyError: If ``name`` has no registered prompt, or ``version`` is not one of its versions.
+        ValueError: If ``version`` names a reference-only variant (``overridable=False``). Those
+            author-published templates are for inspection via ``get_prompt`` / the catalog, not for
+            running: their placeholder and output contract differs from the guardrail's default, so
+            the guardrail's pre-/post-processing cannot drive them.
+
     """
     if prompt is not None:
         return prompt
-    return get_prompt(name, version)
+    template = get_prompt(name, version)
+    if version is not None and not template.overridable:
+        msg = (
+            f"{name.value!r} prompt version {version!r} is reference-only (overridable=False) and "
+            f"cannot be used as a runtime override. Inspect it with "
+            f"AnyGuardrail.get_prompt(GuardrailName.{name.name}, {version!r}), or pass prompt=... to "
+            f"run a custom template."
+        )
+        raise ValueError(msg)
+    return template
