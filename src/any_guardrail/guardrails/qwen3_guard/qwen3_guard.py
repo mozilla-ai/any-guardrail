@@ -48,7 +48,7 @@ _THINK_PATTERN = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 
 class Qwen3Guard(ThreeStageGuardrail[Qwen3GuardPreprocessData, Qwen3GuardInferenceData]):
-    """Qwen3Guard-Gen — generative safety moderation with three-level severity across 119 languages (Qwen).
+    """Generative safety moderation with three-level severity across 119 languages.
 
     Decoder LLM (Apache-2.0) whose chat template embeds the safety-classifier
     instruction: the user prompt alone triggers prompt moderation; supplying an

@@ -17,7 +17,7 @@ _IMPORT_ERROR_HINT = (
 
 
 class WatsonxGuardian(Guardrail):
-    """watsonx Guardian — hosted text-detection moderation API running configurable Granite Guardian detectors (IBM).
+    """Hosted text-detection moderation API running configurable Granite Guardian detectors.
 
     This is the hosted, pay-per-use counterpart to the locally-run
     :class:`~any_guardrail.guardrails.granite_guardian.granite_guardian.GraniteGuardian`

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class Flowjudge(ThreeStageGuardrail["EvalInputType", "EvalOutputType"]):
-    """Flow Judge — local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library (Flow AI).
+    """Local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library.
 
     Flow Judge wraps Flow AI's ``flow-judge`` library and its 3.8B evaluator LLM
     (``flowaicom/Flow-Judge-v0.1``, fine-tuned from Phi-3.5-mini). Unlike most guardrails it

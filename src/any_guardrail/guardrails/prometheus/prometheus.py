@@ -34,7 +34,7 @@ _RESULT_PATTERN = re.compile(r"(?:\[RESULT\]|\[SCORE\]|Result:|Score:)\s*\(?\[?\
 
 
 class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferenceData]):
-    """Prometheus — open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval).
+    """Open rubric-based LLM judge grading a response on a user-defined 1-5 rubric.
 
     Prometheus is an open-source decoder LLM specialized in evaluating other models'
     outputs. This guardrail drives it in **absolute grading** mode: each call wraps the

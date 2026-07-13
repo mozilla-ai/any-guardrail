@@ -9,7 +9,7 @@
       "toxicity"
     ],
     "default_license": "proprietary",
-    "description": "Alinia \u2014 hosted content-moderation and safety-detection API with configurable detection policies (Alinia AI).",
+    "description": "Hosted content-moderation and safety-detection API with configurable detection policies.",
     "display_name": "Alinia",
     "multilingual": true,
     "multimodal": false,
@@ -37,7 +37,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "AnyLlm \u2014 policy-based LLM judge that grades text against a natural-language policy using any LLM provider supported by any-llm.",
+    "description": "Policy-based LLM judge that grades text against a natural-language policy using an LLM provider.",
     "display_name": "AnyLlm",
     "multilingual": false,
     "multimodal": false,
@@ -68,7 +68,7 @@
       "toxicity"
     ],
     "default_license": "proprietary",
-    "description": "Azure AI Content Safety \u2014 hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores (Microsoft).",
+    "description": "Hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores.",
     "display_name": "Azure Content Safety",
     "multilingual": true,
     "multimodal": true,
@@ -92,7 +92,7 @@
       "prompt_injection"
     ],
     "default_license": "proprietary",
-    "description": "Azure AI Prompt Shields \u2014 hosted detector for direct (user prompt) and indirect (document-borne) prompt-injection and jailbreak attacks (Microsoft).",
+    "description": "Hosted detector for direct (user prompt) and indirect (document-borne) prompt-injection and jailbreak attacks.",
     "display_name": "Azure Prompt Shields",
     "multilingual": true,
     "multimodal": false,
@@ -120,7 +120,7 @@
       "pii"
     ],
     "default_license": "proprietary",
-    "description": "AWS Bedrock Guardrails \u2014 hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding (Amazon).",
+    "description": "Hosted, configurable moderation via the ApplyGuardrail API covering content filters, denied topics, PII, word filters, and contextual grounding.",
     "display_name": "Bedrock Guardrails",
     "multilingual": true,
     "multimodal": false,
@@ -145,7 +145,7 @@
       "toxicity"
     ],
     "default_license": "apache-2.0",
-    "description": "Bielik Guard \u2014 Polish multi-label safety classifier (SpeakLeash / Bielik.AI).",
+    "description": "Polish multi-label safety classifier.",
     "display_name": "Bielik Guard",
     "multilingual": true,
     "multimodal": false,
@@ -169,7 +169,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "CompassJudger \u2014 generalist LLM judge that scores a response against user-defined criteria and rubric on a 1-10 scale (OpenCompass).",
+    "description": "Generalist LLM judge that scores a response against user-defined criteria and rubric on a 1-10 scale.",
     "display_name": "CompassJudger",
     "multilingual": false,
     "multimodal": false,
@@ -193,7 +193,7 @@
       "prompt_injection"
     ],
     "default_license": "cc-by-4.0",
-    "description": "Deepset \u2014 binary prompt-injection classifier built on DeBERTa-v3-base (deepset).",
+    "description": "Binary prompt-injection classifier built on DeBERTa-v3-base.",
     "display_name": "Deepset",
     "multilingual": false,
     "multimodal": false,
@@ -218,7 +218,7 @@
       "toxicity"
     ],
     "default_license": "apache-2.0",
-    "description": "DuoGuard \u2014 multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts.",
+    "description": "Multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts.",
     "display_name": "DuoGuard",
     "multilingual": true,
     "multimodal": false,
@@ -243,7 +243,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "DynaGuard \u2014 dynamic guardian model evaluating conversation compliance with user-defined policies.",
+    "description": "Dynamic guardian model evaluating conversation compliance with user-defined policies.",
     "display_name": "DynaGuard",
     "multilingual": false,
     "multimodal": false,
@@ -268,7 +268,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "Flow Judge \u2014 local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library (Flow AI).",
+    "description": "Local LLM judge scoring text against user-defined criteria, metrics, and rubrics via the flow-judge library.",
     "display_name": "Flow Judge",
     "multilingual": false,
     "multimodal": false,
@@ -295,7 +295,7 @@
       "toxicity"
     ],
     "default_license": "apache-2.0",
-    "description": "GLiGuard \u2014 schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2 (Fastino).",
+    "description": "Schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2.",
     "display_name": "GLiGuard",
     "multilingual": false,
     "multimodal": false,
@@ -318,7 +318,7 @@
       "general_judge"
     ],
     "default_license": "cc-by-nc-4.0",
-    "description": "GLIDER \u2014 prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases (Patronus AI).",
+    "description": "Prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases.",
     "display_name": "GLIDER",
     "multilingual": false,
     "multimodal": false,
@@ -344,7 +344,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "gpt-oss-safeguard \u2014 policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy (OpenAI).",
+    "description": "Policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy.",
     "display_name": "gpt-oss-safeguard",
     "multilingual": false,
     "multimodal": false,
@@ -371,7 +371,7 @@
       "tool_use"
     ],
     "default_license": "apache-2.0",
-    "description": "Granite Guardian \u2014 hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria (IBM).",
+    "description": "Hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria.",
     "display_name": "Granite Guardian",
     "multilingual": false,
     "multimodal": false,
@@ -401,7 +401,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "HarmAug-Guard \u2014 binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.",
+    "description": "Binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.",
     "display_name": "HarmAug-Guard",
     "multilingual": false,
     "multimodal": false,
@@ -427,7 +427,7 @@
       "prompt_injection"
     ],
     "default_license": "mit",
-    "description": "PIGuard \u2014 binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense (successor to InjecGuard).",
+    "description": "Binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense.",
     "display_name": "PIGuard",
     "multilingual": false,
     "multimodal": false,
@@ -450,7 +450,7 @@
       "prompt_injection"
     ],
     "default_license": "mit",
-    "description": "Jasper \u2014 binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base (JasperLS).",
+    "description": "Binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base.",
     "display_name": "Jasper",
     "multilingual": false,
     "multimodal": false,
@@ -474,7 +474,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Kanana Safeguard \u2014 Korean safety decoder models covering harmful content, legal risk, and prompt attacks (Kakao).",
+    "description": "Korean safety decoder models covering harmful content, legal risk, and prompt attacks.",
     "display_name": "Kanana Safeguard",
     "multilingual": true,
     "multimodal": false,
@@ -501,7 +501,7 @@
       "prompt_injection"
     ],
     "default_license": "proprietary",
-    "description": "Lakera Guard \u2014 hosted API for prompt-injection, jailbreak, content-moderation, and PII detection (Lakera).",
+    "description": "Hosted API for prompt-injection, jailbreak, content-moderation, and PII detection.",
     "display_name": "Lakera Guard",
     "multilingual": true,
     "multimodal": false,
@@ -524,7 +524,7 @@
       "hallucination"
     ],
     "default_license": "mit",
-    "description": "LettuceDetect \u2014 token/span-level RAG hallucination detector built on ModernBERT (KRLabs).",
+    "description": "Token/span-level RAG hallucination detector built on ModernBERT.",
     "display_name": "LettuceDetect",
     "multilingual": false,
     "multimodal": false,
@@ -552,7 +552,7 @@
       "content_safety"
     ],
     "default_license": "llama-3.1",
-    "description": "Llama Guard \u2014 decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy (Meta).",
+    "description": "Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.",
     "display_name": "Llama Guard",
     "multilingual": true,
     "multimodal": true,
@@ -577,7 +577,7 @@
       "content_safety"
     ],
     "default_license": "nvidia-open-model",
-    "description": "Nemotron Content Safety \u2014 4B reasoning safety classifier covering a 22-category content-safety taxonomy (NVIDIA).",
+    "description": "4B reasoning safety classifier covering a 22-category content-safety taxonomy.",
     "display_name": "Nemotron Content Safety",
     "multilingual": false,
     "multimodal": false,
@@ -602,7 +602,7 @@
       "off_topic"
     ],
     "default_license": "mit",
-    "description": "Off-Topic \u2014 cross-encoder relevance detector that flags whether an input strays from a comparison text (GovTech Singapore).",
+    "description": "Cross-encoder relevance detector that flags whether an input strays from a comparison text.",
     "display_name": "Off-Topic",
     "multilingual": false,
     "multimodal": false,
@@ -628,7 +628,7 @@
       "toxicity"
     ],
     "default_license": "proprietary",
-    "description": "OpenAI Moderation \u2014 hosted moderation API flagging content across 13 harm categories with calibrated scores (OpenAI).",
+    "description": "Hosted moderation API flagging content across 13 harm categories with calibrated scores.",
     "display_name": "OpenAI Moderation",
     "multilingual": true,
     "multimodal": true,
@@ -652,7 +652,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Pangolin Guard \u2014 binary prompt-injection classifier built on ModernBERT (dcarpintero).",
+    "description": "Binary prompt-injection classifier built on ModernBERT.",
     "display_name": "Pangolin Guard",
     "multilingual": false,
     "multimodal": false,
@@ -679,7 +679,7 @@
       "toxicity"
     ],
     "default_license": "proprietary",
-    "description": "Patronus \u2014 hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI).",
+    "description": "Hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging.",
     "display_name": "Patronus",
     "multilingual": false,
     "multimodal": false,
@@ -707,7 +707,7 @@
       "content_safety"
     ],
     "default_license": "apache-2.0",
-    "description": "PolyGuard \u2014 multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",
+    "description": "Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",
     "display_name": "PolyGuard",
     "multilingual": true,
     "multimodal": false,
@@ -732,7 +732,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "Prometheus \u2014 open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval).",
+    "description": "Open rubric-based LLM judge grading a response on a user-defined 1-5 rubric.",
     "display_name": "Prometheus",
     "multilingual": false,
     "multimodal": false,
@@ -756,7 +756,7 @@
       "prompt_injection"
     ],
     "default_license": "llama-4",
-    "description": "Prompt Guard 2 \u2014 encoder classifier for prompt-injection and jailbreak detection (Meta).",
+    "description": "Encoder classifier for prompt-injection and jailbreak detection.",
     "display_name": "Prompt Guard 2",
     "multilingual": true,
     "multimodal": false,
@@ -779,7 +779,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "ProtectAI \u2014 binary prompt-injection classifiers built on DeBERTa-v3 and DistilRoBERTa (ProtectAI).",
+    "description": "Binary prompt-injection classifiers built on DeBERTa-v3 and DistilRoBERTa.",
     "display_name": "ProtectAI",
     "multilingual": false,
     "multimodal": false,
@@ -802,7 +802,7 @@
       "content_safety"
     ],
     "default_license": "apache-2.0",
-    "description": "Qwen3Guard-Gen \u2014 generative safety moderation with three-level severity across 119 languages (Qwen).",
+    "description": "Generative safety moderation with three-level severity across 119 languages.",
     "display_name": "Qwen3Guard",
     "multilingual": true,
     "multimodal": false,
@@ -828,7 +828,7 @@
       "content_safety"
     ],
     "default_license": "apache-2.0",
-    "description": "Qwen3Guard-Stream \u2014 token-level streaming safety moderation with span output (Qwen).",
+    "description": "Token-level streaming safety moderation with span output.",
     "display_name": "Qwen3Guard-Stream",
     "multilingual": true,
     "multimodal": false,
@@ -854,7 +854,7 @@
       "general_judge"
     ],
     "default_license": "apache-2.0",
-    "description": "Selene 1 Mini \u2014 general-purpose LLM judge grading a response against a user-defined 1-5 rubric (Atla).",
+    "description": "General-purpose LLM judge grading a response against a user-defined 1-5 rubric.",
     "display_name": "Selene 1 Mini",
     "multilingual": false,
     "multimodal": false,
@@ -878,7 +878,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Sentinel \u2014 binary prompt-injection classifier built on DeBERTa (Qualifire).",
+    "description": "Binary prompt-injection classifier built on DeBERTa.",
     "display_name": "Sentinel",
     "multilingual": false,
     "multimodal": false,
@@ -901,7 +901,7 @@
       "content_safety"
     ],
     "default_license": "gemma",
-    "description": "ShieldGemma \u2014 policy-conditioned safety classifier that judges a prompt against a user-supplied policy via Yes/No token logits (Google).",
+    "description": "Policy-conditioned safety classifier that judges a prompt against a user-supplied policy via Yes/No token logits.",
     "display_name": "ShieldGemma",
     "multilingual": false,
     "multimodal": false,
@@ -928,7 +928,7 @@
       "toxicity"
     ],
     "default_license": "proprietary",
-    "description": "watsonx Guardian \u2014 hosted text-detection moderation API running configurable Granite Guardian detectors (IBM).",
+    "description": "Hosted text-detection moderation API running configurable Granite Guardian detectors.",
     "display_name": "watsonx Guardian",
     "multilingual": false,
     "multimodal": false,
@@ -953,7 +953,7 @@
       "content_safety"
     ],
     "default_license": "apache-2.0",
-    "description": "WildGuard \u2014 one-pass safety-moderation judge reporting prompt harm, response harm, and refusal (Allen Institute for AI).",
+    "description": "One-pass safety-moderation judge reporting prompt harm, response harm, and refusal.",
     "display_name": "WildGuard",
     "multilingual": false,
     "multimodal": false,

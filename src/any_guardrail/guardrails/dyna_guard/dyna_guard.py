@@ -42,7 +42,7 @@ _BARE_VERDICT = re.compile(r"\b(PASS|FAIL)\b")
 
 
 class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceData]):
-    """DynaGuard — dynamic guardian model evaluating conversation compliance with user-defined policies.
+    """Dynamic guardian model evaluating conversation compliance with user-defined policies.
 
     A decoder-LLM guardian model (University of Maryland / Capital One) that checks a
     conversation transcript against a bring-your-own ``policy`` — a numbered list of

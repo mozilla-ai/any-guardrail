@@ -12,7 +12,7 @@ SENTINEL_INJECTION_LABEL = "jailbreak"
 
 
 class Sentinel(StandardGuardrail):
-    """Sentinel — binary prompt-injection classifier built on DeBERTa (Qualifire).
+    """Binary prompt-injection classifier built on DeBERTa.
 
     Runs Qualifire's DeBERTa-based encoder classifier over a single user prompt and reports whether
     the text is a prompt-injection / jailbreak attempt. The model is a two-class sequence classifier

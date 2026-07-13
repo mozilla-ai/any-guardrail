@@ -17,7 +17,7 @@ HARMGUARD_DEFAULT_THRESHOLD = 0.5  # Taken from the HarmGuard paper
 
 
 class HarmGuard(StandardGuardrail):
-    """HarmAug-Guard — binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.
+    """Binary safety and jailbreak classifier built on DeBERTa-v3-large, scoring a prompt or prompt-response pair.
 
     HarmAug-Guard is a 435M DeBERTa-v3-large classifier distilled from a much larger (7B+)
     teacher safety model using the HarmAug data-augmentation method, which jailbreaks an LLM

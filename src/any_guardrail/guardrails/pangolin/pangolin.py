@@ -12,7 +12,7 @@ PANGOLIN_INJECTION_LABEL = "unsafe"
 
 
 class Pangolin(StandardGuardrail):
-    """Pangolin Guard — binary prompt-injection classifier built on ModernBERT (dcarpintero).
+    """Binary prompt-injection classifier built on ModernBERT.
 
     Runs one of dcarpintero's ModernBERT encoder classifiers over a single user prompt and reports
     whether the text is a prompt-injection / jailbreak attempt. Each model is a two-class sequence
