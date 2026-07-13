@@ -612,7 +612,7 @@ An instruction (might include an Input inside it), a response to evaluate, a ref
 ###Score Rubrics:
 {rubric}
 
-###Feedback: 
+###Feedback:
 ```
 
 **Rubric:**

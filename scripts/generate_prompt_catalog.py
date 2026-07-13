@@ -1,8 +1,9 @@
-"""Generate ``docs/prompt_catalog.md`` — a browsable catalog of every guardrail's default prompt
-template plus its author-published policies / rubrics / criteria.
+"""Generate a browsable catalog of every guardrail's default prompt and authored content.
 
-Rendered from the import-free ``PROMPT_REGISTRY`` and ``CONTENT_REGISTRY`` so it never drifts, and
-committed so it is viewable both on GitHub and the docs site. Wired into pre-commit with ``--check``.
+Renders ``docs/prompt_catalog.md`` — each guardrail's default prompt template text plus its
+author-published policies / rubrics / criteria, from the import-free ``PROMPT_REGISTRY`` and
+``CONTENT_REGISTRY`` (so it never drifts). Committed and viewable on GitHub + the docs site; wired
+into pre-commit with ``--check``.
 
 Usage:
     python scripts/generate_prompt_catalog.py            # write docs/prompt_catalog.md
@@ -18,7 +19,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from any_guardrail.base import GuardrailName
 from any_guardrail.content import ContentKind
 from any_guardrail.content_registry import CONTENT_REGISTRY
 from any_guardrail.prompt_registry import PROMPT_REGISTRY
@@ -79,7 +79,10 @@ def build() -> str:
                         "</details>",
                         "",
                     ]
-    return "\n".join(lines).rstrip() + "\n"
+    # Strip trailing whitespace per line (prompt text can carry trailing spaces) so the committed
+    # file matches what the trim-trailing-whitespace pre-commit hook would leave.
+    text = "\n".join(lines)
+    return "\n".join(line.rstrip() for line in text.split("\n")).rstrip() + "\n"
 
 
 def main() -> int:
