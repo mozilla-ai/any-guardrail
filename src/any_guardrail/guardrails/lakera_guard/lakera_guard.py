@@ -25,7 +25,7 @@ _CONFIDENCE_SCORES: dict[str, float] = {
 
 
 class LakeraGuard(Guardrail):
-    """Lakera Guard — hosted API for prompt-injection, jailbreak, content-moderation, and PII detection (Lakera).
+    """Hosted API for prompt-injection, jailbreak, content-moderation, and PII detection.
 
     Lakera Guard exposes a single ``/v2/guard`` endpoint that returns whether a message (or message list)
     was flagged. ``validate(content)`` accepts either a plain string (wrapped as a single user-role

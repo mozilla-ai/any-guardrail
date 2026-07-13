@@ -11,7 +11,7 @@ from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOut
 
 
 class OffTopic(ThreeStageGuardrail[Any, Any]):
-    """Off-Topic — cross-encoder relevance detector that flags whether an input strays from a comparison text (GovTech Singapore).
+    """Cross-encoder relevance detector that flags whether an input strays from a comparison text.
 
     A dispatcher over GovTech Singapore's two open off-topic detection models. Given an
     ``input_text`` and a ``comparison_text`` (typically the system prompt or the app's

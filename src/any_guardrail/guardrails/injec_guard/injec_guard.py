@@ -12,7 +12,7 @@ INJECGUARD_LABEL = "injection"
 
 
 class InjecGuard(StandardGuardrail):
-    """PIGuard — binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense (successor to InjecGuard).
+    """Binary prompt-injection classifier trained to mitigate over-defense.
 
     Runs PIGuard's DeBERTa-v3 encoder classifier over a single user prompt and reports whether the
     text is a prompt-injection attempt. The model is a two-class sequence classifier whose unsafe

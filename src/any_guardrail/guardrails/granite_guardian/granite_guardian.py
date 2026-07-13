@@ -114,7 +114,7 @@ class GraniteGuardianRisk:
 
 
 class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, GraniteGuardianInferenceData]):
-    """Granite Guardian — hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria (IBM).
+    """Hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria.
 
     Granite Guardian is a decoder-LLM safeguard, derived from IBM's Granite models, that
     evaluates whether a given text meets a single user-specified criterion. It runs through

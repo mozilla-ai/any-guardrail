@@ -61,7 +61,7 @@ def error_message(message: str) -> Callable[[F], F]:
 
 
 class AzureContentSafety(ThreeStageGuardrail[AzureAnalyzeInput, AzureAnalyzeOutput]):
-    """Azure AI Content Safety — hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores (Microsoft).
+    """Hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores.
 
     Calls the Azure AI Content Safety ``analyze_text`` / ``analyze_image`` APIs. ``validate``
     takes a single string: plain text is sent to text analysis, while a string that is an

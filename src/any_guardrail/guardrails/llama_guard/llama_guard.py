@@ -51,7 +51,7 @@ def _parse_violated_categories(generated_text: str) -> list[CategoryResult]:
 
 
 class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferenceData]):
-    """Llama Guard — decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy (Meta).
+    """Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.
 
     Llama Guard is Meta's instruction-tuned safety model. Each call wraps a user prompt (and,
     optionally, an assistant response) in the model's moderation template listing the 14 MLCommons

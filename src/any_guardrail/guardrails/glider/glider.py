@@ -27,7 +27,7 @@ INPUT_DATA_FORMAT = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve().segments["in
 
 
 class Glider(ThreeStageGuardrail[ChatMessages, str]):
-    """GLIDER — prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases (Patronus AI).
+    """Prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases.
 
     GLIDER is a compact (3B) evaluator LLM fine-tuned to score arbitrary text on
     arbitrary user-defined criteria. Each call wraps the text in GLIDER's evaluation

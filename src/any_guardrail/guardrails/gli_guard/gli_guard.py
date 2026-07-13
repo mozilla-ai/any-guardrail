@@ -60,7 +60,7 @@ GLIGUARD_SCHEMA: dict[str, Any] = {
 
 
 class GliGuard(Guardrail):
-    """GLiGuard — schema-driven safety, toxicity, jailbreak, and refusal detector built on GLiNER2 (Fastino).
+    """Schema-driven safety, toxicity, jailbreak, and refusal detector.
 
     Wraps the ``gliner2`` library to run a 300M GLiNER2 encoder that classifies a single text
     across four tasks in one pass, driven by ``GLIGUARD_SCHEMA``:

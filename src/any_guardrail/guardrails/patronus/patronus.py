@@ -11,7 +11,7 @@ from any_guardrail.types import AnyDict, CategoryResult
 
 
 class Patronus(Guardrail):
-    """Patronus — hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI).
+    """Hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging.
 
     This is the hosted, pay-per-use counterpart to the locally-run
     :class:`~any_guardrail.guardrails.glider.glider.Glider` (GLIDER) judge and the

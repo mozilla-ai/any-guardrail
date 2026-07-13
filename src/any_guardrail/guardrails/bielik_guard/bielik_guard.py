@@ -33,7 +33,7 @@ def _build_output(scores_row: Sequence[float], labels: Sequence[str] | None, thr
 
 
 class BielikGuard(StandardGuardrail):
-    """Bielik Guard — Polish multi-label safety classifier (SpeakLeash / Bielik.AI).
+    """Polish multi-label safety classifier.
 
     Encoder classifier that emits an independent probability (sigmoid) for each of five Polish
     safety categories: Hate/Aggression, Vulgarities, Sexual Content, Crime, and Self-Harm. It
