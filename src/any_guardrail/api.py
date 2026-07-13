@@ -4,6 +4,7 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
+import any_guardrail.content_registry as _content
 from any_guardrail.base import Guardrail, GuardrailName
 from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
 from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
@@ -178,6 +179,57 @@ class AnyGuardrail:
         classifiers). Reads the import-free prompt registry; no backend is loaded.
         """
         return _registry_list_prompt_versions(guardrail_name)
+
+    @classmethod
+    def list_policies(cls, guardrail_name: GuardrailName) -> list[str]:
+        """List the author-published policy keys registered for a guardrail (empty if none).
+
+        Reads the import-free content registry; no backend is loaded.
+        """
+        return _content.list_policies(guardrail_name)
+
+    @classmethod
+    def get_policy(cls, guardrail_name: GuardrailName, key: str) -> str:
+        """Return a ready-to-use author-published policy string for a guardrail.
+
+        Pass the result straight to the guardrail, e.g.
+        ``AnyGuardrail.create(GuardrailName.SHIELD_GEMMA, policy=AnyGuardrail.get_policy(...))``.
+
+        Raises:
+            KeyError: If the guardrail has no policy with that key.
+
+        """
+        return _content.get_policy(guardrail_name, key)
+
+    @classmethod
+    def list_rubrics(cls, guardrail_name: GuardrailName) -> list[str]:
+        """List the author-published rubric keys registered for a guardrail (empty if none)."""
+        return _content.list_rubrics(guardrail_name)
+
+    @classmethod
+    def get_rubric(cls, guardrail_name: GuardrailName, key: str) -> str:
+        """Return a ready-to-use author-published rubric string for a guardrail.
+
+        Raises:
+            KeyError: If the guardrail has no rubric with that key.
+
+        """
+        return _content.get_rubric(guardrail_name, key)
+
+    @classmethod
+    def list_criteria(cls, guardrail_name: GuardrailName) -> list[str]:
+        """List the author-published criteria keys registered for a guardrail (empty if none)."""
+        return _content.list_criteria(guardrail_name)
+
+    @classmethod
+    def get_criteria(cls, guardrail_name: GuardrailName, key: str) -> str:
+        """Return a ready-to-use author-published criterion string for a guardrail.
+
+        Raises:
+            KeyError: If the guardrail has no criterion with that key.
+
+        """
+        return _content.get_criteria(guardrail_name, key)
 
     @classmethod
     def get_supported_model(cls, guardrail_name: GuardrailName) -> list[str]:
