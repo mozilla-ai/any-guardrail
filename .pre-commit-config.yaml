@@ -66,6 +66,13 @@ repos:
         pass_filenames: false
         files: ^(src/any_guardrail/(content|content_registry|_authored_content_data|base)\.py|scripts/generate_content_json\.py|schemas/guardrail_content\.json)$
 
+      - id: guardrail-prompt-catalog
+        name: check prompt/content catalog is up to date
+        entry: "uv run python scripts/generate_prompt_catalog.py --check"
+        language: system
+        pass_filenames: false
+        files: ^(src/any_guardrail/(prompts|prompt_registry|content|content_registry|_authored_content_data|base|registry)\.py|scripts/generate_prompt_catalog\.py|docs/prompt_catalog\.md)$
+
       - id: guardrail-summary-nav
         name: check guardrail SUMMARY navigation is up to date
         entry: "uv run python scripts/generate_summary.py --check"
