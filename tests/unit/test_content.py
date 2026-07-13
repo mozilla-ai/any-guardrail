@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 import any_guardrail.content
 from any_guardrail import AnyGuardrail, GuardrailName
-from any_guardrail.content import AuthoredContent, ContentKind
+from any_guardrail.content import ContentKind
 from any_guardrail.content_registry import CONTENT_BEARING, CONTENT_REGISTRY
 
 CONTENT_NAMES = sorted(CONTENT_BEARING, key=lambda n: n.value)
@@ -115,7 +115,9 @@ def test_granite_criteria_match_source() -> None:
     from any_guardrail.guardrails.granite_guardian.granite_guardian import GraniteGuardianRisk
 
     for key in AnyGuardrail.list_criteria(GuardrailName.GRANITE_GUARDIAN):
-        assert AnyGuardrail.get_criteria(GuardrailName.GRANITE_GUARDIAN, key) == getattr(GraniteGuardianRisk, key.upper())
+        assert AnyGuardrail.get_criteria(GuardrailName.GRANITE_GUARDIAN, key) == getattr(
+            GraniteGuardianRisk, key.upper()
+        )
 
 
 def test_flowjudge_content_matches_library() -> None:
@@ -127,7 +129,9 @@ def test_flowjudge_content_matches_library() -> None:
     for key in AnyGuardrail.list_criteria(GuardrailName.FLOWJUDGE):
         assert AnyGuardrail.get_criteria(GuardrailName.FLOWJUDGE, key) == getattr(metrics, key.upper()).criteria
     for key in AnyGuardrail.list_rubrics(GuardrailName.FLOWJUDGE):
-        assert AnyGuardrail.get_rubric(GuardrailName.FLOWJUDGE, key) == format_rubric(getattr(metrics, key.upper()).rubric)
+        assert AnyGuardrail.get_rubric(GuardrailName.FLOWJUDGE, key) == format_rubric(
+            getattr(metrics, key.upper()).rubric
+        )
 
 
 def test_authored_content_data_matches_live_sources() -> None:
