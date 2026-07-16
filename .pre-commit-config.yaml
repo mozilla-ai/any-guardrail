@@ -81,7 +81,7 @@ repos:
         files: ^(src/any_guardrail/(taxonomy|registry|base)\.py|scripts/generate_summary\.py|docs/SUMMARY\.md)$
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.2"
+    rev: "v2.4.3"
     hooks:
       - id: codespell
         exclude: CODE_OF_CONDUCT.md|tests/assets
