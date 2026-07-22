@@ -106,6 +106,26 @@ class BackendType(StrEnum):
     """A third-party Python library invoked directly (its own optional extra)."""
 
 
+class VariantLicense(BaseModel):
+    """License governing a single model variant of a guardrail.
+
+    Used where a guardrail's ``SUPPORTED_MODELS`` span several base models with
+    different governing licenses (e.g. Llama Guard's 3.2 / 3.1 / 4 variants, or
+    PolyGuard's non-commercial Ministral vs Apache Qwen variants), so a single
+    ``default_license`` string cannot capture per-variant redistribution terms.
+    Instances are frozen, so a ``tuple`` of them keeps :class:`GuardrailMetadata`
+    hashable.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    model_id: str
+    """The variant's model ID (one of the guardrail's ``SUPPORTED_MODELS``)."""
+
+    license: str
+    """SPDX-ish license governing this variant (e.g. ``"llama-3.2"``, ``"mrl"``, ``"apache-2.0"``)."""
+
+
 class GuardrailMetadata(BaseModel):
     """Static, queryable capability metadata for a single guardrail.
 
@@ -160,7 +180,16 @@ class GuardrailMetadata(BaseModel):
     """Organization that produced the model/service (e.g. ``"IBM"``, ``"Meta"``)."""
 
     default_license: str
-    """SPDX-ish license of the default model/service (e.g. ``"apache-2.0"``, ``"proprietary"``)."""
+    """SPDX-ish license of the guardrail's default model or service: the license of
+    ``SUPPORTED_MODELS[0]`` for model-backed guardrails, or of the service/library itself for
+    hosted-API and library-wrapped guardrails (e.g. ``"apache-2.0"``, ``"proprietary"``). See
+    ``variant_licenses`` for the per-variant breakdown."""
+
+    variant_licenses: tuple[VariantLicense, ...] = ()
+    """Per-variant licenses, for guardrails whose ``SUPPORTED_MODELS`` span base models with
+    different governing licenses (empty when ``default_license`` covers every variant). Each entry's
+    ``model_id`` is one of the guardrail's ``SUPPORTED_MODELS``. This is the redistribution-governing
+    metadata a downstream consumer reads to decide per-variant eligibility."""
 
     @model_validator(mode="after")
     def _primary_in_categories(self) -> Self:
@@ -184,3 +213,11 @@ class GuardrailMetadata(BaseModel):
         stages, output_shapes); each element is stringified to its value explicitly.
         """
         return sorted(str(member) for member in value)
+
+    @field_serializer("variant_licenses")
+    def _serialize_variant_licenses(self, value: tuple[VariantLicense, ...]) -> list[dict[str, str]]:
+        """Emit per-variant licenses as a ``model_id``-sorted list so JSON export is deterministic."""
+        return [
+            {"model_id": variant.model_id, "license": variant.license}
+            for variant in sorted(value, key=lambda v: v.model_id)
+        ]

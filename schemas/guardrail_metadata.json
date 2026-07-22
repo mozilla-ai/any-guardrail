@@ -29,6 +29,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Alinia AI"
   },
   "any_llm": {
@@ -59,6 +60,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Mozilla AI"
   },
   "azure_content_safety": {
@@ -84,6 +86,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Microsoft"
   },
   "azure_prompt_shields": {
@@ -109,6 +112,7 @@
       "input",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Microsoft"
   },
   "bedrock_guardrails": {
@@ -136,6 +140,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Amazon"
   },
   "bielik_guard": {
@@ -161,6 +166,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "SpeakLeash / Bielik.AI"
   },
   "compass_judger": {
@@ -185,6 +191,7 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "OpenCompass"
   },
   "deepset": {
@@ -192,7 +199,7 @@
     "categories": [
       "prompt_injection"
     ],
-    "default_license": "cc-by-4.0",
+    "default_license": "mit",
     "description": "Binary prompt-injection classifier.",
     "display_name": "Deepset",
     "multilingual": false,
@@ -208,6 +215,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "deepset"
   },
   "duo_guard": {
@@ -233,6 +241,20 @@
     "stages": [
       "input",
       "output"
+    ],
+    "variant_licenses": [
+      {
+        "license": "apache-2.0",
+        "model_id": "DuoGuard/DuoGuard-0.5B"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "DuoGuard/DuoGuard-1.5B-transfer"
+      },
+      {
+        "license": "llama-3.2",
+        "model_id": "DuoGuard/DuoGuard-1B-Llama-3.2-transfer"
+      }
     ],
     "vendor": "DuoGuard"
   },
@@ -260,6 +282,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "DynaGuard"
   },
   "flowjudge": {
@@ -285,6 +308,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Flow AI"
   },
   "gli_guard": {
@@ -310,6 +334,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Fastino"
   },
   "glider": {
@@ -335,6 +360,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Patronus AI"
   },
   "gpt_oss_safeguard": {
@@ -358,6 +384,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "OpenAI"
   },
   "granite_guardian": {
@@ -392,6 +419,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "IBM"
   },
   "harm_guard": {
@@ -419,6 +447,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "hbseong"
   },
   "injec_guard": {
@@ -442,6 +471,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "leolee99"
   },
   "jasper": {
@@ -465,6 +495,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "JasperLS"
   },
   "kanana_safeguard": {
@@ -491,6 +522,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Kakao"
   },
   "lakera_guard": {
@@ -516,6 +548,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Lakera"
   },
   "lettuce_detect": {
@@ -544,6 +577,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "KRLabs"
   },
   "llama_guard": {
@@ -551,7 +585,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "llama-3.1",
+    "default_license": "llama-3.2",
     "description": "Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.",
     "display_name": "Llama Guard",
     "multilingual": true,
@@ -569,6 +603,20 @@
       "input",
       "output"
     ],
+    "variant_licenses": [
+      {
+        "license": "llama-3.2",
+        "model_id": "meta-llama/Llama-Guard-3-1B"
+      },
+      {
+        "license": "llama-3.1",
+        "model_id": "meta-llama/Llama-Guard-3-8B"
+      },
+      {
+        "license": "llama-4",
+        "model_id": "meta-llama/Llama-Guard-4-12B"
+      }
+    ],
     "vendor": "Meta"
   },
   "nemotron_content_safety": {
@@ -576,7 +624,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "nvidia-open-model",
+    "default_license": "gemma",
     "description": "Reasoning safety classifier covering a 22-category content-safety taxonomy.",
     "display_name": "Nemotron Content Safety",
     "multilingual": false,
@@ -594,6 +642,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "NVIDIA"
   },
   "off_topic": {
@@ -619,6 +668,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "GovTech Singapore"
   },
   "openai_moderation": {
@@ -644,6 +694,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "OpenAI"
   },
   "pangolin": {
@@ -667,6 +718,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "dcarpintero"
   },
   "patronus": {
@@ -699,6 +751,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Patronus AI"
   },
   "poly_guard": {
@@ -706,7 +759,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "mrl",
     "description": "Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",
     "display_name": "PolyGuard",
     "multilingual": true,
@@ -723,6 +776,20 @@
     "stages": [
       "input",
       "output"
+    ],
+    "variant_licenses": [
+      {
+        "license": "mrl",
+        "model_id": "ToxicityPrompts/PolyGuard-Ministral"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "ToxicityPrompts/PolyGuard-Qwen"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "ToxicityPrompts/PolyGuard-Qwen-Smol"
+      }
     ],
     "vendor": "ToxicityPrompts"
   },
@@ -748,6 +815,24 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [
+      {
+        "license": "llama-2",
+        "model_id": "prometheus-eval/prometheus-13b-v1.0"
+      },
+      {
+        "license": "llama-2",
+        "model_id": "prometheus-eval/prometheus-7b-v1.0"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "prometheus-eval/prometheus-7b-v2.0"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "prometheus-eval/prometheus-8x7b-v2.0"
+      }
+    ],
     "vendor": "KAIST / prometheus-eval"
   },
   "prompt_guard": {
@@ -771,6 +856,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Meta"
   },
   "protectai": {
@@ -794,6 +880,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "ProtectAI"
   },
   "qwen3_guard": {
@@ -820,6 +907,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Qwen"
   },
   "qwen3_guard_stream": {
@@ -846,6 +934,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Qwen"
   },
   "selene": {
@@ -853,7 +942,7 @@
     "categories": [
       "general_judge"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "llama-3.1",
     "description": "General-purpose LLM judge grading a response against a user-defined 1-5 rubric.",
     "display_name": "Selene 1 Mini",
     "multilingual": false,
@@ -870,6 +959,7 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Atla"
   },
   "sentinel": {
@@ -877,7 +967,7 @@
     "categories": [
       "prompt_injection"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "elastic-2.0",
     "description": "Binary prompt-injection classifier.",
     "display_name": "Sentinel",
     "multilingual": false,
@@ -893,6 +983,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Qualifire"
   },
   "shield_gemma": {
@@ -916,6 +1007,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Google"
   },
   "watsonx_guardian": {
@@ -945,6 +1037,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "IBM"
   },
   "wild_guard": {
@@ -971,6 +1064,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Allen Institute for AI"
   }
 }

@@ -19,6 +19,7 @@ from any_guardrail.taxonomy import (
     GuardrailMetadata,
     GuardrailStage,
     OutputShape,
+    VariantLicense,
 )
 
 GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
@@ -65,7 +66,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         output_shapes=frozenset({OutputShape.BINARY, OutputShape.SCORE}),
         backend=BackendType.LOCAL_ENCODER,
         vendor="deepset",
-        default_license="cc-by-4.0",
+        default_license="mit",
     ),
     GuardrailName.DUOGUARD: GuardrailMetadata(
         description="Multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts.",
@@ -79,7 +80,13 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         backend=BackendType.LOCAL_ENCODER,
         multilingual=True,
         vendor="DuoGuard",
+        # Default (0.5B) and 1.5B are Apache-2.0 (Qwen2.5 base); the 1B transfer carries Llama 3.2 terms.
         default_license="apache-2.0",
+        variant_licenses=(
+            VariantLicense(model_id="DuoGuard/DuoGuard-0.5B", license="apache-2.0"),
+            VariantLicense(model_id="DuoGuard/DuoGuard-1B-Llama-3.2-transfer", license="llama-3.2"),
+            VariantLicense(model_id="DuoGuard/DuoGuard-1.5B-transfer", license="apache-2.0"),
+        ),
     ),
     GuardrailName.FLOWJUDGE: GuardrailMetadata(
         description="Local LLM judge scoring text against user-defined criteria, metrics, and rubrics.",
@@ -217,7 +224,8 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         output_shapes=frozenset({OutputShape.BINARY, OutputShape.SCORE}),
         backend=BackendType.LOCAL_ENCODER,
         vendor="Qualifire",
-        default_license="apache-2.0",
+        # Gated on HuggingFace and released under Elastic License 2.0; redistribution not cleared.
+        default_license="elastic-2.0",
     ),
     GuardrailName.SHIELD_GEMMA: GuardrailMetadata(
         description="Policy-conditioned safety classifier that judges a prompt against a user-supplied policy via Yes/No token logits.",
@@ -242,7 +250,13 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         multilingual=True,
         multimodal=True,
         vendor="Meta",
-        default_license="llama-3.1",
+        # Default is Llama-Guard-3-1B (Llama 3.2); the 8B and 4-12B variants carry different Llama terms.
+        default_license="llama-3.2",
+        variant_licenses=(
+            VariantLicense(model_id="meta-llama/Llama-Guard-3-1B", license="llama-3.2"),
+            VariantLicense(model_id="meta-llama/Llama-Guard-3-8B", license="llama-3.1"),
+            VariantLicense(model_id="meta-llama/Llama-Guard-4-12B", license="llama-4"),
+        ),
     ),
     GuardrailName.AZURE_CONTENT_SAFETY: GuardrailMetadata(
         description="Hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores.",
@@ -367,7 +381,9 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         backend=BackendType.LOCAL_DECODER,
         optional_validate_kwargs=frozenset({"output_text"}),
         vendor="NVIDIA",
-        default_license="nvidia-open-model",
+        # Fine-tune of google/gemma-3-4b-it: NVIDIA Open Model License + Gemma Terms of Use both apply;
+        # Gemma is the binding constraint for redistribution.
+        default_license="gemma",
     ),
     GuardrailName.POLY_GUARD: GuardrailMetadata(
         description="Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",
@@ -380,7 +396,14 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         optional_validate_kwargs=frozenset({"output_text"}),
         multilingual=True,
         vendor="ToxicityPrompts",
-        default_license="apache-2.0",
+        # Default is PolyGuard-Ministral, under the non-commercial Mistral Research License (MRL);
+        # only the Qwen variants are Apache-2.0.
+        default_license="mrl",
+        variant_licenses=(
+            VariantLicense(model_id="ToxicityPrompts/PolyGuard-Ministral", license="mrl"),
+            VariantLicense(model_id="ToxicityPrompts/PolyGuard-Qwen", license="apache-2.0"),
+            VariantLicense(model_id="ToxicityPrompts/PolyGuard-Qwen-Smol", license="apache-2.0"),
+        ),
     ),
     GuardrailName.KANANA_SAFEGUARD: GuardrailMetadata(
         description="Korean safety decoder models covering harmful content, legal risk, and prompt attacks.",
@@ -416,7 +439,14 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         backend=BackendType.LOCAL_DECODER,
         optional_validate_kwargs=frozenset({"output_text"}),
         vendor="KAIST / prometheus-eval",
+        # v2 (default) is Apache-2.0 (Mistral base); the v1 checkpoints carry Llama 2 terms.
         default_license="apache-2.0",
+        variant_licenses=(
+            VariantLicense(model_id="prometheus-eval/prometheus-7b-v2.0", license="apache-2.0"),
+            VariantLicense(model_id="prometheus-eval/prometheus-8x7b-v2.0", license="apache-2.0"),
+            VariantLicense(model_id="prometheus-eval/prometheus-7b-v1.0", license="llama-2"),
+            VariantLicense(model_id="prometheus-eval/prometheus-13b-v1.0", license="llama-2"),
+        ),
     ),
     GuardrailName.COMPASS_JUDGER: GuardrailMetadata(
         description="Generalist LLM judge that scores a response against user-defined criteria and rubric on a 1-10 scale.",
@@ -440,7 +470,8 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         backend=BackendType.LOCAL_DECODER,
         optional_validate_kwargs=frozenset({"output_text"}),
         vendor="Atla",
-        default_license="apache-2.0",
+        # apache-2.0 tag is a base carryover; the Llama-3.1-8B base governs.
+        default_license="llama-3.1",
     ),
     GuardrailName.LETTUCE_DETECT: GuardrailMetadata(
         description="Token/span-level RAG hallucination detector.",
