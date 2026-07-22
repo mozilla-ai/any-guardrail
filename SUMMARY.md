@@ -54,6 +54,8 @@
     * [ShieldGemma](api/guardrails/shield-gemma.md)
     * [watsonx Guardian](api/guardrails/watsonx-guardian.md)
     * [WildGuard](api/guardrails/wild-guard.md)
+  * PII
+    * [GLiNER2 PII](api/guardrails/gli-ner-pii.md)
   * Hallucination
     * [LettuceDetect](api/guardrails/lettuce-detect.md)
   * Off-Topic

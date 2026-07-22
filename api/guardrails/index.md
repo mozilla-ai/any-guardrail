@@ -41,6 +41,12 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | [watsonx Guardian](watsonx-guardian.md) | Hosted text-detection moderation API running configurable Granite Guardian detectors. |
 | [WildGuard](wild-guard.md) | One-pass safety-moderation judge reporting prompt harm, response harm, and refusal. |
 
+## PII
+
+| Guardrail | Description |
+|-----------|-------------|
+| [GLiNER2 PII](gli-ner-pii.md) | Span-level PII/NER detector emitting character spans and a redacted copy of the text. |
+
 ## Hallucination
 
 | Guardrail | Description |
