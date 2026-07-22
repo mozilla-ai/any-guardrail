@@ -164,8 +164,8 @@ module = ["lettucedetect.*", "gliner2", "flow_judge.*"]
 ignore_missing_imports = true # optional guardrail backends, not installed in every env
 
 [[tool.mypy.overrides]]
-module = ["generate_cookbooks"]
-ignore_missing_imports = true # script imported via sys.path.insert in tests/unit/test_generate_cookbooks.py
+module = ["generate_cookbooks", "generate_parameter_data", "generate_parameters_json"]
+ignore_missing_imports = true # scripts imported via sys.path.insert in tests/unit/test_*.py
 
 [tool.pytest.ini_options]
 timeout = 120

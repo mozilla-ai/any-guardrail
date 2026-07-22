@@ -1,0 +1,1635 @@
+{
+  "alinia": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "Which detections to run and their thresholds. Pass either a detection-configuration ID string registered with Alinia, or a dict enabling detections inline \u2014 e.g. ``{\"security\": True}``, or nested per-policy settings such as ``{\"safety\": {\"toxicity\": 0.8}}``.",
+      "name": "detection_config",
+      "required": true,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Alinia API endpoint URL (obtained from Alinia alongside the key). If ``None``, it is read from the ``ALINIA_ENDPOINT`` environment variable.",
+      "name": "endpoint",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional metadata dict sent with every request (e.g. app or user identifiers for Alinia-side monitoring).",
+      "name": "metadata",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional response Alinia should return when content is blocked, e.g. ``{\"output\": \"Sorry, I can't help with that.\"}``.",
+      "name": "blocked_response",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": false,
+      "description": "Whether to request a streaming API response. Defaults to ``False``.",
+      "name": "stream",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional model response to validate alongside the input, for detections that evaluate outputs (e.g. hallucination or compliance checks).",
+      "name": "output",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional context documents (e.g. retrieved RAG passages) that give output-side detections the grounding text to check against.",
+      "name": "context_documents",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    }
+  ],
+  "any_llm": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "Natural-language policy to validate against, e.g. ``\"The text must not request or contain personal data.\"``. Substituted into the system prompt's ``{policy}`` placeholder.",
+      "name": "policy",
+      "required": true,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": "openai:gpt-5-nano",
+      "description": "The judge model in any-llm's ``provider:model`` format, e.g. ``\"openai:gpt-5-nano\"`` (default) or ``\"mistral:mistral-small-latest\"``. The model must support structured output.",
+      "name": "model_id",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Override the system prompt. Defaults to ``None``, which uses the registry default (:data:`DEFAULT_SYSTEM_PROMPT`) \u2014 or the version selected by ``prompt_version``. A supplied prompt should have a ``{policy}`` placeholder and instruct the model to return the ``valid`` / ``explanation`` / ``risk_score`` fields of :class:`GuardrailOutputAnyLLM`.",
+      "name": "system_prompt",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": [
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``system_prompt`` is not given. Defaults to ``None`` (the default version). See :meth:`any_guardrail.AnyGuardrail.list_prompt_versions`.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "validate",
+      "type": "enum"
+    }
+  ],
+  "azure_content_safety": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The endpoint URL for the Azure Content Safety service.",
+      "name": "endpoint",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": 2,
+      "description": "The threshold for determining if content is unsafe.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": null,
+      "default": "max",
+      "description": "The type of score to use (\"max\" or \"avg\").",
+      "name": "score_type",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "List of blocklist names to use for content evaluation.",
+      "name": "blocklist_names",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    }
+  ],
+  "azure_prompt_shields": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "Azure Content Safety endpoint URL. If ``None``, the value is read from the ``CONTENT_SAFETY_ENDPOINT`` environment variable.",
+      "name": "endpoint",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Auxiliary documents (e.g. retrieved context, tool outputs) to scan for indirect (data-borne) prompt-injection. If ``None``, only the user prompt is analyzed.",
+      "name": "documents",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    }
+  ],
+  "bedrock_guardrails": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The AWS guardrail identifier (ID or ARN) of an existing Bedrock Guardrail. Create one in the Bedrock console before instantiating this class.",
+      "name": "guardrail_identifier",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": "DRAFT",
+      "description": "The guardrail version to apply. ``\"DRAFT\"`` refers to the working draft; otherwise pass a published numeric version string (e.g. ``\"1\"``).",
+      "name": "guardrail_version",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": "INPUT",
+      "description": "Either ``\"INPUT\"`` (apply policy to a user prompt) or ``\"OUTPUT\"`` (apply policy to a model response). Validated on construction.",
+      "name": "source",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional AWS region (e.g. ``\"us-east-1\"``). Falls back to the boto3 default chain when ``None``.",
+      "name": "region_name",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional explicit access key. Prefer environment variables or an IAM role in production.",
+      "name": "aws_access_key_id",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional explicit secret key. Prefer environment variables or an IAM role in production.",
+      "name": "aws_secret_access_key",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional pre-configured ``boto3.Session`` instance. When supplied, takes precedence over the explicit credentials and region_name kwargs.",
+      "name": "boto3_session",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    }
+  ],
+  "bielik_guard": [
+    {
+      "choices": [
+        "speakleash/Bielik-Guard-0.1B-v1.1",
+        "speakleash/Bielik-Guard-0.5B-v1.1"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``speakleash/Bielik-Guard-0.1B-v1.1``. Pass ``speakleash/Bielik-Guard-0.5B-v1.1`` for the larger variant (loaded with ``trust_remote_code=True`` because it ships custom modeling code).",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Per-category probability strictly above which that category is flagged (and the text becomes invalid). Defaults to 0.5.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    }
+  ],
+  "compass_judger": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "A description of what is being judged, e.g. ``\"Helpfulness of the response to the user's question\"``.",
+      "name": "criteria",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The scoring-rubric guidance describing what low vs. high ratings mean, e.g. ``\"1-3: unhelpful ... 8-10: fully answers the question\"``.",
+      "name": "rubric",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The 1-10 rating at which the response passes. With ``higher_is_better=True``, ratings at or above it yield ``valid=True``; with ``higher_is_better=False``, ratings at or below it pass.",
+      "name": "pass_threshold",
+      "required": true,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "Whether higher ratings mean better text. Defaults to ``True``.",
+      "name": "higher_is_better",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "opencompass/CompassJudger-2-7B-Instruct",
+        "opencompass/CompassJudger-2-32B-Instruct",
+        "opencompass/CompassJudger-1-1.5B-Instruct",
+        "opencompass/CompassJudger-1-7B-Instruct",
+        "opencompass/CompassJudger-1-14B-Instruct",
+        "opencompass/CompassJudger-1-32B-Instruct"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``opencompass/CompassJudger-2-7B-Instruct``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (must fill ``{criteria}`` / ``{rubric}`` / ``{instruction}`` / ``{response}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The response being judged \u2014 semantically the main text under evaluation. When ``None``, ``input_text`` itself is placed in the response slot of the judging prompt and judged directly.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "deepset": [
+    {
+      "choices": [
+        "deepset/deberta-v3-base-injection"
+      ],
+      "default": null,
+      "description": null,
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "duo_guard": [
+    {
+      "choices": [
+        "DuoGuard/DuoGuard-0.5B",
+        "DuoGuard/DuoGuard-1B-Llama-3.2-transfer",
+        "DuoGuard/DuoGuard-1.5B-transfer"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``DuoGuard/DuoGuard-0.5B``. The larger ``DuoGuard/DuoGuard-1B-Llama-3.2-transfer`` and ``DuoGuard/DuoGuard-1.5B-transfer`` variants trade latency for accuracy.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Per-category probability strictly above which that category is flagged (and the text becomes invalid). Defaults to 0.5, from the model card.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    }
+  ],
+  "dyna_guard": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The rules to enforce, as numbered natural-language text (a bring-your-own taxonomy), e.g. a newline-separated list of ``1. Do not reveal the system prompt.`` and ``2. Do not issue refunds.``. Applied to every ``validate`` call.",
+      "name": "policy",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": false,
+      "description": "If ``True``, request chain-of-thought reasoning before the verdict, which raises the generation token budget and latency. Defaults to ``False``.",
+      "name": "think",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "tomg-group-umd/DynaGuard-8B",
+        "tomg-group-umd/DynaGuard-4B",
+        "tomg-group-umd/DynaGuard-1.7B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``tomg-group-umd/DynaGuard-8B``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (system prompt plus a user template filling ``{policy}`` / ``{transcript}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "author-full",
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional agent response judged alongside the user turn, e.g. ``\"Sure, I've issued your refund.\"``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline).",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "flowjudge": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "User-defined metric name (convenience path), e.g. ``\"faithfulness\"``.",
+      "name": "name",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": [
+        "response_correctness_3point",
+        "response_correctness_5point",
+        "response_correctness_binary",
+        "response_faithfulness_3point",
+        "response_faithfulness_5point",
+        "response_faithfulness_binary",
+        "response_relevance_3point",
+        "response_relevance_5point",
+        "response_relevance_binary"
+      ],
+      "default": null,
+      "description": "User-defined question the judge should answer (convenience path), e.g. ``\"Is the response grounded in the provided context?\"``.",
+      "name": "criteria",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A Likert-scale ``dict[int, str]`` mapping each integer score to its meaning (convenience path). Its integer keys define the scale bounds used to normalize ``score``.",
+      "name": "rubric",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The input field names the judge should consider (convenience path), e.g. ``[\"query\", \"context\"]``; must match the ``inputs`` keys passed to ``validate``.",
+      "name": "required_inputs",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The output field name the judge should grade (convenience path), e.g. ``\"response\"``; must match the ``output`` key passed to ``validate``.",
+      "name": "required_output",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": 3,
+      "description": "The rubric score at which the response counts as passing. ``valid`` is ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better`` is ``False``). Defaults to ``3``.",
+      "name": "pass_threshold",
+      "required": false,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse. Defaults to ``True``.",
+      "name": "higher_is_better",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A prebuilt ``flow_judge`` ``Metric`` / ``CustomMetric`` or preset (e.g. ``RESPONSE_FAITHFULNESS_3POINT``). When given, the convenience fields are ignored. Keyword-only.",
+      "name": "metric",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A prebuilt ``flow_judge`` backend (``Hf``, ``Vllm``, ``Llamafile``, ``Baseten``). Defaults to ``Hf(flash_attn=False)``. Install the matching ``flow-judge[vllm|llamafile|baseten]`` extra yourself for non-default backends. Keyword-only.",
+      "name": "model",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Generation parameters (``temperature``, ``top_p``, ``max_new_tokens``, ``do_sample``) for the default ``Hf`` backend; ignored when ``model`` is supplied. Keyword-only.",
+      "name": "generation_params",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A single-key dictionary mapping the ``required_output`` name to the text being graded, e.g. ``{\"response\": \"The capital of France is Paris.\"}``.",
+      "name": "output",
+      "required": true,
+      "stage": "validate",
+      "type": "json"
+    }
+  ],
+  "gli_guard": [
+    {
+      "choices": [
+        "fastino/gliguard-LLMGuardrails-300M"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``fastino/gliguard-LLMGuardrails-300M``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Classification threshold forwarded to ``gliner2``'s ``classify_text`` for the whole schema. Defaults to 0.5; the toxicity task overrides it with its own ``cls_threshold`` of 0.4 in ``GLIGUARD_SCHEMA``.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    }
+  ],
+  "gli_ner_pii": [
+    {
+      "choices": [
+        "fastino/gliner2-privacy-filter-PII-multi"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``fastino/gliner2-privacy-filter-PII-multi``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Default confidence threshold forwarded to ``gliner2``'s ``extract_entities``. Defaults to 0.5; a per-call ``threshold`` overrides it.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "PII entity types to detect. Defaults to ``DEFAULT_PII_ENTITIES``.",
+      "name": "entity_types",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Confidence threshold for this call. Defaults to the instance ``threshold``.",
+      "name": "threshold",
+      "required": false,
+      "stage": "validate",
+      "type": "number"
+    },
+    {
+      "choices": null,
+      "default": "[REDACTED_{label}]",
+      "description": "Template used to replace each detected span in ``modified_text``; the substring ``{label}`` is replaced with the upper-cased entity type (e.g. ``\"[REDACTED_EMAIL]\"``). Any other braces are kept literal, so an arbitrary placeholder never raises.",
+      "name": "redaction_placeholder",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "glider": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "A question or description of what is being judged, e.g. ``\"Is the response free of unsupported medical claims?\"``.",
+      "name": "pass_criteria",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A free-text scoring rubric telling the model what each score means, e.g. ``\"0: contains unsupported claims. 1: all claims are supported.\"``.",
+      "name": "rubric",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The rubric score at which the text counts as passing. ``valid`` is ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better=False``). Must be on the same scale as the rubric.",
+      "name": "pass_threshold",
+      "required": true,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": [
+        "PatronusAI/glider"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``PatronusAI/glider``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "Whether higher rubric scores mean better/passing text. Set to ``False`` for rubrics where higher scores mean worse text (e.g. a severity scale).",
+      "name": "higher_is_better",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional ``(min, max)`` bounds of the rubric scale, e.g. ``(0, 1)`` or ``(1, 5)``. Supplying it enables the normalized canonical risk in ``GuardrailOutput.score``; when omitted, ``score`` is ``None`` and the raw rubric value is still available in ``extra[\"rubric_score\"]``.",
+      "name": "score_range",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (system prompt filling ``{data}`` / ``{pass_criteria}`` / ``{rubric}`` plus the ``input`` / ``input_output`` data wrappers). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "author-canonical",
+        "data-conversational",
+        "data-general",
+        "data-rag",
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional second text, wrapped in ``<OUTPUT>`` tags and judged alongside ``input_text`` \u2014 typically the model response when the pass criteria compare a response against a prompt (e.g. ``\"Does the OUTPUT answer the question in the INPUT?\"``).",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "gpt_oss_safeguard": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The written safety policy (bring-your-own-taxonomy) the model evaluates content against \u2014 e.g. a numbered list of disallowed-content rules with definitions and examples. It is installed as the system message, with a short output instruction appended so the model ends its reply with ``VIOLATION`` or ``SAFE``.",
+      "name": "policy",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": [
+        "openai/gpt-oss-safeguard-20b",
+        "openai/gpt-oss-safeguard-120b"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``: ``openai/gpt-oss-safeguard-20b`` (default) or ``openai/gpt-oss-safeguard-120b``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "granite_guardian": [
+    {
+      "choices": [
+        "answer_relevance",
+        "context_relevance",
+        "function_call_hallucination",
+        "groundedness",
+        "harm",
+        "jailbreak",
+        "profanity",
+        "social_bias",
+        "unethical_behavior",
+        "violence"
+      ],
+      "default": null,
+      "description": "The judging criterion applied to every ``validate`` call. Use a :class:`GraniteGuardianRisk` constant (e.g. ``GraniteGuardianRisk.HARM``, ``GraniteGuardianRisk.GROUNDEDNESS``) or a custom Bring-Your-Own-Criteria string. Phrase it as a violation (``\"the text contains harmful content\"``) so ``valid=True`` means the criterion was *not* met.",
+      "name": "criteria",
+      "required": true,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": false,
+      "description": "If ``True``, run in think mode \u2014 the model emits a ``<think>...</think>`` chain-of-thought block before the ``<score>`` verdict (up to 2048 new tokens, higher latency). Defaults to ``False``, which returns the verdict immediately (up to 48 new tokens).",
+      "name": "think",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "ibm-granite/granite-guardian-4.1-8b"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``ibm-granite/granite-guardian-4.1-8b``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response. Required for criteria that judge the assistant (e.g. groundedness, answer relevance, function-call hallucination); omit to judge the user input directly (e.g. jailbreak, harm, context relevance).",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional RAG documents (dicts with ``doc_id`` and ``text``). Required for groundedness and context-relevance criteria.",
+      "name": "documents",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks.",
+      "name": "available_tools",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    }
+  ],
+  "harm_guard": [
+    {
+      "choices": [
+        "hbseong/HarmAug-Guard"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``hbseong/HarmAug-Guard``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Unsafe-probability cutoff at or above which the input is flagged unsafe (``valid=False``). Defaults to 0.5, the value used in the HarmAug paper; lower it to catch borderline content, raise it to reduce false positives.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional model response. When provided, ``input_text`` and ``output_text`` are tokenized as a text pair so the response is judged for safety in the context of the prompt; when ``None``, only the prompt is judged.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "injec_guard": [
+    {
+      "choices": [
+        "leolee99/PIGuard",
+        "leolee99/InjecGuard"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``leolee99/PIGuard`` (the maintained successor). Pass ``\"leolee99/InjecGuard\"`` for the original repository, kept for backward compatibility.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "jasper": [
+    {
+      "choices": [
+        "JasperLS/gelectra-base-injection",
+        "JasperLS/deberta-v3-base-injection"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``JasperLS/gelectra-base-injection`` (a German-language gELECTRA encoder). Pass ``\"JasperLS/deberta-v3-base-injection\"`` for the English DeBERTa-v3 variant.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "kanana_safeguard": [
+    {
+      "choices": [
+        "kakaocorp/kanana-safeguard-8b",
+        "kakaocorp/kanana-safeguard-siren-8b",
+        "kakaocorp/kanana-safeguard-prompt-2.1b"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; one of ``SUPPORTED_MODELS`` (``kakaocorp/kanana-safeguard-8b``, ``kakaocorp/kanana-safeguard-siren-8b``, ``kakaocorp/kanana-safeguard-prompt-2.1b``). Defaults to the harm model ``kakaocorp/kanana-safeguard-8b``. Each variant carries its own unsafe-code taxonomy (see the class docstring).",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response. Only the harm model (``kakaocorp/kanana-safeguard-8b``) is trained to judge an assistant turn; the ``-siren-8b`` and ``-prompt-2.1b`` variants silently ignore this argument.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "lakera_guard": [
+    {
+      "choices": null,
+      "default": "https://api.lakera.ai/v2/guard",
+      "description": "Lakera Guard API endpoint URL. Defaults to the v2 endpoint at ``https://api.lakera.ai/v2/guard``; override for self-hosted or regional deployments.",
+      "name": "endpoint",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional Lakera project ID (e.g. ``\"project-1234\"``). Projects carry per-project policy configuration (which detectors run, severity thresholds, custom rules); when supplied, it is forwarded with each request so that project's policy is applied.",
+      "name": "project_id",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "If ``True`` (default), request the per-detector ``breakdown`` list, which also enables the graded ``score`` / ``categories`` mapping. If ``False``, ``score`` degrades to ``1.0``/``0.0`` and ``categories`` is empty.",
+      "name": "breakdown",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "If ``True`` (default), request the ``payload`` list locating PII / profanity / custom-regex matches (``start`` / ``end`` offsets, matched ``text``, ``labels``), surfaced in ``extra[\"payload\"]``.",
+      "name": "payload",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": false,
+      "description": "If ``True``, request Lakera build information (git revision, model version) in the response, surfaced in ``extra[\"dev_info\"]``. Defaults to ``False``.",
+      "name": "dev_info",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional request metadata forwarded to Lakera for observability, e.g. ``{\"user_id\": \"u-42\", \"session_id\": \"s-1\"}``.",
+      "name": "metadata",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    }
+  ],
+  "lettuce_detect": [
+    {
+      "choices": [
+        "KRLabsOrg/lettucedect-base-modernbert-en-v1",
+        "KRLabsOrg/lettucedect-large-modernbert-en-v1"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; one of ``SUPPORTED_MODELS`` (``KRLabsOrg/lettucedect-base-modernbert-en-v1`` or ``KRLabsOrg/lettucedect-large-modernbert-en-v1``). Defaults to the base model; the large model trades speed for accuracy.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": "transformer",
+      "description": "Detection method forwarded to ``lettucedetect``'s ``HallucinationDetector`` constructor. Defaults to ``\"transformer\"``, the encoder token-classification method the supported checkpoints were trained for.",
+      "name": "method",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The grounding context (a string or list of strings). Required.",
+      "name": "context",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional question the answer responds to.",
+      "name": "question",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "llama_guard": [
+    {
+      "choices": [
+        "meta-llama/Llama-Guard-3-1B",
+        "meta-llama/Llama-Guard-3-8B",
+        "meta-llama/Llama-Guard-4-12B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Selects the variant \u2014 ``meta-llama/Llama-Guard-3-1B`` (default) or ``meta-llama/Llama-Guard-3-8B`` for Llama Guard 3, ``meta-llama/Llama-Guard-4-12B`` for Llama Guard 4.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response. When provided, an ``assistant`` turn is appended so Llama Guard judges the response in the context of the prompt.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "nemotron_content_safety": [
+    {
+      "choices": null,
+      "default": false,
+      "description": "If ``True``, request chain-of-thought reasoning (``/think``) before the verdict; otherwise ``/no_think``. Slower but can improve borderline judgments; the reasoning is stripped before parsing but kept in ``GuardrailOutput.explanation``.",
+      "name": "think",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "nvidia/Nemotron-Content-Safety-Reasoning-4B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``nvidia/Nemotron-Content-Safety-Reasoning-4B``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response moderated alongside the prompt. When provided, a missing or unparsable response verdict causes the guardrail to fail closed.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "off_topic": [
+    {
+      "choices": [
+        "mozilla-ai/jina-embeddings-v2-small-en-off-topic",
+        "mozilla-ai/stsb-roberta-base-off-topic"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID choosing which detector to load. Must be one of ``SUPPORTED_MODELS``: ``mozilla-ai/jina-embeddings-v2-small-en-off-topic`` loads the Jina bi-encoder (``OffTopicJina``); ``mozilla-ai/stsb-roberta-base-off-topic`` (the default) loads the STSB cross-encoder (``OffTopicStsb``).",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The reference topic to compare against \u2014 typically the system prompt or the app's intended subject, e.g. ``\"You are a customer-support bot for an online bookstore.\"``. Although it defaults to ``None`` for signature reasons, it is semantically required: a missing or empty value raises ``ValueError``.",
+      "name": "comparison_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "openai_moderation": [
+    {
+      "choices": [
+        "omni-moderation-latest",
+        "omni-moderation-2024-09-26",
+        "text-moderation-latest"
+      ],
+      "default": null,
+      "description": "The moderation model to use. Defaults to ``omni-moderation-latest``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional custom base URL for the OpenAI client (useful for proxies or Azure-style routing).",
+      "name": "base_url",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Maximum per-category score above which content is considered invalid even if OpenAI did not explicitly flag it. Defaults to ``0.5``.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    }
+  ],
+  "pangolin": [
+    {
+      "choices": [
+        "dcarpintero/pangolin-guard-base",
+        "dcarpintero/pangolin-guard-large"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``dcarpintero/pangolin-guard-base`` (ModernBERT-base). Pass ``\"dcarpintero/pangolin-guard-large\"`` for the higher-accuracy ModernBERT-large variant with an 8192-token context. Both share the same ``\"unsafe\"`` label.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "patronus": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The evaluators to run, each a dict with at least an ``\"evaluator\"`` key plus optional ``\"criteria\"`` / ``\"explain_strategy\"``. Example: ``[{\"evaluator\": \"judge\", \"criteria\": \"patronus:prompt-injection\"}]``. Must be non-empty.",
+      "name": "evaluators",
+      "required": true,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": "https://api.patronus.ai/v1/evaluate",
+      "description": "Evaluate API endpoint URL. Defaults to ``https://api.patronus.ai/v1/evaluate``.",
+      "name": "endpoint",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": [
+        "all_pass",
+        "any_pass"
+      ],
+      "default": "all_pass",
+      "description": "How to combine multiple evaluators into the overall ``valid`` verdict \u2014 ``\"all_pass\"`` (every evaluator must pass) or ``\"any_pass\"`` (at least one must). Defaults to ``\"all_pass\"``.",
+      "name": "success_strategy",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional tags forwarded with each request for observability, e.g. ``{\"env\": \"prod\"}``.",
+      "name": "tags",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The model output to evaluate. Required by evaluators that judge a response (e.g. hallucination, answer relevance).",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "RAG context document(s). Required by grounding / hallucination evaluators.",
+      "name": "retrieved_context",
+      "required": false,
+      "stage": "validate",
+      "type": "json"
+    }
+  ],
+  "poly_guard": [
+    {
+      "choices": [
+        "ToxicityPrompts/PolyGuard-Ministral",
+        "ToxicityPrompts/PolyGuard-Qwen",
+        "ToxicityPrompts/PolyGuard-Qwen-Smol"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``ToxicityPrompts/PolyGuard-Ministral``; ``ToxicityPrompts/PolyGuard-Qwen`` and ``ToxicityPrompts/PolyGuard-Qwen-Smol`` are the Qwen-based alternatives.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (system prompt plus a user template filling ``{prompt}`` / ``{response}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "author-full",
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response, judged for harm and refusal alongside the request. When omitted, the response slot is left empty.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "prometheus": [
+    {
+      "choices": [
+        "factual_validity",
+        "harmlessness",
+        "helpfulness",
+        "honesty",
+        "reasoning"
+      ],
+      "default": null,
+      "description": "The score rubric applied to every ``validate`` call \u2014 the evaluation criteria plus ``Score 1:`` \u2026 ``Score 5:`` descriptions, e.g. ``\"Is the answer factually correct? Score 1: entirely wrong. ... Score 5: fully correct.\"``.",
+      "name": "rubric",
+      "required": true,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The score (1-5) at or above which the response passes (or at or below when ``higher_is_better=False``), e.g. ``4``.",
+      "name": "pass_threshold",
+      "required": true,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional gold answer that would earn a score of 5, supplied to the model as an anchor for the top of the scale. Defaults to ``None`` (no reference; an empty string is sent).",
+      "name": "reference_answer",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse (e.g. a severity scale). Defaults to ``True``.",
+      "name": "higher_is_better",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "prometheus-eval/prometheus-7b-v2.0",
+        "prometheus-eval/prometheus-8x7b-v2.0",
+        "prometheus-eval/prometheus-7b-v1.0",
+        "prometheus-eval/prometheus-13b-v1.0"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``prometheus-eval/prometheus-7b-v2.0``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (must fill ``{instruction}`` / ``{response}`` / ``{reference_answer}`` / ``{rubric}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "absolute-no-reference",
+        "absolute-rag",
+        "absolute-with-reference",
+        "default",
+        "relative-no-reference",
+        "relative-rag",
+        "relative-with-reference"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The response being graded against the rubric, e.g. ``\"The sky is blue because sunlight scatters off the air.\"``. When ``None``, ``input_text`` itself is graded as the response.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "prompt_guard": [
+    {
+      "choices": [
+        "meta-llama/Llama-Prompt-Guard-2-86M",
+        "meta-llama/Llama-Prompt-Guard-2-22M"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``meta-llama/Llama-Prompt-Guard-2-86M`` (mDeBERTa-base, multilingual). Pass ``meta-llama/Llama-Prompt-Guard-2-22M`` for the smaller English-only variant with ~75% lower latency.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "protectai": [
+    {
+      "choices": [
+        "ProtectAI/deberta-v3-small-prompt-injection-v2",
+        "ProtectAI/distilroberta-base-rejection-v1",
+        "ProtectAI/deberta-v3-base-prompt-injection",
+        "ProtectAI/deberta-v3-base-prompt-injection-v2"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``ProtectAI/deberta-v3-small-prompt-injection-v2``. Pass one of the other entries (e.g. ``\"ProtectAI/deberta-v3-base-prompt-injection-v2\"``) for a larger DeBERTa-v3 classifier, or ``\"ProtectAI/distilroberta-base-rejection-v1\"`` for the rejection head.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "qwen3_guard": [
+    {
+      "choices": null,
+      "default": true,
+      "description": "If ``True`` (default), only ``Safe`` verdicts pass validation; set ``False`` to let ``Controversial`` content pass (``valid=True``), leaving it reflected only in ``score`` and ``extra[\"severity\"]``.",
+      "name": "strict",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "Qwen/Qwen3Guard-Gen-0.6B",
+        "Qwen/Qwen3Guard-Gen-4B",
+        "Qwen/Qwen3Guard-Gen-8B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID, one of ``SUPPORTED_MODELS``. Defaults to ``Qwen/Qwen3Guard-Gen-0.6B``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": null,
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "qwen3_guard_stream": [
+    {
+      "choices": null,
+      "default": true,
+      "description": "If ``True`` (default), only ``Safe`` verdicts pass validation; set ``False`` to let ``Controversial`` content pass (``valid=True``), leaving it reflected only in ``score``, ``extra``, and ``spans``.",
+      "name": "strict",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "Qwen/Qwen3Guard-Stream-0.6B",
+        "Qwen/Qwen3Guard-Stream-4B",
+        "Qwen/Qwen3Guard-Stream-8B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``Qwen/Qwen3Guard-Stream-0.6B``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response moderated token-by-token, e.g. ``\"I can't help with that.\"``. When supplied, flagged token runs are returned as ``spans`` with character offsets into this text; when omitted, only the prompt is moderated and no spans are produced.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "selene": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "The score rubric applied to every ``validate`` call \u2014 the evaluation objective plus ``Score 1:`` \u2026 ``Score 5:`` descriptions, e.g. ``\"How helpful is the answer? Score 1: not helpful. ... Score 5: fully helpful.\"``.",
+      "name": "rubric",
+      "required": true,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The score (1-5) at or above which the response passes (or at or below when ``higher_is_better=False``), e.g. ``4``.",
+      "name": "pass_threshold",
+      "required": true,
+      "stage": "create",
+      "type": "integer"
+    },
+    {
+      "choices": null,
+      "default": true,
+      "description": "Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse. Defaults to ``True``.",
+      "name": "higher_is_better",
+      "required": false,
+      "stage": "create",
+      "type": "boolean"
+    },
+    {
+      "choices": [
+        "AtlaAI/Selene-1-Mini-Llama-3.1-8B"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``AtlaAI/Selene-1-Mini-Llama-3.1-8B``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (must fill ``{instruction}`` / ``{response}`` / ``{rubric}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "absolute-scoring",
+        "absolute-scoring-with-reference",
+        "classification",
+        "classification-with-reference",
+        "default",
+        "pairwise"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "The response being graded against the rubric, e.g. ``\"The article argues that remote work boosts productivity.\"``. When ``None``, ``input_text`` itself is graded as the response.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ],
+  "sentinel": [
+    {
+      "choices": [
+        "qualifire/prompt-injection-sentinel"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to (and currently only supports) ``qualifire/prompt-injection-sentinel``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "shield_gemma": [
+    {
+      "choices": [
+        "dangerous_content",
+        "harassment",
+        "hate_speech",
+        "sexually_explicit"
+      ],
+      "default": null,
+      "description": "The free-text safety principle the prompt is judged against, inserted into ShieldGemma's judgment template as ``{safety_policy}``. Bring-your-own policy \u2014 e.g. ``\"No Hate Speech: The prompt shall not contain or seek generation of content that targets identity or protected attributes ...\"``.",
+      "name": "policy",
+      "required": true,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Decision threshold on the ``Yes`` (violation) probability. ``valid`` is ``score < threshold``; raise it to flag only higher-confidence violations, lower it to be stricter. Defaults to ``0.5``.",
+      "name": "threshold",
+      "required": false,
+      "stage": "create",
+      "type": "number"
+    },
+    {
+      "choices": [
+        "google/shieldgemma-2b",
+        "google/shieldgemma-9b",
+        "google/shieldgemma-27b"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``google/shieldgemma-2b``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (must fill ``{user_prompt}`` and ``{safety_policy}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "default",
+        "prompt-only",
+        "prompt-response"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    }
+  ],
+  "watsonx_guardian": [
+    {
+      "choices": null,
+      "default": null,
+      "description": "watsonx.ai region endpoint, e.g. ``https://us-south.ml.cloud.ibm.com``. If ``None``, it is read from ``WATSONX_URL``. Ignored when ``api_client`` is supplied.",
+      "name": "url",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "watsonx project ID. If ``None``, it is read from ``WATSONX_PROJECT_ID``. One of ``project_id`` / ``space_id`` is required (unless ``api_client`` is supplied).",
+      "name": "project_id",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "watsonx deployment space ID. If ``None``, it is read from ``WATSONX_SPACE_ID``. Alternative to ``project_id``.",
+      "name": "space_id",
+      "required": false,
+      "stage": "create",
+      "type": "string"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Detector configuration forwarded to ``Guardian``. Defaults to ``{\"granite_guardian\": {}}``; pass e.g. ``{\"granite_guardian\": {\"threshold\": 0.6}, \"pii\": {}}`` to tune thresholds or add the ``hap`` / ``pii`` detectors.",
+      "name": "detectors",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "A pre-built ``ibm_watsonx_ai.APIClient``. When supplied, the credential arguments above are ignored and the client is used as-is (useful for shared clients or testing).",
+      "name": "api_client",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    }
+  ],
+  "wild_guard": [
+    {
+      "choices": [
+        "allenai/wildguard"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``allenai/wildguard``.",
+      "name": "model_id",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional prompt-template override, used as-is (must fill ``{prompt}`` / ``{response}``). Defaults to ``None`` \u2014 the registry default, or the version named by ``prompt_version``.",
+      "name": "prompt",
+      "required": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": [
+        "default"
+      ],
+      "default": null,
+      "description": "Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``.",
+      "name": "prompt_version",
+      "required": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional assistant response judged alongside the request, e.g. ``\"I can't help with that.\"``. When omitted, only request harm is evaluated and the response-side signals may be absent.",
+      "name": "output_text",
+      "required": false,
+      "stage": "validate",
+      "type": "string"
+    }
+  ]
+}
