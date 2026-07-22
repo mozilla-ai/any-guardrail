@@ -115,7 +115,7 @@ def test_primary_category_in_categories(name: GuardrailName) -> None:
 @pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
 def test_default_license_non_empty(name: GuardrailName) -> None:
     """Every guardrail records a non-empty default_license (issue #211)."""
-    assert GUARDRAIL_METADATA[name].default_license, f"{name.value}: default_license must be non-empty"
+    assert GUARDRAIL_METADATA[name].default_license.strip(), f"{name.value}: default_license must be non-empty"
 
 
 @pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
@@ -128,7 +128,7 @@ def test_variant_licenses_reference_supported_models(name: GuardrailName) -> Non
     seen: set[str] = set()
     for variant in meta.variant_licenses:
         assert variant.model_id in supported, f"{name.value}: variant {variant.model_id!r} not in SUPPORTED_MODELS"
-        assert variant.license, f"{name.value}: variant {variant.model_id!r} has an empty license"
+        assert variant.license.strip(), f"{name.value}: variant {variant.model_id!r} has an empty license"
         assert variant.model_id not in seen, f"{name.value}: duplicate variant {variant.model_id!r}"
         seen.add(variant.model_id)
 

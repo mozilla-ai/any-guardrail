@@ -180,8 +180,10 @@ class GuardrailMetadata(BaseModel):
     """Organization that produced the model/service (e.g. ``"IBM"``, ``"Meta"``)."""
 
     default_license: str
-    """SPDX-ish license of the default model/service (i.e. of ``SUPPORTED_MODELS[0]``;
-    e.g. ``"apache-2.0"``, ``"proprietary"``). See ``variant_licenses`` for the per-variant breakdown."""
+    """SPDX-ish license of the guardrail's default model or service: the license of
+    ``SUPPORTED_MODELS[0]`` for model-backed guardrails, or of the service/library itself for
+    hosted-API and library-wrapped guardrails (e.g. ``"apache-2.0"``, ``"proprietary"``). See
+    ``variant_licenses`` for the per-variant breakdown."""
 
     variant_licenses: tuple[VariantLicense, ...] = ()
     """Per-variant licenses, for guardrails whose ``SUPPORTED_MODELS`` span base models with
