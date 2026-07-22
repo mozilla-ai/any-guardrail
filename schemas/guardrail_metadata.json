@@ -29,6 +29,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Alinia AI"
   },
   "any_llm": {
@@ -59,6 +60,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Mozilla AI"
   },
   "azure_content_safety": {
@@ -84,6 +86,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Microsoft"
   },
   "azure_prompt_shields": {
@@ -109,6 +112,7 @@
       "input",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Microsoft"
   },
   "bedrock_guardrails": {
@@ -136,6 +140,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Amazon"
   },
   "bielik_guard": {
@@ -161,6 +166,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "SpeakLeash / Bielik.AI"
   },
   "compass_judger": {
@@ -185,6 +191,7 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "OpenCompass"
   },
   "deepset": {
@@ -208,6 +215,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "deepset"
   },
   "duo_guard": {
@@ -234,6 +242,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "DuoGuard"
   },
   "dyna_guard": {
@@ -260,6 +269,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "DynaGuard"
   },
   "flowjudge": {
@@ -285,6 +295,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Flow AI"
   },
   "gli_guard": {
@@ -310,6 +321,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Fastino"
   },
   "glider": {
@@ -335,6 +347,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Patronus AI"
   },
   "gpt_oss_safeguard": {
@@ -358,6 +371,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "OpenAI"
   },
   "granite_guardian": {
@@ -392,6 +406,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "IBM"
   },
   "harm_guard": {
@@ -419,6 +434,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "hbseong"
   },
   "injec_guard": {
@@ -442,6 +458,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "leolee99"
   },
   "jasper": {
@@ -465,6 +482,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "JasperLS"
   },
   "kanana_safeguard": {
@@ -491,6 +509,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Kakao"
   },
   "lakera_guard": {
@@ -516,6 +535,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Lakera"
   },
   "lettuce_detect": {
@@ -544,6 +564,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "KRLabs"
   },
   "llama_guard": {
@@ -569,6 +590,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Meta"
   },
   "nemotron_content_safety": {
@@ -594,6 +616,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "NVIDIA"
   },
   "off_topic": {
@@ -619,6 +642,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "GovTech Singapore"
   },
   "openai_moderation": {
@@ -644,6 +668,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "OpenAI"
   },
   "pangolin": {
@@ -667,6 +692,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "dcarpintero"
   },
   "patronus": {
@@ -699,6 +725,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "Patronus AI"
   },
   "poly_guard": {
@@ -724,6 +751,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "ToxicityPrompts"
   },
   "prometheus": {
@@ -748,6 +776,7 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "KAIST / prometheus-eval"
   },
   "prompt_guard": {
@@ -771,6 +800,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Meta"
   },
   "protectai": {
@@ -794,6 +824,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "ProtectAI"
   },
   "qwen3_guard": {
@@ -820,6 +851,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Qwen"
   },
   "qwen3_guard_stream": {
@@ -846,6 +878,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Qwen"
   },
   "selene": {
@@ -870,6 +903,7 @@
     "stages": [
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Atla"
   },
   "sentinel": {
@@ -893,6 +927,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Qualifire"
   },
   "shield_gemma": {
@@ -916,6 +951,7 @@
     "stages": [
       "input"
     ],
+    "variant_licenses": [],
     "vendor": "Google"
   },
   "watsonx_guardian": {
@@ -945,6 +981,7 @@
       "output",
       "rag_context"
     ],
+    "variant_licenses": [],
     "vendor": "IBM"
   },
   "wild_guard": {
@@ -971,6 +1008,7 @@
       "input",
       "output"
     ],
+    "variant_licenses": [],
     "vendor": "Allen Institute for AI"
   }
 }

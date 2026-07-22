@@ -112,6 +112,35 @@ def test_primary_category_in_categories(name: GuardrailName) -> None:
     assert meta.primary_category in meta.categories
 
 
+@pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
+def test_default_license_non_empty(name: GuardrailName) -> None:
+    """Every guardrail records a non-empty default_license (issue #211)."""
+    assert GUARDRAIL_METADATA[name].default_license, f"{name.value}: default_license must be non-empty"
+
+
+@pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
+def test_variant_licenses_reference_supported_models(name: GuardrailName) -> None:
+    """Each per-variant license points at a real SUPPORTED_MODELS entry and names a license (issue #211)."""
+    meta = GUARDRAIL_METADATA[name]
+    if not meta.variant_licenses:
+        return
+    supported = set(_guardrail_class(name).SUPPORTED_MODELS)
+    seen: set[str] = set()
+    for variant in meta.variant_licenses:
+        assert variant.model_id in supported, f"{name.value}: variant {variant.model_id!r} not in SUPPORTED_MODELS"
+        assert variant.license, f"{name.value}: variant {variant.model_id!r} has an empty license"
+        assert variant.model_id not in seen, f"{name.value}: duplicate variant {variant.model_id!r}"
+        seen.add(variant.model_id)
+
+
+def test_variant_licenses_serialize_sorted_by_model_id() -> None:
+    """The variant_licenses JSON export is deterministically sorted by model_id (issue #211)."""
+    for name in ALL_NAMES:
+        dumped = GUARDRAIL_METADATA[name].model_dump(mode="json")["variant_licenses"]
+        model_ids = [entry["model_id"] for entry in dumped]
+        assert model_ids == sorted(model_ids), f"{name.value}: variant_licenses not sorted by model_id"
+
+
 def test_metadata_is_frozen() -> None:
     """GuardrailMetadata instances are immutable."""
     meta = next(iter(GUARDRAIL_METADATA.values()))
