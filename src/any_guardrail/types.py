@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # ``any_guardrail.types`` alongside ``GuardrailOutput``. ``content`` and ``prompts``
 # are leaf modules (imports only the stdlib + pydantic), so this creates no cycle.
 from any_guardrail.content import AuthoredContent, ContentKind
+from any_guardrail.parameters import ParameterSpec, ParameterStage, ParameterType
 from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
 
 # Re-export the dependency-free taxonomy so callers can reach the capability
@@ -43,6 +44,9 @@ __all__ = [
     "GuardrailUsage",
     "InferenceT",
     "OutputShape",
+    "ParameterSpec",
+    "ParameterStage",
+    "ParameterType",
     "PreprocessT",
     "PromptAssembly",
     "PromptSpec",

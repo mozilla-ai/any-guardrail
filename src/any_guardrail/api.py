@@ -6,6 +6,8 @@ from typing import Any
 
 import any_guardrail.content_registry as _content
 from any_guardrail.base import Guardrail, GuardrailName
+from any_guardrail.parameter_registry import get_parameter_schema as _registry_get_parameter_schema
+from any_guardrail.parameters import ParameterSpec
 from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
 from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
 from any_guardrail.prompts import PromptTemplate
@@ -179,6 +181,21 @@ class AnyGuardrail:
         classifiers). Reads the import-free prompt registry; no backend is loaded.
         """
         return _registry_list_prompt_versions(guardrail_name)
+
+    @classmethod
+    def get_parameter_schema(cls, guardrail_name: GuardrailName) -> list[ParameterSpec]:
+        """Return a guardrail's typed ``create`` + ``validate`` parameter specs (issue #206).
+
+        Each :class:`~any_guardrail.parameters.ParameterSpec` carries the parameter's ``name``,
+        ``stage`` (``create`` / ``validate``), ``type`` (string / integer / number / boolean /
+        enum / json), whether it is ``required``, its ``default``, its ``choices`` (for enums,
+        e.g. ``model_id`` from ``SUPPORTED_MODELS``), and a one-line ``description``. Returns an
+        empty list for a guardrail that takes no configurable parameters.
+
+        Reads the import-free parameter registry and does not import the guardrail
+        implementation or any model backend, so it works in a bare install.
+        """
+        return _registry_get_parameter_schema(guardrail_name)
 
     @classmethod
     def list_policies(cls, guardrail_name: GuardrailName) -> list[str]:
