@@ -199,7 +199,7 @@
     "categories": [
       "prompt_injection"
     ],
-    "default_license": "cc-by-4.0",
+    "default_license": "mit",
     "description": "Binary prompt-injection classifier.",
     "display_name": "Deepset",
     "multilingual": false,
@@ -242,7 +242,20 @@
       "input",
       "output"
     ],
-    "variant_licenses": [],
+    "variant_licenses": [
+      {
+        "license": "apache-2.0",
+        "model_id": "DuoGuard/DuoGuard-0.5B"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "DuoGuard/DuoGuard-1.5B-transfer"
+      },
+      {
+        "license": "llama-3.2",
+        "model_id": "DuoGuard/DuoGuard-1B-Llama-3.2-transfer"
+      }
+    ],
     "vendor": "DuoGuard"
   },
   "dyna_guard": {
@@ -572,7 +585,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "llama-3.1",
+    "default_license": "llama-3.2",
     "description": "Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.",
     "display_name": "Llama Guard",
     "multilingual": true,
@@ -590,7 +603,20 @@
       "input",
       "output"
     ],
-    "variant_licenses": [],
+    "variant_licenses": [
+      {
+        "license": "llama-3.2",
+        "model_id": "meta-llama/Llama-Guard-3-1B"
+      },
+      {
+        "license": "llama-3.1",
+        "model_id": "meta-llama/Llama-Guard-3-8B"
+      },
+      {
+        "license": "llama-4",
+        "model_id": "meta-llama/Llama-Guard-4-12B"
+      }
+    ],
     "vendor": "Meta"
   },
   "nemotron_content_safety": {
@@ -598,7 +624,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "nvidia-open-model",
+    "default_license": "gemma",
     "description": "Reasoning safety classifier covering a 22-category content-safety taxonomy.",
     "display_name": "Nemotron Content Safety",
     "multilingual": false,
@@ -733,7 +759,7 @@
     "categories": [
       "content_safety"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "mrl",
     "description": "Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",
     "display_name": "PolyGuard",
     "multilingual": true,
@@ -751,7 +777,20 @@
       "input",
       "output"
     ],
-    "variant_licenses": [],
+    "variant_licenses": [
+      {
+        "license": "mrl",
+        "model_id": "ToxicityPrompts/PolyGuard-Ministral"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "ToxicityPrompts/PolyGuard-Qwen"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "ToxicityPrompts/PolyGuard-Qwen-Smol"
+      }
+    ],
     "vendor": "ToxicityPrompts"
   },
   "prometheus": {
@@ -776,7 +815,24 @@
     "stages": [
       "output"
     ],
-    "variant_licenses": [],
+    "variant_licenses": [
+      {
+        "license": "llama-2",
+        "model_id": "prometheus-eval/prometheus-13b-v1.0"
+      },
+      {
+        "license": "llama-2",
+        "model_id": "prometheus-eval/prometheus-7b-v1.0"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "prometheus-eval/prometheus-7b-v2.0"
+      },
+      {
+        "license": "apache-2.0",
+        "model_id": "prometheus-eval/prometheus-8x7b-v2.0"
+      }
+    ],
     "vendor": "KAIST / prometheus-eval"
   },
   "prompt_guard": {
@@ -886,7 +942,7 @@
     "categories": [
       "general_judge"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "llama-3.1",
     "description": "General-purpose LLM judge grading a response against a user-defined 1-5 rubric.",
     "display_name": "Selene 1 Mini",
     "multilingual": false,
@@ -911,7 +967,7 @@
     "categories": [
       "prompt_injection"
     ],
-    "default_license": "apache-2.0",
+    "default_license": "elastic-2.0",
     "description": "Binary prompt-injection classifier.",
     "display_name": "Sentinel",
     "multilingual": false,
