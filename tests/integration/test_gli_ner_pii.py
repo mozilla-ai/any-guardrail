@@ -7,13 +7,19 @@ Downloads a real ~0.3B GLiNER2 model. Auto-marked ``e2e`` by the directory conft
 import pytest
 
 from any_guardrail import AnyGuardrail, GuardrailName
+from any_guardrail.base import Guardrail
 from any_guardrail.types import GuardrailOutput
 
 pytest.importorskip("gliner2", reason="requires `any-guardrail[gliner]`")
 
 
-def test_gli_ner_pii_detects_and_redacts_email() -> None:
-    guardrail = AnyGuardrail.create(GuardrailName.GLI_NER_PII)
+@pytest.fixture(scope="module")
+def guardrail() -> Guardrail:
+    """Load the ~0.3B GLiNER2 model once per module (both tests share the instance)."""
+    return AnyGuardrail.create(GuardrailName.GLI_NER_PII)
+
+
+def test_gli_ner_pii_detects_and_redacts_email(guardrail: Guardrail) -> None:
     result = guardrail.validate("Contact me at john.smith@example.com for details.")
     assert isinstance(result, GuardrailOutput)
     assert result.valid is False
@@ -29,8 +35,7 @@ def test_gli_ner_pii_detects_and_redacts_email() -> None:
     assert "john.smith@example.com" not in result.modified_text
 
 
-def test_gli_ner_pii_benign_text_is_valid() -> None:
-    guardrail = AnyGuardrail.create(GuardrailName.GLI_NER_PII)
+def test_gli_ner_pii_benign_text_is_valid(guardrail: Guardrail) -> None:
     result = guardrail.validate("The weather is pleasant this afternoon.")
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True

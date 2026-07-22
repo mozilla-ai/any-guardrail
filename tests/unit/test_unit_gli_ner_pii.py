@@ -86,10 +86,35 @@ def test_gli_ner_pii_overlapping_spans_redact_once_keeping_higher_score() -> Non
     assert result.modified_text == "[REDACTED_PERSON] wrote the first program."
 
 
+def test_gli_ner_pii_nested_unequal_overlap_redacts_full_region() -> None:
+    # A shorter, higher-confidence span nested at the start of a longer, lower-confidence span:
+    # the ENTIRE covered region must be redacted (no unredacted tail leak), labelled by the
+    # highest-scoring span.
+    guard = _pii(
+        {
+            "entities": {
+                "email": [{"text": "john@acme.com", "confidence": 0.6, "start": 0, "end": 13}],
+                "person": [{"text": "john", "confidence": 0.95, "start": 0, "end": 4}],
+            }
+        }
+    )
+    result = guard.validate("john@acme.com sent it.")
+    assert result.modified_text == "[REDACTED_PERSON] sent it."
+    assert "acme.com" not in result.modified_text
+    assert "@" not in result.modified_text
+
+
 def test_gli_ner_pii_custom_placeholder() -> None:
     guard = _pii({"entities": {"email": [{"text": "a@b.com", "confidence": 0.8, "start": 0, "end": 7}]}})
     result = guard.validate("a@b.com", redaction_placeholder="<PII>")
     assert result.modified_text == "<PII>"
+
+
+def test_gli_ner_pii_placeholder_with_stray_braces_is_literal() -> None:
+    # A placeholder containing unrelated braces must be kept literal, never format-crash.
+    guard = _pii({"entities": {"email": [{"text": "a@b.com", "confidence": 0.8, "start": 0, "end": 7}]}})
+    result = guard.validate("a@b.com", redaction_placeholder="{secret}<{label}>")
+    assert result.modified_text == "{secret}<EMAIL>"
 
 
 def test_gli_ner_pii_missing_package_raises() -> None:

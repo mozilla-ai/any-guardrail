@@ -118,9 +118,10 @@ class GliNerPii(Guardrail):
             input_text: The text to scan for PII. A single string.
             entity_types: PII entity types to detect. Defaults to ``DEFAULT_PII_ENTITIES``.
             threshold: Confidence threshold for this call. Defaults to the instance ``threshold``.
-            redaction_placeholder: Format string used to replace each detected span in
-                ``modified_text``; ``{label}`` is substituted with the upper-cased entity type
-                (e.g. ``"[REDACTED_EMAIL]"``).
+            redaction_placeholder: Template used to replace each detected span in
+                ``modified_text``; the substring ``{label}`` is replaced with the upper-cased
+                entity type (e.g. ``"[REDACTED_EMAIL]"``). Any other braces are kept literal, so
+                an arbitrary placeholder never raises.
             **kwargs: Accepted for interface compatibility and ignored.
 
         Returns:
@@ -182,19 +183,39 @@ def _to_spans(result: dict[str, Any]) -> list[SpanResult]:
 
 
 def _redact(text: str, spans: list[SpanResult], placeholder: str) -> str:
-    """Return ``text`` with each detected span replaced by ``placeholder``.
+    """Return ``text`` with every detected span replaced by ``placeholder``.
 
-    Overlapping spans (possible across entity types) are resolved greedily left-to-right,
-    keeping the higher-scoring span, so the rebuilt text never double-redacts a region.
+    Overlapping spans (possible across entity types) are merged into their maximal covering
+    region so the **whole** flagged region is redacted — a shorter high-confidence span nested
+    in a longer one never leaves the longer span's tail in the clear. Each merged region is
+    labelled by its highest-scoring span.
     """
-    ordered = sorted(spans, key=lambda span: (span.start, -(span.score or 0.0)))
+    ordered = sorted(spans, key=lambda span: (span.start, span.end))
+    # Merge overlapping spans into [start, end, label, best_score] regions covering their union.
+    regions: list[list[Any]] = []
+    for span in ordered:
+        score = span.score or 0.0
+        if regions and span.start < regions[-1][1]:
+            region = regions[-1]
+            region[1] = max(region[1], span.end)
+            if score > region[3]:
+                region[2], region[3] = span.label, score
+        else:
+            regions.append([span.start, span.end, span.label, score])
     pieces: list[str] = []
     cursor = 0
-    for span in ordered:
-        if span.start < cursor:
-            continue  # overlaps a span already applied
-        pieces.append(text[cursor : span.start])
-        pieces.append(placeholder.format(label=(span.label or "PII").upper()))
-        cursor = span.end
+    for start, end, label, _ in regions:
+        pieces.append(text[cursor:start])
+        pieces.append(_format_placeholder(placeholder, label))
+        cursor = end
     pieces.append(text[cursor:])
     return "".join(pieces)
+
+
+def _format_placeholder(placeholder: str, label: str | None) -> str:
+    """Substitute ``{label}`` (upper-cased) into ``placeholder`` without ``str.format``.
+
+    A plain ``replace`` leaves any other braces in a user-supplied placeholder literal, so an
+    arbitrary ``redaction_placeholder`` can never raise ``KeyError`` / ``ValueError``.
+    """
+    return placeholder.replace("{label}", (label or "PII").upper())
