@@ -337,6 +337,35 @@
     "variant_licenses": [],
     "vendor": "Fastino"
   },
+  "gli_ner_pii": {
+    "backend": "library_wrapped",
+    "categories": [
+      "pii"
+    ],
+    "default_license": "apache-2.0",
+    "description": "Span-level PII/NER detector emitting character spans and a redacted copy of the text.",
+    "display_name": "GLiNER2 PII",
+    "multilingual": true,
+    "multimodal": false,
+    "optional_validate_kwargs": [
+      "entity_types",
+      "redaction_placeholder",
+      "threshold"
+    ],
+    "output_shapes": [
+      "multi_label",
+      "span"
+    ],
+    "primary_category": "pii",
+    "required_validate_kwargs": [],
+    "requires_api_key": false,
+    "stages": [
+      "input",
+      "output"
+    ],
+    "variant_licenses": [],
+    "vendor": "Fastino"
+  },
   "glider": {
     "backend": "local_decoder",
     "categories": [
