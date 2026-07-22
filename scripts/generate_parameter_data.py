@@ -195,6 +195,7 @@ def main() -> int:
             return 1
         return 0
 
+    args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(content, encoding="utf-8")
     print(f"Wrote {args.out}")
     return 0

@@ -20,7 +20,10 @@ PARAMETER_REGISTRY: dict[GuardrailName, tuple[ParameterSpec, ...]] = {
 def get_parameter_schema(name: GuardrailName) -> list[ParameterSpec]:
     """Return the typed ``create`` + ``validate`` parameter specs for a guardrail.
 
-    Returns an empty list for a guardrail that takes no configurable parameters. Reads the
-    import-free registry only — no guardrail implementation or model backend is imported.
+    Returns an empty list for a guardrail that takes no configurable parameters (its registry
+    entry is an empty tuple). The registry covers every ``GuardrailName``, so this indexes
+    directly — a missing entry is an internal invariant violation and raises ``KeyError`` rather
+    than being masked as "no parameters". Reads the import-free registry only; no guardrail
+    implementation or model backend is imported.
     """
-    return list(PARAMETER_REGISTRY.get(name, ()))
+    return list(PARAMETER_REGISTRY[name])
