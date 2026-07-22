@@ -123,6 +123,7 @@ def test_model_load() -> None:
         if guardrail_name in (
             GuardrailName.LETTUCE_DETECT,  # Wraps the lettucedetect library
             GuardrailName.GLI_GUARD,  # Wraps the gliner2 library
+            GuardrailName.GLI_NER_PII,  # Wraps the gliner2 library
         ):
             continue
 

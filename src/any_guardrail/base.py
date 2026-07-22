@@ -59,6 +59,7 @@ class GuardrailName(StrEnum):
     SELENE = "selene"
     LETTUCE_DETECT = "lettuce_detect"
     GLI_GUARD = "gli_guard"
+    GLI_NER_PII = "gli_ner_pii"
     WATSONX_GUARDIAN = "watsonx_guardian"
     PATRONUS = "patronus"
     QWEN3_GUARD = "qwen3_guard"
