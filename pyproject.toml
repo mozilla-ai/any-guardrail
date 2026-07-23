@@ -160,11 +160,18 @@ module = ["pytest", "mktestdocs", "pytest_lazy_fixtures"]
 ignore_missing_imports = true # pytest related modules are not found
 
 [[tool.mypy.overrides]]
-module = ["lettucedetect.*", "gliner2", "flow_judge.*"]
-ignore_missing_imports = true # optional guardrail backends, not installed in every env
+module = ["lettucedetect.*", "gliner2", "flow_judge.*", "guardbench", "presidio_analyzer.*"]
+ignore_missing_imports = true # optional guardrail / benchmark backends, not installed in every env
 
 [[tool.mypy.overrides]]
-module = ["generate_cookbooks", "generate_parameter_data", "generate_parameters_json"]
+module = [
+  "generate_cookbooks",
+  "generate_parameter_data",
+  "generate_parameters_json",
+  "generate_api_docs",
+  "generate_benchmarks_json",
+  "generate_benchmark_schema",
+]
 ignore_missing_imports = true # scripts imported via sys.path.insert in tests/unit/test_*.py
 
 [tool.pytest.ini_options]
@@ -205,6 +212,13 @@ tests = [
   "pytest-timeout",
   "pytest-rerunfailures>=14.0",
   "debugpy",
+]
+
+# Model-heavy benchmark harness (issue #194). Not shipped in the wheel and never run in CI; install
+# only to run evaluations out-of-repo (`uv sync --group benchmarks`). See benchmarks/README.md.
+benchmarks = [
+  "guardbench",
+  "presidio-analyzer",
 ]
 
 # For completeness, but 'uv sync --group dev' currently installs the others too.

@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "BenchmarkSource": {
+      "description": "Provenance of a single benchmark number: ``published:<url>`` or ``measured:<harness>``.",
+      "properties": {
+        "harness_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Harness Version"
+        },
+        "kind": {
+          "$ref": "#/$defs/BenchmarkSourceKind"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "BenchmarkSource",
+      "type": "object"
+    },
+    "BenchmarkSourceKind": {
+      "description": "Where a benchmark number came from.",
+      "enum": [
+        "published",
+        "measured"
+      ],
+      "title": "BenchmarkSourceKind",
+      "type": "string"
+    },
+    "ComparisonCohort": {
+      "description": "The keys that must all match for two scores to be directly comparable / rankable (#194).\n\nTwo benchmark results are comparable **iff** their cohorts are equal. The renderer groups by\ncohort and never aligns scores across cohorts, which is what makes the comparability traps in\nthe guard-model literature impossible to render as one ranked column.",
+      "properties": {
+        "aggregation": {
+          "default": "dataset",
+          "title": "Aggregation",
+          "type": "string"
+        },
+        "dataset": {
+          "title": "Dataset",
+          "type": "string"
+        },
+        "dataset_revision": {
+          "title": "Dataset Revision",
+          "type": "string"
+        },
+        "harness": {
+          "title": "Harness",
+          "type": "string"
+        },
+        "label_mapping": {
+          "title": "Label Mapping",
+          "type": "string"
+        },
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "metric_impl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric Impl"
+        },
+        "split": {
+          "default": "test",
+          "title": "Split",
+          "type": "string"
+        },
+        "threshold_policy": {
+          "title": "Threshold Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset",
+        "dataset_revision",
+        "label_mapping",
+        "metric",
+        "threshold_policy",
+        "harness"
+      ],
+      "title": "ComparisonCohort",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "One guardrail's score on one benchmark under one comparison cohort.",
+  "properties": {
+    "category": {
+      "title": "Category",
+      "type": "string"
+    },
+    "cohort": {
+      "$ref": "#/$defs/ComparisonCohort"
+    },
+    "contamination": {
+      "default": false,
+      "title": "Contamination",
+      "type": "boolean"
+    },
+    "guardrail": {
+      "title": "Guardrail",
+      "type": "string"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "source": {
+      "$ref": "#/$defs/BenchmarkSource"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Value"
+    }
+  },
+  "required": [
+    "guardrail",
+    "category",
+    "value",
+    "source",
+    "cohort"
+  ],
+  "title": "BenchmarkResult",
+  "type": "object"
+}
