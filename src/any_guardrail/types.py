@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Re-export the leaf content and prompt models so callers can reach them from
 # ``any_guardrail.types`` alongside ``GuardrailOutput``. ``content`` and ``prompts``
 # are leaf modules (imports only the stdlib + pydantic), so this creates no cycle.
+from any_guardrail.benchmarks import BenchmarkResult, BenchmarkSource, BenchmarkSourceKind, ComparisonCohort
 from any_guardrail.content import AuthoredContent, ContentKind
 from any_guardrail.parameters import ParameterSpec, ParameterStage, ParameterType
 from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
@@ -31,9 +32,13 @@ __all__ = [
     "AnyDict",
     "AuthoredContent",
     "BackendType",
+    "BenchmarkResult",
+    "BenchmarkSource",
+    "BenchmarkSourceKind",
     "CategoryResult",
     "ChatMessage",
     "ChatMessages",
+    "ComparisonCohort",
     "ContentKind",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
