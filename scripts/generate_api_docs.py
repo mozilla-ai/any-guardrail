@@ -269,7 +269,9 @@ def _benchmarks_section(gname: Any) -> str:
             return "\n".join(lines)
         lines.append(_benchmark_result_table(results))
         return "\n".join(lines)
-    except Exception:
+    except ImportError:
+        # Only a partial install (no benchmark registry) is swallowed; a real renderer/registry
+        # bug propagates so it surfaces instead of silently producing incomplete docs.
         return ""
 
 
@@ -294,7 +296,8 @@ def _license_section(gname: Any) -> str:
             )
         lines.append("")
         return "\n".join(lines)
-    except Exception:
+    except ImportError:
+        # Only a partial install is swallowed; a real metadata-shape bug propagates and fails loudly.
         return ""
 
 

@@ -13,6 +13,7 @@ CI) and recorded in the ``ComparisonCohort.harness`` string alongside the number
 
 from __future__ import annotations
 
+import math
 import statistics
 import time
 from typing import TYPE_CHECKING, Any
@@ -49,12 +50,15 @@ def measure_latency(
         samples_ms.append((time.perf_counter() - start) * 1000.0)
 
     ordered = sorted(samples_ms)
-    p95_index = min(len(ordered) - 1, round(0.95 * (len(ordered) - 1)))
+    n = len(ordered)
+    # Nearest-rank 95th percentile (ceil-based), so it never underestimates p95 the way
+    # bankers-rounding round() can for some sample sizes.
+    p95_index = min(n - 1, max(0, math.ceil(0.95 * n) - 1))
     return {
         "p50_ms": statistics.median(ordered),
         "p95_ms": ordered[p95_index],
         "mean_ms": statistics.fmean(ordered),
-        "n": float(len(ordered)),
+        "n": n,
     }
 
 
