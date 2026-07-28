@@ -365,9 +365,11 @@ def _types_page() -> str:
     lines: list[str] = [
         "# Types\n",
         "Runtime-validated wrappers used throughout the pipeline and the output type returned by every guardrail.\n",
-        "A machine-readable JSON Schema for `GuardrailOutput` (generated from these models) is published at "
-        "<https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json>. "
-        "Pin a release tag in the URL for a specific version.\n",
+        (
+            "A machine-readable JSON Schema for `GuardrailOutput` (generated from these models) is published at "
+            "<https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_output.schema.json>. "
+            "Pin a release tag in the URL for a specific version.\n"
+        ),
     ]
 
     for cls_name in (
@@ -450,11 +452,15 @@ def _taxonomy_page() -> str:
 
     lines: list[str] = [
         "# Taxonomy\n",
-        "The vocabulary behind guardrail metadata (see the [AnyGuardrail reference](any_guardrail.md) "
-        "for the `list_guardrails` / `group_by` query API and "
-        "[Guardrails](guardrails/index.md) for the catalog grouped by primary category).\n",
-        "A machine-readable export of every guardrail's metadata is published at "
-        "<https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_metadata.json>.\n",
+        (
+            "The vocabulary behind guardrail metadata (see the [AnyGuardrail reference](any_guardrail.md) "
+            "for the `list_guardrails` / `group_by` query API and "
+            "[Guardrails](guardrails/index.md) for the catalog grouped by primary category).\n"
+        ),
+        (
+            "A machine-readable export of every guardrail's metadata is published at "
+            "<https://raw.githubusercontent.com/mozilla-ai/any-guardrail/main/schemas/guardrail_metadata.json>.\n"
+        ),
     ]
 
     for enum_name in ("GuardrailCategory", "GuardrailStage", "OutputShape", "BackendType"):
@@ -495,10 +501,14 @@ def _guardrails_index_page() -> str:
 
     lines: list[str] = [
         "# Guardrails\n",
-        "Available guardrails, grouped by primary category. Select a guardrail to view its API details. "
-        "See the [Taxonomy reference](../taxonomy.md) for what each category means.\n",
-        "Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and "
-        "`AnyGuardrail.group_by(...)` — see the [AnyGuardrail reference](../any_guardrail.md).\n",
+        (
+            "Available guardrails, grouped by primary category. Select a guardrail to view its API details. "
+            "See the [Taxonomy reference](../taxonomy.md) for what each category means.\n"
+        ),
+        (
+            "Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and "
+            "`AnyGuardrail.group_by(...)` — see the [AnyGuardrail reference](../any_guardrail.md).\n"
+        ),
     ]
     by_primary: dict[GuardrailCategory, list[GuardrailName]] = {}
     for name in GuardrailName:
