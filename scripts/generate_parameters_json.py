@@ -1,9 +1,16 @@
 """Generate the JSON export of the guardrail parameter registry (#206).
 
-Emits a self-contained JSON document mapping each ``GuardrailName`` value to its list of typed
-parameter specs (name, stage, type, required, default, choices, description) for both the
-``create`` and ``validate`` calls. Committed at ``schemas/guardrail_parameters.json`` so external
-tooling can drive config UIs without importing the package or any model backend.
+Emits a self-contained JSON document mapping each ``GuardrailName`` value to an object with its
+typed parameter specs and its one-of requirement groups::
+
+    {"<guardrail>": {"parameters": [<spec>, ...], "requirement_groups": [<group>, ...]}}
+
+Each ``parameters`` spec carries name, stage, type, required, default, effectively_required,
+env_var, secret, choices, and description for both the ``create`` and ``validate`` calls; each
+``requirement_groups`` entry is an "at least one of these (or their env fallback) must be provided"
+constraint. Committed at ``schemas/guardrail_parameters.json`` so external tooling can drive config
+UIs — including credential masking and one-of validation — without importing the package or any
+model backend.
 
 Dict keys are sorted so the on-disk form is deterministic and ``--check`` diffs are stable. Wired
 into pre-commit, so CI regenerates the file and fails on drift from the registry.
@@ -23,14 +30,20 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from any_guardrail.parameter_registry import PARAMETER_REGISTRY
+from any_guardrail.parameter_registry import PARAMETER_REGISTRY, REQUIREMENT_GROUP_REGISTRY
 
 DEFAULT_OUT = Path(__file__).parent.parent / "schemas" / "guardrail_parameters.json"
 
 
 def build_payload() -> dict[str, Any]:
-    """Build the ``{guardrail_name: [parameter_spec, ...]}`` mapping in JSON-native form."""
-    return {name.value: [spec.model_dump(mode="json") for spec in specs] for name, specs in PARAMETER_REGISTRY.items()}
+    """Build ``{guardrail: {"parameters": [...], "requirement_groups": [...]}}`` in JSON-native form."""
+    return {
+        name.value: {
+            "parameters": [spec.model_dump(mode="json") for spec in specs],
+            "requirement_groups": [group.model_dump(mode="json") for group in REQUIREMENT_GROUP_REGISTRY.get(name, ())],
+        }
+        for name, specs in PARAMETER_REGISTRY.items()
+    }
 
 
 def render(payload: dict[str, Any]) -> str:

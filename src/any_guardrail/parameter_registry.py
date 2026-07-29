@@ -8,12 +8,17 @@ parameter discovery never pulls in ``torch`` / ``transformers`` or spins up a ba
 in a bare install. The public accessor is ``AnyGuardrail.get_parameter_schema(name)``.
 """
 
-from any_guardrail._parameter_data import PARAMETER_DATA
+from any_guardrail._parameter_data import PARAMETER_DATA, REQUIREMENT_GROUPS
 from any_guardrail.base import GuardrailName
-from any_guardrail.parameters import ParameterSpec
+from any_guardrail.parameters import ParameterSpec, RequirementGroup
 
 PARAMETER_REGISTRY: dict[GuardrailName, tuple[ParameterSpec, ...]] = {
     GuardrailName(name): tuple(ParameterSpec(**spec) for spec in specs) for name, specs in PARAMETER_DATA.items()
+}
+
+REQUIREMENT_GROUP_REGISTRY: dict[GuardrailName, tuple[RequirementGroup, ...]] = {
+    GuardrailName(name): tuple(RequirementGroup(**group) for group in groups)
+    for name, groups in REQUIREMENT_GROUPS.items()
 }
 
 
@@ -27,3 +32,14 @@ def get_parameter_schema(name: GuardrailName) -> list[ParameterSpec]:
     implementation or model backend is imported.
     """
     return list(PARAMETER_REGISTRY[name])
+
+
+def get_requirement_groups(name: GuardrailName) -> list[RequirementGroup]:
+    """Return the guardrail's one-of :class:`RequirementGroup` constraints (empty when it has none).
+
+    A group means "at least one of these interchangeable parameters (or their env-var fallbacks)
+    must be provided" — e.g. watsonx's ``project_id`` / ``space_id``. Single-source runtime
+    requirements are not groups; they are carried by :attr:`ParameterSpec.effectively_required`.
+    Reads the import-free registry only; no guardrail implementation or model backend is imported.
+    """
+    return list(REQUIREMENT_GROUP_REGISTRY.get(name, ()))

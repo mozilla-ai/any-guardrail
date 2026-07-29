@@ -29,6 +29,7 @@ from .types import (
     PromptAssembly,
     PromptSpec,
     PromptTemplate,
+    RequirementGroup,
     SpanResult,
     TokenizerDict,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "PromptSpec",
     "PromptTemplate",
     "Provider",
+    "RequirementGroup",
     "SpanResult",
     "ThreeStageGuardrail",
     "TokenizerDict",

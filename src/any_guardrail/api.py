@@ -7,7 +7,8 @@ from typing import Any
 import any_guardrail.content_registry as _content
 from any_guardrail.base import Guardrail, GuardrailName
 from any_guardrail.parameter_registry import get_parameter_schema as _registry_get_parameter_schema
-from any_guardrail.parameters import ParameterSpec
+from any_guardrail.parameter_registry import get_requirement_groups as _registry_get_requirement_groups
+from any_guardrail.parameters import ParameterSpec, RequirementGroup
 from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
 from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
 from any_guardrail.prompts import PromptTemplate
@@ -189,13 +190,32 @@ class AnyGuardrail:
         Each :class:`~any_guardrail.parameters.ParameterSpec` carries the parameter's ``name``,
         ``stage`` (``create`` / ``validate``), ``type`` (string / integer / number / boolean /
         enum / json), whether it is ``required``, its ``default``, its ``choices`` (for enums,
-        e.g. ``model_id`` from ``SUPPORTED_MODELS``), and a one-line ``description``. Returns an
-        empty list for a guardrail that takes no configurable parameters.
+        e.g. ``model_id`` from ``SUPPORTED_MODELS``), and a one-line ``description``. It also
+        records what the signature alone cannot: ``env_var`` (an environment variable that
+        back-fills the argument), ``secret`` (a credential to mask and never log), and
+        ``effectively_required`` (a value that must exist at runtime even though the argument has a
+        default). For "at least one of these" choices spanning several parameters, see
+        :meth:`get_requirement_groups`. Returns an empty list for a guardrail that takes no
+        configurable parameters.
 
         Reads the import-free parameter registry and does not import the guardrail
         implementation or any model backend, so it works in a bare install.
         """
         return _registry_get_parameter_schema(guardrail_name)
+
+    @classmethod
+    def get_requirement_groups(cls, guardrail_name: GuardrailName) -> list[RequirementGroup]:
+        """Return a guardrail's one-of requirement groups (:class:`~any_guardrail.parameters.RequirementGroup`).
+
+        A group means "at least one of these interchangeable parameters (or their env-var
+        fallbacks) must be provided" — the constraint that no single parameter's ``required`` /
+        ``effectively_required`` flag can express (e.g. watsonx's ``project_id`` / ``space_id``).
+        Returns an empty list for the (majority of) guardrails that have no such constraint.
+
+        Reads the import-free parameter registry and does not import the guardrail
+        implementation or any model backend, so it works in a bare install.
+        """
+        return _registry_get_requirement_groups(guardrail_name)
 
     @classmethod
     def list_policies(cls, guardrail_name: GuardrailName) -> list[str]:
