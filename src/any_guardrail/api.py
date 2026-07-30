@@ -6,6 +6,7 @@ from typing import Any
 
 import any_guardrail.content_registry as _content
 from any_guardrail.base import Guardrail, GuardrailName
+from any_guardrail.evaluate import build_validate_call
 from any_guardrail.parameter_registry import get_parameter_schema as _registry_get_parameter_schema
 from any_guardrail.parameter_registry import get_requirement_groups as _registry_get_requirement_groups
 from any_guardrail.parameters import ParameterSpec, RequirementGroup
@@ -21,6 +22,7 @@ from any_guardrail.taxonomy import (
     GuardrailStage,
     OutputShape,
 )
+from any_guardrail.types import GuardrailOutput
 
 # Metadata dimensions that hold a set of values (matched by any-overlap) vs a
 # single scalar value (matched by equality) when filtering / grouping.
@@ -317,6 +319,49 @@ class AnyGuardrail:
         if provider is not None:
             kwargs["provider"] = provider
         return guardrail_class(**kwargs)
+
+    @classmethod
+    def evaluate(
+        cls,
+        guardrail_name: GuardrailName,
+        guardrail: Guardrail,
+        prompt: str,
+        response: str | None = None,
+        **kwargs: Any,
+    ) -> GuardrailOutput | list[GuardrailOutput]:
+        """Drive any guardrail's ``validate()`` through one generic ``(prompt, response)`` call.
+
+        Judges come in several incompatible ``validate()`` shapes (text-pair, single-input,
+        keyed-dict, signature-locked pairs with a different parameter name). This maps a
+        generic call onto whichever shape ``guardrail_name`` actually uses, so callers that
+        want to drive judges interchangeably don't have to hard-code that mapping themselves.
+
+        Args:
+            guardrail_name: Which guardrail ``guardrail`` is an instance of (module->class
+                resolution isn't cleanly invertible from the instance alone, so this is
+                required rather than inferred from ``type(guardrail)``).
+            guardrail: An already-constructed guardrail instance (e.g. from ``create()``).
+                Constructor-only configuration (like ``gpt_oss_safeguard``'s ``policy``) is
+                unaffected since it was already baked in at construction time.
+            prompt: The primary text — the request/instruction/question being judged. Ignored
+                for guardrails with no free-text primary role (currently only ``flowjudge``,
+                which is documented as such).
+            response: The response/answer text being judged alongside ``prompt``, for
+                guardrails that support a response slot. ``None`` for a prompt-only call.
+            **kwargs: Extra arguments forwarded to ``validate()`` as-is (e.g. ``documents``,
+                ``inputs`` for ``flowjudge``, ``policy`` for ``any_llm``).
+
+        Returns:
+            Whatever ``guardrail.validate(...)`` returns.
+
+        Raises:
+            EvaluateArgumentError: If ``response`` is supplied for a guardrail with no
+                response slot, or if an argument the guardrail's ``validate()`` requires is
+                still missing after mapping the call.
+
+        """
+        args, call_kwargs = build_validate_call(guardrail_name, guardrail, prompt, response, kwargs)
+        return guardrail.validate(*args, **call_kwargs)
 
     @classmethod
     def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:

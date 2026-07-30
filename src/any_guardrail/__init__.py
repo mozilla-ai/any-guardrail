@@ -1,6 +1,7 @@
 from .api import AnyGuardrail
 from .base import Guardrail, GuardrailName, ThreeStageGuardrail
 from .content_registry import CONTENT_REGISTRY
+from .evaluate import EvaluateArgumentError
 from .prompt_registry import PROMPT_REGISTRY
 from .providers import HuggingFaceProvider, Provider
 from .registry import GUARDRAIL_METADATA
@@ -45,6 +46,7 @@ __all__ = [
     "ChatMessage",
     "ChatMessages",
     "ContentKind",
+    "EvaluateArgumentError",
     "Guardrail",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
