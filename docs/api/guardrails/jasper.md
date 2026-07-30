@@ -1,6 +1,6 @@
 # Jasper
 
-Jasper — binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base (JasperLS).
+Binary prompt-injection classifiers.
 
 Runs one of JasperLS's encoder classifiers over a single user prompt and reports whether the
 text is a prompt-injection attempt. Each model is a two-class sequence classifier whose unsafe

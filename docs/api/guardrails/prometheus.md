@@ -1,6 +1,6 @@
 # Prometheus
 
-Prometheus — open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval).
+Open rubric-based LLM judge grading a response on a user-defined 1-5 rubric.
 
 Prometheus is an open-source decoder LLM specialized in evaluating other models'
 outputs. This guardrail drives it in **absolute grading** mode: each call wraps the
@@ -53,6 +53,8 @@ For more information, see:
 | `higher_is_better` | `bool` | No | `True` | Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse (e.g. a severity scale). Defaults to ``True``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``prometheus-eval/prometheus-7b-v2.0``. |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` / ``AutoTokenizer`` (transformers is imported lazily here). Pass a ``LlamafileProvider`` to run a GGUF build without the huggingface extra. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{instruction}`` / ``{response}`` / ``{reference_answer}`` / ``{rubric}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the Prometheus guardrail.
 

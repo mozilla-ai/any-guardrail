@@ -1,6 +1,6 @@
 # KananaSafeguard
 
-Kanana Safeguard — Korean safety decoder models covering harmful content, legal risk, and prompt attacks (Kakao).
+Korean safety decoder models covering harmful content, legal risk, and prompt attacks.
 
 Decoder LLMs, trained primarily for Korean text, that emit a single verdict token:
 ``<SAFE>`` or an ``<UNSAFE-*>`` code. Three variants cover different taxonomies:
