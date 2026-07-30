@@ -93,6 +93,13 @@ def test_granite_guardian_extra_kwargs_pass_through() -> None:
     guardrail.validate.assert_called_once_with("P", documents=[{"text": "doc"}], output_text="R")
 
 
+def test_pair_explicit_response_kwarg_wins_over_response() -> None:
+    """An explicitly-passed response kwarg takes precedence over the `response` positional."""
+    guardrail = _stub()
+    AnyGuardrail.evaluate(GuardrailName.PROMETHEUS, guardrail, "P", "ignored", output_text="explicit")
+    guardrail.validate.assert_called_once_with("P", output_text="explicit")
+
+
 def test_alinia_dispatch_uses_output_kwarg() -> None:
     guardrail = _stub()
     AnyGuardrail.evaluate(GuardrailName.ALINIA, guardrail, "P", "R", context_documents=["doc"])
@@ -159,6 +166,19 @@ def test_lettuce_detect_dispatch_swaps_prompt_and_response_roles() -> None:
     guardrail.validate.assert_called_once_with("Paris", question="What is the capital?", context="France...")
 
 
+def test_lettuce_detect_explicit_question_kwarg_wins_over_prompt() -> None:
+    guardrail = _stub()
+    AnyGuardrail.evaluate(
+        GuardrailName.LETTUCE_DETECT,
+        guardrail,
+        "ignored prompt",
+        "Paris",
+        context="France...",
+        question="explicit question",
+    )
+    guardrail.validate.assert_called_once_with("Paris", context="France...", question="explicit question")
+
+
 def test_lettuce_detect_missing_response_raises() -> None:
     guardrail = _stub()
     with pytest.raises(EvaluateArgumentError, match="response"):
@@ -176,9 +196,7 @@ def test_lettuce_detect_missing_context_raises() -> None:
 def test_flowjudge_dispatch_builds_output_from_response() -> None:
     guardrail = _stub()
     guardrail.required_output = "response"
-    AnyGuardrail.evaluate(
-        GuardrailName.FLOWJUDGE, guardrail, "unused prompt", "The answer", inputs=[{"query": "Q"}]
-    )
+    AnyGuardrail.evaluate(GuardrailName.FLOWJUDGE, guardrail, "unused prompt", "The answer", inputs=[{"query": "Q"}])
     guardrail.validate.assert_called_once_with([{"query": "Q"}], output={"response": "The answer"})
 
 

@@ -39,7 +39,7 @@ def _pair(response_kwarg: str) -> _Builder:
     ) -> tuple[tuple[Any, ...], dict[str, Any]]:
         del name, guardrail
         call_kwargs = dict(kwargs)
-        if response is not None:
+        if response is not None and response_kwarg not in call_kwargs:
             call_kwargs[response_kwarg] = response
         return (prompt,), call_kwargs
 
@@ -80,7 +80,8 @@ def _lettuce_detect(
             "hallucinations) via evaluate(..., response=...)."
         )
         raise EvaluateArgumentError(msg)
-    call_kwargs = {**kwargs, "question": prompt}
+    call_kwargs = dict(kwargs)
+    call_kwargs.setdefault("question", prompt)
     return (response,), call_kwargs
 
 
@@ -174,9 +175,6 @@ def build_validate_call(
     args, call_kwargs = _BUILDERS[name](name, guardrail, prompt, response, kwargs)
     missing = GUARDRAIL_METADATA[name].required_validate_kwargs - call_kwargs.keys()
     if missing:
-        msg = (
-            f"{name.value}.validate() requires {sorted(missing)}; pass via "
-            "evaluate(..., response=...) or **kwargs."
-        )
+        msg = f"{name.value}.validate() requires {sorted(missing)}; pass via evaluate(..., response=...) or **kwargs."
         raise EvaluateArgumentError(msg)
     return args, call_kwargs
