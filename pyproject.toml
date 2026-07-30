@@ -26,8 +26,21 @@ bedrock = [
     "boto3>=1.39.0"
 ]
 
+# flow-judge[hf] pins bitsandbytes<=0.42.0 (Jan 2024), which aborts at import on
+# CUDA>=12 and poisons transformers' bitsandbytes integration for every other
+# guardrail in the process — even though flow-judge's Hf backend never actually
+# uses bitsandbytes (it's only relevant for quantized loading, which isn't wired
+# up there). Depend on flow-judge without the [hf] extra and declare its real
+# runtime needs (transformers, torch, accelerate, huggingface-hub — the Hf
+# backend calls huggingface_hub.snapshot_download directly) ourselves, omitting
+# bitsandbytes. If you need quantized loading, install bitsandbytes yourself.
+# See https://github.com/mozilla-ai/any-guardrail/issues/224.
 flowjudge = [
-  "flow-judge[hf]>=0.1.2"
+  "flow-judge>=0.1.2",
+  "transformers>=4.53.2",
+  "torch>=2.7.1",
+  "accelerate>=0.34.2",
+  "huggingface-hub>=0.33.4",
 ]
 
 # Token-level RAG hallucination detection (LettuceDetect guardrail).
