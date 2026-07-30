@@ -69,7 +69,14 @@ class GuardrailStage(StrEnum):
 
 
 class OutputShape(StrEnum):
-    """The decision form a guardrail produces (aligns with the populated ``GuardrailOutput`` fields)."""
+    """The decision form a guardrail produces (aligns with the populated ``GuardrailOutput`` fields).
+
+    ``SCORE`` and ``RUBRIC`` are also the queryable contract for whether
+    ``GuardrailOutput.score`` will be populated: a guardrail declaring neither
+    always leaves ``score`` as ``None`` (it only emits a categorical/binary
+    verdict, not a calibrated risk value); declaring either means ``score`` is
+    populated on every successful call.
+    """
 
     BINARY = "binary"
     """A single flagged / not-flagged verdict."""
@@ -81,10 +88,11 @@ class OutputShape(StrEnum):
     """A taxonomy verdict (e.g. Llama Guard S-codes)."""
 
     SCORE = "score"
-    """A scalar risk score."""
+    """A scalar risk score. Implies ``GuardrailOutput.score`` is populated."""
 
     RUBRIC = "rubric"
-    """A judge score against a rubric (e.g. 1-5 / 1-10)."""
+    """A judge score against a rubric (e.g. 1-5 / 1-10). Implies ``GuardrailOutput.score`` is populated
+    (via the rubric normalized onto the canonical risk axis)."""
 
     SPAN = "span"
     """Character-offset spans (e.g. hallucination or PII spans)."""
