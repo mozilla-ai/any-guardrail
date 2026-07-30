@@ -12,7 +12,6 @@ from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.azure_prompt_shields import AzurePromptShields
 from any_guardrail.guardrails.bedrock_guardrails import BedrockGuardrails
-from any_guardrail.guardrails.glider.glider import Glider
 from any_guardrail.guardrails.lakera_guard import LakeraGuard
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.off_topic.off_topic import OffTopic
@@ -113,7 +112,6 @@ def test_model_load() -> None:
             or guardrail_class is Patronus  # API-based, no provider.load_model
             or guardrail_class is WatsonxGuardian  # SDK-based, no provider.load_model
             or guardrail_class is OpenaiModeration  # API-based, no provider.load_model
-            or guardrail_class is Glider  # Loads model directly, no provider
             or guardrail_class is OffTopic  # Loads model directly, no provider
         ):
             continue
@@ -160,6 +158,10 @@ def test_model_load() -> None:
                 elif guardrail_name in (GuardrailName.DYNA_GUARD, GuardrailName.GPT_OSS_SAFEGUARD):
                     kwargs["policy"] = "Dummy policy"
                 elif guardrail_name in (GuardrailName.PROMETHEUS, GuardrailName.SELENE):
+                    kwargs["rubric"] = "Score 1: bad. Score 5: good."
+                    kwargs["pass_threshold"] = 3
+                elif guardrail_name == GuardrailName.GLIDER:
+                    kwargs["pass_criteria"] = "Dummy criteria"
                     kwargs["rubric"] = "Score 1: bad. Score 5: good."
                     kwargs["pass_threshold"] = 3
                 elif guardrail_name == GuardrailName.COMPASS_JUDGER:
