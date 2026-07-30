@@ -1,6 +1,6 @@
 # NemotronContentSafety
 
-Nemotron Content Safety — 4B reasoning safety classifier covering a 22-category content-safety taxonomy (NVIDIA).
+Reasoning safety classifier covering a 22-category content-safety taxonomy.
 
 Decoder LLM (Gemma-3-4B base) that classifies a user prompt and an optional assistant response
 against NVIDIA's 22-category content-safety taxonomy (``S1`` Violence ... ``S22``

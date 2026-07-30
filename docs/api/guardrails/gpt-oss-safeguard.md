@@ -1,6 +1,6 @@
 # GptOssSafeguard
 
-gpt-oss-safeguard — policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy (OpenAI).
+Policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy.
 
 A reasoning LLM that classifies content against a written ``policy`` supplied at
 construction (bring-your-own-taxonomy). The policy becomes the system message; the
