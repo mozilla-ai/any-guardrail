@@ -38,13 +38,23 @@ marks guardrails that additionally consume retrieved documents/context.
 
 The decision form a guardrail produces (aligns with the populated ``GuardrailOutput`` fields).
 
+``SCORE`` and ``RUBRIC`` are also the queryable signal for whether
+``GuardrailOutput.score`` can ever be populated: a guardrail declaring
+**neither** always leaves ``score`` as ``None`` (it only emits a
+categorical/binary verdict, not a calibrated risk value). A guardrail
+declaring **either** populates ``score`` in the common, successfully-parsed
+case, but individual guardrails may still leave it ``None`` in specific
+edge cases (e.g. a fail-closed parse-failure path, or a guardrail that
+flags something but has nothing to score) — consult the guardrail's own
+docstring for those exceptions.
+
 | Value | Meaning |
 |-------|---------|
 | `binary` | A single flagged / not-flagged verdict. |
 | `multi_label` | Independent per-category scores/verdicts. |
 | `categorical` | A taxonomy verdict (e.g. Llama Guard S-codes). |
-| `score` | A scalar risk score. |
-| `rubric` | A judge score against a rubric (e.g. 1-5 / 1-10). |
+| `score` | A scalar risk score. ``GuardrailOutput.score`` is populated in the common case. |
+| `rubric` | A judge score against a rubric (e.g. 1-5 / 1-10). ``GuardrailOutput.score`` is populated in the common case (via the rubric normalized onto the canonical risk axis). |
 | `span` | Character-offset spans (e.g. hallucination or PII spans). |
 
 ## BackendType
