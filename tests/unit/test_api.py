@@ -173,15 +173,15 @@ def test_model_load() -> None:
 
 def test_get_all_supported_models_skips_guardrails_with_missing_extras() -> None:
     """A guardrail whose optional extra isn't installed shouldn't break the aggregate query."""
-    real_get_supported_model = AnyGuardrail.get_supported_model.__func__
+    real_get_guardrail_class = AnyGuardrail._get_guardrail_class
 
-    def flaky_get_supported_model(cls: type[AnyGuardrail], guardrail_name: GuardrailName) -> list[str]:
+    def flaky_get_guardrail_class(guardrail_name: GuardrailName) -> type[Guardrail]:
         if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
             msg = "azure-ai-contentsafety package is not installed"
             raise ImportError(msg)
-        return real_get_supported_model(cls, guardrail_name)
+        return real_get_guardrail_class(guardrail_name)
 
-    with patch.object(AnyGuardrail, "get_supported_model", classmethod(flaky_get_supported_model)):
+    with patch.object(AnyGuardrail, "_get_guardrail_class", staticmethod(flaky_get_guardrail_class)):
         model_ids = AnyGuardrail.get_all_supported_models()
 
     assert GuardrailName.AZURE_CONTENT_SAFETY.value not in model_ids
