@@ -46,7 +46,12 @@ huggingface = [
   "huggingface-hub>=0.33.4",
   "transformers>=4.53.2",
   "torch>=2.7.1",
-  "hf-xet>=1.1.5"
+  "hf-xet>=1.1.5",
+  # Needed by transformers to convert SentencePiece-only tokenizers (e.g. allenai/wildguard,
+  # which ships no fast tokenizer.json) into a usable tokenizer; without these, transformers
+  # misdetects the file as tiktoken-formatted and fails on every transformers major version.
+  "sentencepiece",
+  "protobuf"
 ]
 
 azure-content-safety = [
