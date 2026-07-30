@@ -1478,11 +1478,10 @@ _PARAMETER_DATA_JSON = r"""
   "pangolin": [
     {
       "choices": [
-        "dcarpintero/pangolin-guard-base",
-        "dcarpintero/pangolin-guard-large"
+        "dcarpintero/pangolin-guard-base"
       ],
       "default": null,
-      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``dcarpintero/pangolin-guard-base`` (ModernBERT-base). Pass ``\"dcarpintero/pangolin-guard-large\"`` for the higher-accuracy ModernBERT-large variant with an 8192-token context. Both share the same ``\"unsafe\"`` label.",
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``dcarpintero/pangolin-guard-base`` (ModernBERT-base).",
       "effectively_required": false,
       "env_var": null,
       "name": "model_id",

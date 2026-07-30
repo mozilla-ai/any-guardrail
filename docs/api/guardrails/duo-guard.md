@@ -1,6 +1,6 @@
 # DuoGuard
 
-DuoGuard — multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts.
+Multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts.
 
 DuoGuard is a compact (0.5B-1.5B) classifier built on Qwen 2.5 and Llama 3.2 backbones,
 trained with a two-player reinforcement-learning framework in which a generator and the
