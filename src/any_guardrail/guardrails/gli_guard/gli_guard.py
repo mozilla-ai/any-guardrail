@@ -1,4 +1,6 @@
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName
@@ -57,6 +59,45 @@ GLIGUARD_SCHEMA: dict[str, Any] = {
     "jailbreak_detection": {"labels": JAILBREAK_LABELS, "multi_label": True},
     "response_refusal": REFUSAL_LABELS,
 }
+
+
+def _transformers_major() -> int:
+    """Return the installed transformers major version (0 if transformers isn't importable)."""
+    try:
+        from transformers import __version__ as transformers_version
+    except ImportError:
+        return 0
+    return int(transformers_version.split(".")[0])
+
+
+@contextmanager
+def _tolerate_list_extra_special_tokens() -> Iterator[None]:
+    """Backport transformers>=5's list/tuple handling for ``extra_special_tokens`` onto <5.
+
+    ``fastino/gliguard-LLMGuardrails-300M`` ships ``extra_special_tokens`` in
+    ``tokenizer_config.json`` as a JSON list. transformers<5's
+    ``PreTrainedTokenizerBase.__init__`` passes that value straight to
+    ``_set_model_specific_special_tokens``, which assumes a dict and calls ``.keys()``
+    on it, raising ``AttributeError: 'list' object has no attribute 'keys'``.
+    transformers>=5 added an ``isinstance(value, (list, tuple))`` branch upstream that
+    handles this natively, so this shim is only needed below that version. ``gliner2``'s
+    own processor hardcodes and re-injects its special-token strings by value — it never
+    reads these dict keys — so any synthesized key names are safe here.
+    """
+    from transformers import PreTrainedTokenizerBase
+
+    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
+
+    def _patched(self: Any, special_tokens: Any) -> None:
+        if isinstance(special_tokens, (list, tuple)):
+            special_tokens = {f"extra_special_token_{i}": tok for i, tok in enumerate(special_tokens)}
+        original(self, special_tokens)
+
+    PreTrainedTokenizerBase._set_model_specific_special_tokens = _patched  # type: ignore[method-assign]
+    try:
+        yield
+    finally:
+        PreTrainedTokenizerBase._set_model_specific_special_tokens = original  # type: ignore[method-assign]
 
 
 class GliGuard(Guardrail):
@@ -131,7 +172,11 @@ class GliGuard(Guardrail):
             raise ImportError(msg) from MISSING_PACKAGES_ERROR
         self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.threshold = threshold
-        self.model = GLiNER2.from_pretrained(self.model_id)
+        if _transformers_major() < 5:
+            with _tolerate_list_extra_special_tokens():
+                self.model = GLiNER2.from_pretrained(self.model_id)
+        else:
+            self.model = GLiNER2.from_pretrained(self.model_id)
 
     def validate(self, input_text: str, **kwargs: Any) -> GuardrailOutput:
         """Classify ``input_text`` across the safety / toxicity / jailbreak / refusal schema.

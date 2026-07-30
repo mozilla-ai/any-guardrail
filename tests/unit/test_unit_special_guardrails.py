@@ -5,9 +5,10 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from transformers import PreTrainedTokenizerBase
 
 from any_guardrail.guardrails.flowjudge.flowjudge import MISSING_PACKAGES_ERROR, Flowjudge
-from any_guardrail.guardrails.gli_guard.gli_guard import GliGuard
+from any_guardrail.guardrails.gli_guard.gli_guard import GliGuard, _tolerate_list_extra_special_tokens
 from any_guardrail.guardrails.lettuce_detect.lettuce_detect import LettuceDetect
 
 # --- LettuceDetect -------------------------------------------------------------
@@ -91,6 +92,66 @@ def test_gli_guard_safe() -> None:
         }
     )
     assert guard.validate("what's the weather?").valid is True
+
+
+def test_tolerate_list_extra_special_tokens_converts_list_to_dict() -> None:
+    """The shim backports transformers>=5's list/tuple handling onto the raw <5 codepath."""
+    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
+    fake: Any = SimpleNamespace(SPECIAL_TOKENS_ATTRIBUTES=[], _special_tokens_map={})
+    with pytest.raises(AttributeError):
+        # Unpatched, the raw list crashes exactly like transformers<5 does.
+        original(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+
+    with _tolerate_list_extra_special_tokens():
+        PreTrainedTokenizerBase._set_model_specific_special_tokens(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+
+    assert fake._special_tokens_map == {"extra_special_token_0": "[SEP_STRUCT]", "extra_special_token_1": "[SEP_TEXT]"}
+    assert PreTrainedTokenizerBase._set_model_specific_special_tokens is original
+
+
+def test_gli_guard_transformers_5_skips_patch() -> None:
+    """On transformers>=5, GLiNER2.from_pretrained is called directly, unpatched."""
+    with (
+        patch("any_guardrail.guardrails.gli_guard.gli_guard._transformers_major", return_value=5),
+        patch("any_guardrail.guardrails.gli_guard.gli_guard._tolerate_list_extra_special_tokens") as mock_shim,
+        patch("any_guardrail.guardrails.gli_guard.gli_guard.GLiNER2") as mock_gliner2,
+    ):
+        mock_gliner2.from_pretrained.return_value = MagicMock()
+        GliGuard()
+        mock_shim.assert_not_called()
+        mock_gliner2.from_pretrained.assert_called_once_with("fastino/gliguard-LLMGuardrails-300M")
+
+
+def test_gli_guard_transformers_below_5_applies_and_restores_patch() -> None:
+    """On transformers<5, the shim wraps the load and is restored afterward."""
+    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
+
+    def _assert_patched_during_call(_model_id: str) -> MagicMock:
+        assert PreTrainedTokenizerBase._set_model_specific_special_tokens is not original
+        return MagicMock()
+
+    with (
+        patch("any_guardrail.guardrails.gli_guard.gli_guard._transformers_major", return_value=4),
+        patch("any_guardrail.guardrails.gli_guard.gli_guard.GLiNER2") as mock_gliner2,
+    ):
+        mock_gliner2.from_pretrained.side_effect = _assert_patched_during_call
+        GliGuard()
+
+    assert PreTrainedTokenizerBase._set_model_specific_special_tokens is original
+
+
+def test_gli_guard_patch_restored_on_load_failure() -> None:
+    """The shim is restored via `finally` even when GLiNER2.from_pretrained raises."""
+    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
+    with (
+        patch("any_guardrail.guardrails.gli_guard.gli_guard._transformers_major", return_value=4),
+        patch("any_guardrail.guardrails.gli_guard.gli_guard.GLiNER2") as mock_gliner2,
+    ):
+        mock_gliner2.from_pretrained.side_effect = RuntimeError("boom")
+        with pytest.raises(RuntimeError, match="boom"):
+            GliGuard()
+
+    assert PreTrainedTokenizerBase._set_model_specific_special_tokens is original
 
 
 # --- FlowJudge new init paths --------------------------------------------------
