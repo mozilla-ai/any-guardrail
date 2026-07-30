@@ -1,8 +1,11 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from any_guardrail import GuardrailOutput
 from any_guardrail.guardrails.glider import Glider
-from any_guardrail.types import GuardrailInferenceOutput
+from any_guardrail.providers.huggingface import HuggingFaceProvider
+from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
 
 @pytest.fixture
@@ -26,8 +29,13 @@ GENERATION = """<reasoning>
 </score>"""
 
 
+def _gen(text: str) -> GuardrailInferenceOutput[dict[str, object]]:
+    """Mimic a provider.generate_chat output."""
+    return GuardrailInferenceOutput(data={"generated_text": text, "prompt_token_count": 7, "completion_token_count": 3})
+
+
 def test_glider_parses_reasoning_highlights_and_score(glider_instance: Glider) -> None:
-    result = glider_instance._post_processing(GuardrailInferenceOutput(data=GENERATION))
+    result = glider_instance._post_processing(_gen(GENERATION))
 
     assert isinstance(result, GuardrailOutput)
     assert result.valid is True  # 8 >= 5
@@ -37,12 +45,15 @@ def test_glider_parses_reasoning_highlights_and_score(glider_instance: Glider) -
     assert result.extra["highlights"] == '["clear", "well structured"]'
     # Without an explicit score_range, the free-text rubric yields no normalized score.
     assert result.score is None
+    assert result.usage is not None
+    assert result.usage.prompt_tokens == 7
+    assert result.usage.completion_tokens == 3
 
 
 def test_glider_normalizes_score_when_range_given(glider_instance: Glider) -> None:
     glider_instance.score_range = (0, 10)  # higher_is_better=True
 
-    result = glider_instance._post_processing(GuardrailInferenceOutput(data=GENERATION))
+    result = glider_instance._post_processing(_gen(GENERATION))
 
     # raw 8 on a 0-10 scale → quality 0.8 → risk 0.2.
     assert result.score == pytest.approx(0.2)
@@ -65,7 +76,7 @@ def test_glider_threshold_mapping(
     glider_instance.pass_threshold = pass_threshold
     glider_instance.higher_is_better = higher_is_better
 
-    result = glider_instance._post_processing(GuardrailInferenceOutput(data=GENERATION))
+    result = glider_instance._post_processing(_gen(GENERATION))
 
     assert result.valid is expected_valid
 
@@ -79,7 +90,7 @@ def test_glider_threshold_mapping(
     ],
 )
 def test_glider_fails_closed_on_unparseable_score(glider_instance: Glider, model_outputs: str) -> None:
-    result = glider_instance._post_processing(GuardrailInferenceOutput(data=model_outputs))
+    result = glider_instance._post_processing(_gen(model_outputs))
 
     assert result.valid is False
     assert result.extra == {"parse_failure": True}
@@ -88,10 +99,38 @@ def test_glider_fails_closed_on_unparseable_score(glider_instance: Glider, model
 
 
 def test_glider_falls_back_to_full_text_without_reasoning_tags(glider_instance: Glider) -> None:
-    result = glider_instance._post_processing(GuardrailInferenceOutput(data="<score>\n3\n</score>"))
+    result = glider_instance._post_processing(_gen("<score>\n3\n</score>"))
 
     assert result.valid is False  # 3 < 5
     assert result.explanation == "<score>\n3\n</score>"
     assert result.extra is not None
     assert result.extra["rubric_score"] == 3
     assert result.extra["highlights"] is None
+
+
+def test_glider_inference_dispatches_through_provider(glider_instance: Glider) -> None:
+    """Glider must run its generation through provider.generate_chat, not a private pipeline."""
+    mock_provider = MagicMock(spec=HuggingFaceProvider)
+    mock_provider.generate_chat.return_value = _gen(GENERATION)
+    glider_instance.provider = mock_provider
+
+    messages = [{"role": "user", "content": "judge this"}]
+    result = glider_instance._inference(GuardrailPreprocessOutput(data=messages))
+
+    mock_provider.generate_chat.assert_called_once_with(messages=messages, max_new_tokens=2048, do_sample=False)
+    assert result.data["generated_text"] == GENERATION
+
+
+def test_glider_honors_provider_device() -> None:
+    """A caller-supplied provider must be used as-is, not silently replaced (issue #226)."""
+    mock_provider = MagicMock(spec=HuggingFaceProvider)
+
+    instance = Glider(
+        pass_criteria="Is the response clear?",
+        rubric="0: unclear. 1: clear.",
+        pass_threshold=1,
+        provider=mock_provider,
+    )
+
+    assert instance.provider is mock_provider
+    mock_provider.load_model.assert_called_once()

@@ -1,16 +1,23 @@
 import re
 from typing import ClassVar
 
-from transformers import pipeline
-
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
 from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
 from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
 from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
+from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import GuardrailMetadata
-from any_guardrail.types import ChatMessages, GuardrailInferenceOutput, GuardrailPreprocessOutput
+from any_guardrail.types import (
+    AnyDict,
+    ChatMessages,
+    GuardrailInferenceOutput,
+    GuardrailPreprocessOutput,
+    GuardrailUsage,
+)
+
+MAX_NEW_TOKENS = 2048
 
 SCORE_PATTERN = re.compile(r"<score>\s*(\d+)\s*</score>")
 REASONING_PATTERN = re.compile(r"<reasoning>\s*(.*?)\s*</reasoning>", re.DOTALL)
@@ -26,7 +33,7 @@ INPUT_DATA_FORMAT = PROMPT_REGISTRY[GuardrailName.GLIDER].resolve().segments["in
 """GLIDER input-only data wrapper (registry-sourced); fills ``{input_text}``."""
 
 
-class Glider(ThreeStageGuardrail[ChatMessages, str]):
+class Glider(ThreeStageGuardrail[ChatMessages, AnyDict]):
     """Prompt-based LLM judge that grades text against user-supplied pass criteria and rubric, returning reasoning and highlighted phrases.
 
     GLIDER is a compact (3B) evaluator LLM fine-tuned to score arbitrary text on
@@ -53,9 +60,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
     ``output_text`` judged alongside it (typically a model response); list/batch
     input is not supported.
 
-    Note: this guardrail runs the model through a ``transformers`` text-generation
-    pipeline directly; the ``provider`` argument is reserved for future
-    extensibility and is currently unused.
+    It runs through ``provider.generate_chat``, so it can be served from either a
+    ``HuggingFaceProvider`` or a ``LlamafileProvider``.
 
     For more information, see:
 
@@ -68,7 +74,9 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         pass_threshold: The rubric score at which the text counts as passing. ``valid`` is
             ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better`` is False).
         model_id: HuggingFace path to model. Defaults to ``PatronusAI/glider``.
-        provider: Reserved for future extensibility. Currently unused.
+        provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
+            loading a causal LM. Pass a ``LlamafileProvider`` to run a GGUF build without
+            the huggingface extra.
         higher_is_better: Whether higher rubric scores mean better/passing text. Set to
             False for rubrics where higher scores mean worse text.
         score_range: Optional ``(min, max)`` bounds of the rubric scale. GLIDER's rubric is
@@ -93,7 +101,7 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         rubric: str,
         pass_threshold: int,
         model_id: str | None = None,
-        provider: StandardProvider | None = None,  # Reserved for future extensibility
+        provider: StandardProvider | None = None,
         higher_is_better: bool = True,
         score_range: tuple[int, int] | None = None,
         prompt: PromptTemplate | None = None,
@@ -111,8 +119,10 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
                 ``higher_is_better=False``). Must be on the same scale as the rubric.
             model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
                 defaults to ``PatronusAI/glider``.
-            provider: Reserved for future extensibility; currently unused. GLIDER runs
-                through a ``transformers`` text-generation pipeline instead.
+            provider: Optional pre-configured provider. When ``None``, a
+                ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` /
+                ``AutoTokenizer`` (transformers is imported lazily here). Pass a
+                ``LlamafileProvider`` to run a GGUF build without the huggingface extra.
             higher_is_better: Whether higher rubric scores mean better/passing text.
                 Set to ``False`` for rubrics where higher scores mean worse text (e.g. a
                 severity scale).
@@ -138,8 +148,18 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         self.higher_is_better = higher_is_better
         self.score_range = score_range
         self._prompt = resolve_prompt(GuardrailName.GLIDER, prompt, prompt_version)
-        self.provider = provider  # Reserved for future extensibility
-        self.model = pipeline("text-generation", self.model_id, max_new_tokens=2048, return_full_text=False)
+        load_kwargs: AnyDict = {}
+        if provider is not None:
+            self.provider = provider
+            if isinstance(self.provider, HuggingFaceProvider):
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+
+                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
+        else:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
+            self.provider = HuggingFaceProvider(model_class=AutoModelForCausalLM, tokenizer_class=AutoTokenizer)
+        self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(self, input_text: str, output_text: str | None = None) -> GuardrailOutput:  # type: ignore[override]
         """Use the provided pass criteria and rubric to judge the input and output text provided.
@@ -185,13 +205,12 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
         prompt = self._prompt.segments["system"].format(data=data, pass_criteria=self.pass_criteria, rubric=self.rubric)
         return GuardrailPreprocessOutput(data=[{"role": "user", "content": prompt}])
 
-    def _inference(self, message: GuardrailPreprocessOutput[ChatMessages]) -> GuardrailInferenceOutput[str]:
-        """Run text-generation pipeline on chat messages."""
-        generated_text: str = self.model(message.data)[0]["generated_text"]  # type: ignore[assignment]
-        return GuardrailInferenceOutput(data=generated_text)
+    def _inference(self, message: GuardrailPreprocessOutput[ChatMessages]) -> GuardrailInferenceOutput[AnyDict]:
+        """Run the chat messages through the provider's generative backend."""
+        return self.provider.generate_chat(messages=message.data, max_new_tokens=MAX_NEW_TOKENS, do_sample=False)
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[str]) -> GuardrailOutput:
-        generated_text = model_outputs.data
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[AnyDict]) -> GuardrailOutput:
+        generated_text = model_outputs.data["generated_text"]
         score_match = SCORE_PATTERN.search(generated_text)
         if score_match is None:
             return GuardrailOutput(valid=False, explanation=generated_text, extra={"parse_failure": True})
@@ -217,4 +236,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, str]):
                 "rubric_score": rubric_score,
                 "highlights": highlight_match.group(1) if highlight_match else None,
             },
+            usage=GuardrailUsage(
+                prompt_tokens=model_outputs.data.get("prompt_token_count"),
+                completion_tokens=model_outputs.data.get("completion_token_count"),
+            ),
         )
