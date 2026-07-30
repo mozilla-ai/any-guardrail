@@ -94,19 +94,35 @@ def test_gli_guard_safe() -> None:
     assert guard.validate("what's the weather?").valid is True
 
 
-def test_tolerate_list_extra_special_tokens_converts_list_to_dict() -> None:
-    """The shim backports transformers>=5's list/tuple handling onto the raw <5 codepath."""
-    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
-    fake: Any = SimpleNamespace(SPECIAL_TOKENS_ATTRIBUTES=[], _special_tokens_map={})
-    with pytest.raises(AttributeError):
-        # Unpatched, the raw list crashes exactly like transformers<5 does.
-        original(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+def _legacy_set_model_specific_special_tokens(self: Any, special_tokens: Any) -> None:
+    """Mirror transformers<5's dict-only implementation, independent of the installed version.
 
-    with _tolerate_list_extra_special_tokens():
-        PreTrainedTokenizerBase._set_model_specific_special_tokens(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+    Real transformers (both <5 and >=5) implements this by calling ``.keys()``/``.items()``
+    unconditionally, so a raw list crashes with ``AttributeError``. Pinning that behavior here
+    (rather than calling the real, installed method) keeps this test from becoming brittle to
+    upstream changes in transformers' own implementation.
+    """
+    self.SPECIAL_TOKENS_ATTRIBUTES = self.SPECIAL_TOKENS_ATTRIBUTES + list(special_tokens.keys())
+    for key, value in special_tokens.items():
+        self._special_tokens_map[key] = value
+
+
+def test_tolerate_list_extra_special_tokens_converts_list_to_dict() -> None:
+    """The shim backports transformers>=5's list/tuple handling onto a transformers<5-style callable."""
+    fake: Any = SimpleNamespace(SPECIAL_TOKENS_ATTRIBUTES=[], _special_tokens_map={})
+    with patch.object(
+        PreTrainedTokenizerBase, "_set_model_specific_special_tokens", _legacy_set_model_specific_special_tokens
+    ):
+        with pytest.raises(AttributeError):
+            # Unpatched, the raw list crashes exactly like transformers<5 does.
+            PreTrainedTokenizerBase._set_model_specific_special_tokens(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+
+        with _tolerate_list_extra_special_tokens():
+            PreTrainedTokenizerBase._set_model_specific_special_tokens(fake, ["[SEP_STRUCT]", "[SEP_TEXT]"])  # type: ignore[arg-type]
+
+        assert PreTrainedTokenizerBase._set_model_specific_special_tokens is _legacy_set_model_specific_special_tokens
 
     assert fake._special_tokens_map == {"extra_special_token_0": "[SEP_STRUCT]", "extra_special_token_1": "[SEP_TEXT]"}
-    assert PreTrainedTokenizerBase._set_model_specific_special_tokens is original
 
 
 def test_gli_guard_transformers_5_skips_patch() -> None:

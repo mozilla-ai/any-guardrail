@@ -1,3 +1,4 @@
+import threading
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -70,6 +71,11 @@ def _transformers_major() -> int:
     return int(transformers_version.split(".")[0])
 
 
+# _tolerate_list_extra_special_tokens mutates a class-wide transformers method for its
+# duration, so concurrent GliGuard() constructions on transformers<5 must not interleave.
+_PATCH_LOCK = threading.Lock()
+
+
 @contextmanager
 def _tolerate_list_extra_special_tokens() -> Iterator[None]:
     """Backport transformers>=5's list/tuple handling for ``extra_special_tokens`` onto <5.
@@ -86,18 +92,19 @@ def _tolerate_list_extra_special_tokens() -> Iterator[None]:
     """
     from transformers import PreTrainedTokenizerBase
 
-    original = PreTrainedTokenizerBase._set_model_specific_special_tokens
+    with _PATCH_LOCK:
+        original = PreTrainedTokenizerBase._set_model_specific_special_tokens
 
-    def _patched(self: Any, special_tokens: Any) -> None:
-        if isinstance(special_tokens, (list, tuple)):
-            special_tokens = {f"extra_special_token_{i}": tok for i, tok in enumerate(special_tokens)}
-        original(self, special_tokens)
+        def _patched(self: Any, special_tokens: Any) -> None:
+            if isinstance(special_tokens, (list, tuple)):
+                special_tokens = {f"extra_special_token_{i}": tok for i, tok in enumerate(special_tokens)}
+            original(self, special_tokens)
 
-    PreTrainedTokenizerBase._set_model_specific_special_tokens = _patched  # type: ignore[method-assign]
-    try:
-        yield
-    finally:
-        PreTrainedTokenizerBase._set_model_specific_special_tokens = original  # type: ignore[method-assign]
+        PreTrainedTokenizerBase._set_model_specific_special_tokens = _patched  # type: ignore[method-assign]
+        try:
+            yield
+        finally:
+            PreTrainedTokenizerBase._set_model_specific_special_tokens = original  # type: ignore[method-assign]
 
 
 class GliGuard(Guardrail):
