@@ -86,4 +86,12 @@ Get the model IDs supported by a specific guardrail.
 
 Get all model IDs supported by all guardrails.
 
+Guardrails whose optional extra isn't installed are skipped rather than
+raising, since this is a discovery API and the natural use is "what can I
+run here?" on a partial install. Every guardrail module that gates an
+optional SDK re-raises the failed import as ``raise ImportError(msg) from
+e``, so only an ``ImportError`` with a chained cause is treated as a
+missing-extra signal; an uncaused ``ImportError`` (e.g. an unresolvable
+module path or class name) is a real bug and propagates.
+
 **Returns:** `dict[str, list[str]]`
