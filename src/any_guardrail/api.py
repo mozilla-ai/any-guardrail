@@ -276,10 +276,18 @@ class AnyGuardrail:
 
     @classmethod
     def get_all_supported_models(cls) -> dict[str, list[str]]:
-        """Get all model IDs supported by all guardrails."""
+        """Get all model IDs supported by all guardrails.
+
+        Guardrails whose optional extra isn't installed are skipped rather than
+        raising, since this is a discovery API and the natural use is "what can I
+        run here?" on a partial install.
+        """
         model_ids = {}
         for guardrail_name in cls.get_supported_guardrails():
-            model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
+            try:
+                model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
+            except ImportError:
+                continue
         return model_ids
 
     @classmethod

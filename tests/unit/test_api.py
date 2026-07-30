@@ -171,6 +171,24 @@ def test_model_load() -> None:
                 assert hasattr(guardrail, "provider")
 
 
+def test_get_all_supported_models_skips_guardrails_with_missing_extras() -> None:
+    """A guardrail whose optional extra isn't installed shouldn't break the aggregate query."""
+    real_get_supported_model = AnyGuardrail.get_supported_model.__func__
+
+    def flaky_get_supported_model(cls: type[AnyGuardrail], guardrail_name: GuardrailName) -> list[str]:
+        if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
+            msg = "azure-ai-contentsafety package is not installed"
+            raise ImportError(msg)
+        return real_get_supported_model(cls, guardrail_name)
+
+    with patch.object(AnyGuardrail, "get_supported_model", classmethod(flaky_get_supported_model)):
+        model_ids = AnyGuardrail.get_all_supported_models()
+
+    assert GuardrailName.AZURE_CONTENT_SAFETY.value not in model_ids
+    assert GuardrailName.LLAMA_GUARD.value in model_ids
+    assert len(model_ids) == len(GuardrailName) - 1
+
+
 def test_post_processing_implementation() -> None:
     """Test that all ThreeStageGuardrail subclasses with a provider implement _post_processing."""
     for guardrail_name in GuardrailName:
