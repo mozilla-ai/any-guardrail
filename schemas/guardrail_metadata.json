@@ -103,7 +103,8 @@
       "documents"
     ],
     "output_shapes": [
-      "binary"
+      "binary",
+      "score"
     ],
     "primary_category": "prompt_injection",
     "required_validate_kwargs": [],
@@ -130,7 +131,8 @@
     "multimodal": false,
     "optional_validate_kwargs": [],
     "output_shapes": [
-      "categorical"
+      "categorical",
+      "score"
     ],
     "primary_category": "content_safety",
     "required_validate_kwargs": [],
@@ -437,8 +439,7 @@
       "output_text"
     ],
     "output_shapes": [
-      "categorical",
-      "score"
+      "categorical"
     ],
     "primary_category": "general_judge",
     "required_validate_kwargs": [],
@@ -568,7 +569,8 @@
     "multimodal": false,
     "optional_validate_kwargs": [],
     "output_shapes": [
-      "categorical"
+      "categorical",
+      "score"
     ],
     "primary_category": "prompt_injection",
     "required_validate_kwargs": [],
@@ -954,6 +956,7 @@
     ],
     "output_shapes": [
       "categorical",
+      "score",
       "span"
     ],
     "primary_category": "content_safety",
@@ -1056,6 +1059,7 @@
     "optional_validate_kwargs": [],
     "output_shapes": [
       "multi_label",
+      "score",
       "span"
     ],
     "primary_category": "content_safety",
