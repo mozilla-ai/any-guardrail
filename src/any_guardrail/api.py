@@ -280,14 +280,19 @@ class AnyGuardrail:
 
         Guardrails whose optional extra isn't installed are skipped rather than
         raising, since this is a discovery API and the natural use is "what can I
-        run here?" on a partial install.
+        run here?" on a partial install. Every guardrail module that gates an
+        optional SDK re-raises the failed import as ``raise ImportError(msg) from
+        e``, so only an ``ImportError`` with a chained cause is treated as a
+        missing-extra signal; an uncaused ``ImportError`` (e.g. an unresolvable
+        module path or class name) is a real bug and propagates.
         """
         model_ids = {}
         for guardrail_name in cls.get_supported_guardrails():
             try:
                 model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
-            except ImportError:
-                continue
+            except ImportError as e:
+                if e.__cause__ is None:
+                    raise
         return model_ids
 
     @classmethod

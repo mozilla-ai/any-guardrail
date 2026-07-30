@@ -172,13 +172,18 @@ def test_model_load() -> None:
 
 
 def test_get_all_supported_models_skips_guardrails_with_missing_extras() -> None:
-    """A guardrail whose optional extra isn't installed shouldn't break the aggregate query."""
+    """A guardrail whose optional extra isn't installed shouldn't break the aggregate query.
+
+    Mirrors the real failure shape: every guardrail module that gates an optional
+    SDK does ``raise ImportError(msg) from e``, chaining the original
+    ModuleNotFoundError as the cause.
+    """
     real_get_guardrail_class = AnyGuardrail._get_guardrail_class
 
     def flaky_get_guardrail_class(guardrail_name: GuardrailName) -> type[Guardrail]:
         if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
             msg = "azure-ai-contentsafety package is not installed"
-            raise ImportError(msg)
+            raise ImportError(msg) from ModuleNotFoundError(name="azure.ai.contentsafety")
         return real_get_guardrail_class(guardrail_name)
 
     with patch.object(AnyGuardrail, "_get_guardrail_class", staticmethod(flaky_get_guardrail_class)):
@@ -187,6 +192,25 @@ def test_get_all_supported_models_skips_guardrails_with_missing_extras() -> None
     assert GuardrailName.AZURE_CONTENT_SAFETY.value not in model_ids
     assert GuardrailName.LLAMA_GUARD.value in model_ids
     assert len(model_ids) == len(GuardrailName) - 1
+
+
+def test_get_all_supported_models_reraises_uncaused_import_error() -> None:
+    """An ImportError with no chained cause is a real bug (bad module path, unresolvable
+    class), not a missing extra, and must propagate rather than being silently skipped.
+    """
+    real_get_guardrail_class = AnyGuardrail._get_guardrail_class
+
+    def broken_get_guardrail_class(guardrail_name: GuardrailName) -> type[Guardrail]:
+        if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
+            msg = "Could not resolve guardrail class for 'azure_content_safety'"
+            raise ImportError(msg)
+        return real_get_guardrail_class(guardrail_name)
+
+    with (
+        patch.object(AnyGuardrail, "_get_guardrail_class", staticmethod(broken_get_guardrail_class)),
+        pytest.raises(ImportError, match="Could not resolve guardrail class"),
+    ):
+        AnyGuardrail.get_all_supported_models()
 
 
 def test_post_processing_implementation() -> None:
