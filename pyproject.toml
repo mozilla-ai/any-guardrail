@@ -154,11 +154,15 @@ extend-select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 # D: docstrings aren't required in tests.
-# S105/S106 are scoped to the bedrock test only — its fake-cred fixtures hardcode
-# "credentials" that ruff flags, but they're fixtures, not real secrets. Ruff unions
-# per-file-ignores across matching patterns, so that file keeps D + S105 + S106.
+# S105/S106 are scoped to test files whose fixtures legitimately contain the
+# substring "pass" that ruff's hardcoded-password heuristic flags, but none are
+# real secrets: bedrock's fake-cred fixtures, and Glider's real `pass_criteria`/
+# `pass_threshold` constructor args. Ruff unions per-file-ignores across matching
+# patterns, so each file below keeps D plus its S105/S106 entry.
 "tests/**" = ["D"]
 "tests/unit/test_unit_bedrock_guardrails.py" = ["S105", "S106"]
+"tests/unit/test_api.py" = ["S105"]
+"tests/unit/test_unit_glider_guardrail.py" = ["S106"]
 "docs/cookbook/**" = ["T201", "TRY300"]
 "scripts/**" = ["T201"]
 
