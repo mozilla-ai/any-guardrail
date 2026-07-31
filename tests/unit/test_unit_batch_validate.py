@@ -9,6 +9,8 @@ fallback otherwise — not the prompt-parsing logic, which is covered elsewhere.
 from typing import Any
 from unittest.mock import MagicMock
 
+import pytest
+
 from any_guardrail.base import GuardrailName
 from any_guardrail.guardrails.compass_judger.compass_judger import CompassJudger
 from any_guardrail.guardrails.dyna_guard.dyna_guard import DynaGuard
@@ -132,12 +134,8 @@ def test_dyna_guard_validate_batch_rejects_mismatched_output_text_length() -> No
     provider = MagicMock(spec=HuggingFaceProvider)
     judge.provider = provider
 
-    try:
+    with pytest.raises(ValueError, match="output_text"):
         judge.validate(["t1", "t2"], output_text=["only one"])
-    except ValueError as e:
-        assert "output_text" in str(e)
-    else:
-        raise AssertionError("expected ValueError for mismatched output_text length")
 
 
 def test_compass_judger_validate_batch_uses_real_batching_with_hf_provider() -> None:
