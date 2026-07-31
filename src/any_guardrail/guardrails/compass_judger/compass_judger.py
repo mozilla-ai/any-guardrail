@@ -2,7 +2,7 @@ import re
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.guardrails.utils import broadcast_optional, default, normalize_rubric_to_risk
 from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
 from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
@@ -42,9 +42,13 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
     *last* bracketed rating in the generation, so numbers the model quotes while
     justifying are not mistaken for the final rating.
 
-    Inputs are single strings only (no batching): ``input_text`` is the instruction
-    and ``output_text`` is the response being judged. When ``output_text`` is omitted,
-    ``input_text`` itself is placed in the response slot and judged directly.
+    Inputs are strings: ``input_text`` is the instruction and ``output_text`` is the
+    response being judged. When ``output_text`` is omitted, ``input_text`` itself is
+    placed in the response slot and judged directly. ``input_text`` also accepts a
+    ``list[str]`` to judge a batch in one real batched ``generate_chat`` call when the
+    provider is a ``HuggingFaceProvider`` (``output_text`` may then be a matching-length
+    list, a single value broadcast to every item, or omitted); other providers fall back
+    to one call per item.
 
     Verdict mapping onto ``GuardrailOutput``:
 
@@ -168,37 +172,40 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
-        self, input_text: str, output_text: str | None = None, **kwargs: Any
-    ) -> GuardrailOutput:
+        self, input_text: str | list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> GuardrailOutput | list[GuardrailOutput]:
         """Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 
         Args:
-            input_text: The instruction/prompt the response answers, as a single
-                string (list inputs are not supported), e.g.
-                ``"Summarize the article in two sentences."``.
+            input_text: The instruction/prompt the response answers, e.g.
+                ``"Summarize the article in two sentences."``, or a ``list[str]`` to
+                judge a batch in one call.
             output_text: The response being judged — semantically the main text under
                 evaluation. When ``None``, ``input_text`` itself is placed in the
-                response slot of the judging prompt and judged directly.
+                response slot of the judging prompt and judged directly. For a batched
+                ``input_text``, this may be a matching-length list, a single value
+                broadcast to every item, or omitted.
             **kwargs: Forwarded to the base pipeline; ignored by pre-processing.
 
         Returns:
-            GuardrailOutput where ``valid`` maps the 1-10 rating through
-            ``pass_threshold``, ``score`` is the rating normalized onto the canonical
-            risk axis (higher = riskier), ``explanation`` is the judge's
-            justification, and ``extra["rubric_score"]`` is the raw rating. Fails
-            closed (``valid=False`` with ``extra={"parse_failure": True}``) when no
-            rating parses.
-
-        Raises:
-            TypeError: If ``input_text`` is a list; CompassJudger only supports
-                single strings.
+            GuardrailOutput (or a list, one per item, in order, for a batched call)
+            where ``valid`` maps the 1-10 rating through ``pass_threshold``, ``score``
+            is the rating normalized onto the canonical risk axis (higher = riskier),
+            ``explanation`` is the judge's justification, and ``extra["rubric_score"]``
+            is the raw rating. Fails closed (``valid=False`` with
+            ``extra={"parse_failure": True}``) when no rating parses.
 
         """
-        result = super().validate(input_text, output_text=output_text, **kwargs)
-        if isinstance(result, list):
-            msg = "CompassJudger.validate received a list input but only supports single strings."
-            raise TypeError(msg)
-        return result
+        return super().validate(input_text, output_text=output_text, **kwargs)
+
+    def _build_messages(self, input_text: str, output_text: str | None) -> ChatMessages:
+        prompt = self._prompt.segments["user"].format(
+            criteria=self.criteria,
+            rubric=self.rubric,
+            instruction=input_text,
+            response=output_text if output_text is not None else input_text,
+        )
+        return [{"role": "user", "content": prompt}]
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
@@ -217,14 +224,7 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
 
         """
         del kwargs
-        prompt = self._prompt.segments["user"].format(
-            criteria=self.criteria,
-            rubric=self.rubric,
-            instruction=input_text,
-            response=output_text if output_text is not None else input_text,
-        )
-        messages: ChatMessages = [{"role": "user", "content": prompt}]
-        return GuardrailPreprocessOutput(data={"messages": messages})
+        return GuardrailPreprocessOutput(data={"messages": self._build_messages(input_text, output_text)})
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[CompassJudgerPreprocessData]
@@ -233,16 +233,7 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[CompassJudgerInferenceData]) -> GuardrailOutput:
-        """Parse the last ``Rating: [[X]]`` from the generation into a GuardrailOutput.
-
-        ``valid`` maps the rating through ``pass_threshold``; ``score`` is the rating
-        normalized onto the canonical risk axis (higher = riskier);
-        ``extra["rubric_score"]`` is the raw integer. Fails closed
-        (``valid=False`` with ``extra={"parse_failure": True}``) when no in-range
-        rating is found.
-        """
-        text = model_outputs.data["generated_text"]
+    def _build_result(self, text: str, prompt_tokens: int | None, completion_tokens: int | None) -> GuardrailOutput:
         # The verdict is the LAST ``[[X]]``: the justification may quote other bracketed
         # numbers before the final rating, so leftmost-match would be wrong. Take the final one.
         matches = list(_RATING_PATTERN.finditer(text))
@@ -257,8 +248,37 @@ class CompassJudger(ThreeStageGuardrail[CompassJudgerPreprocessData, CompassJudg
             score=normalize_rubric_to_risk(rating, SCORE_MIN, SCORE_MAX, higher_is_better=self.higher_is_better),
             explanation=text,
             extra={"rubric_score": rating},
-            usage=GuardrailUsage(
-                prompt_tokens=model_outputs.data.get("prompt_token_count"),
-                completion_tokens=model_outputs.data.get("completion_token_count"),
-            ),
+            usage=GuardrailUsage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens),
         )
+
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[CompassJudgerInferenceData]) -> GuardrailOutput:
+        """Parse the last ``Rating: [[X]]`` from the generation into a GuardrailOutput.
+
+        ``valid`` maps the rating through ``pass_threshold``; ``score`` is the rating
+        normalized onto the canonical risk axis (higher = riskier);
+        ``extra["rubric_score"]`` is the raw integer. Fails closed
+        (``valid=False`` with ``extra={"parse_failure": True}``) when no in-range
+        rating is found.
+        """
+        data = model_outputs.data
+        return self._build_result(
+            data["generated_text"], data.get("prompt_token_count"), data.get("completion_token_count")
+        )
+
+    def _validate_batch(
+        self, input_texts: list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> list[GuardrailOutput]:
+        if not input_texts:
+            return []
+        if not isinstance(self.provider, HuggingFaceProvider):
+            return super()._validate_batch(input_texts, output_text=output_text, **kwargs)
+        outputs = broadcast_optional(output_text, len(input_texts), "output_text")
+        batch = [self._build_messages(t, o) for t, o in zip(input_texts, outputs, strict=True)]
+        result = self.provider.generate_chat(messages=batch, max_new_tokens=MAX_NEW_TOKENS, do_sample=False)
+        data = result.data
+        return [
+            self._build_result(text, prompt_tokens, completion_tokens)
+            for text, prompt_tokens, completion_tokens in zip(
+                data["generated_text"], data["prompt_token_count"], data["completion_token_count"], strict=True
+            )
+        ]

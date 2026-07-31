@@ -472,14 +472,14 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "The response being judged \u2014 semantically the main text under evaluation. When ``None``, ``input_text`` itself is placed in the response slot of the judging prompt and judged directly.",
+      "description": "The response being judged \u2014 semantically the main text under evaluation. When ``None``, ``input_text`` itself is placed in the response slot of the judging prompt and judged directly. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted.",
       "effectively_required": false,
       "env_var": null,
       "name": "output_text",
       "required": false,
       "secret": false,
       "stage": "validate",
-      "type": "string"
+      "type": "json"
     }
   ],
   "deepset": [
@@ -599,14 +599,14 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "Optional agent response judged alongside the user turn, e.g. ``\"Sure, I've issued your refund.\"``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline).",
+      "description": "Optional agent response judged alongside the user turn, e.g. ``\"Sure, I've issued your refund.\"``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted.",
       "effectively_required": false,
       "env_var": null,
       "name": "output_text",
       "required": false,
       "secret": false,
       "stage": "validate",
-      "type": "string"
+      "type": "json"
     }
   ],
   "flowjudge": [
@@ -1045,19 +1045,19 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "Optional assistant response. Required for criteria that judge the assistant (e.g. groundedness, answer relevance, function-call hallucination); omit to judge the user input directly (e.g. jailbreak, harm, context relevance).",
+      "description": "Optional assistant response. Required for criteria that judge the assistant (e.g. groundedness, answer relevance, function-call hallucination); omit to judge the user input directly (e.g. jailbreak, harm, context relevance). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted.",
       "effectively_required": false,
       "env_var": null,
       "name": "output_text",
       "required": false,
       "secret": false,
       "stage": "validate",
-      "type": "string"
+      "type": "json"
     },
     {
       "choices": null,
       "default": null,
-      "description": "Optional RAG documents (dicts with ``doc_id`` and ``text``). Required for groundedness and context-relevance criteria.",
+      "description": "Optional RAG documents (dicts with ``doc_id`` and ``text``). Required for groundedness and context-relevance criteria. Applies uniformly across a whole batch, not per item.",
       "effectively_required": false,
       "env_var": null,
       "name": "documents",
@@ -1069,7 +1069,7 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks.",
+      "description": "Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks. Applies uniformly across a whole batch, not per item.",
       "effectively_required": false,
       "env_var": null,
       "name": "available_tools",
@@ -1744,14 +1744,14 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "The response being graded against the rubric, e.g. ``\"The sky is blue because sunlight scatters off the air.\"``. When ``None``, ``input_text`` itself is graded as the response.",
+      "description": "The response being graded against the rubric, e.g. ``\"The sky is blue because sunlight scatters off the air.\"``. When ``None``, ``input_text`` itself is graded as the response. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted.",
       "effectively_required": false,
       "env_var": null,
       "name": "output_text",
       "required": false,
       "secret": false,
       "stage": "validate",
-      "type": "string"
+      "type": "json"
     }
   ],
   "prompt_guard": [

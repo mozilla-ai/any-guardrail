@@ -2,7 +2,7 @@ import re
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.guardrails.utils import default, normalize_rubric_to_risk
+from any_guardrail.guardrails.utils import broadcast_optional, default, normalize_rubric_to_risk
 from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
 from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
@@ -57,9 +57,12 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
       ``extra={"parse_failure": True}``. The parser takes the **last** ``[RESULT]`` marker,
       because feedback often quotes other rubric levels inline.
 
-    Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the
+    Inputs are strings: ``input_text`` is the instruction and ``output_text`` is the
     response being graded (when ``output_text`` is omitted, ``input_text`` is graded as the
-    response). List/batch input is not supported.
+    response). ``input_text`` also accepts a ``list[str]`` to judge a batch in one real
+    batched ``generate_chat`` call when the provider is a ``HuggingFaceProvider``
+    (``output_text`` may then be a matching-length list, a single value broadcast to every
+    item, or omitted); other providers fall back to one call per item.
 
     For more information, see:
 
@@ -158,33 +161,44 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
-        self, input_text: str, output_text: str | None = None, **kwargs: Any
-    ) -> GuardrailOutput:
+        self, input_text: str | list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> GuardrailOutput | list[GuardrailOutput]:
         """Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 
         Args:
             input_text: The instruction the response was produced for, e.g.
-                ``"Explain why the sky is blue to a five-year-old."``. Single string only;
-                list/batch input is not supported and raises ``TypeError``.
+                ``"Explain why the sky is blue to a five-year-old."``, or a ``list[str]`` to
+                judge a batch in one call.
             output_text: The response being graded against the rubric, e.g.
                 ``"The sky is blue because sunlight scatters off the air."``. When ``None``,
-                ``input_text`` itself is graded as the response.
+                ``input_text`` itself is graded as the response. For a batched ``input_text``,
+                this may be a matching-length list, a single value broadcast to every item, or
+                omitted.
             **kwargs: Ignored; accepted only so the signature matches the ``ThreeStageGuardrail``
                 contract.
 
         Returns:
-            GuardrailOutput where ``valid`` maps the rubric score through ``pass_threshold``,
-            ``score`` is the 1-5 rubric score normalized onto the canonical risk axis
-            (higher = riskier), ``explanation`` is the model's feedback, and
-            ``extra["rubric_score"]`` is the raw integer. When no score can be parsed the
-            output fails closed (``valid=False`` with ``extra={"parse_failure": True}``).
+            GuardrailOutput (or a list, one per item, in order, for a batched call) where
+            ``valid`` maps the rubric score through ``pass_threshold``, ``score`` is the 1-5
+            rubric score normalized onto the canonical risk axis (higher = riskier),
+            ``explanation`` is the model's feedback, and ``extra["rubric_score"]`` is the raw
+            integer. When no score can be parsed the output fails closed (``valid=False`` with
+            ``extra={"parse_failure": True}``).
 
         """
-        result = super().validate(input_text, output_text=output_text, **kwargs)
-        if isinstance(result, list):
-            msg = "Prometheus.validate received a list input but only supports single strings."
-            raise TypeError(msg)
-        return result
+        return super().validate(input_text, output_text=output_text, **kwargs)
+
+    def _build_messages(self, input_text: str, output_text: str | None) -> ChatMessages:
+        user = self._prompt.segments["user"].format(
+            instruction=input_text,
+            response=output_text if output_text is not None else input_text,
+            reference_answer=self.reference_answer or "",
+            rubric=self.rubric,
+        )
+        return [
+            {"role": "system", "content": self._prompt.segments["system"]},
+            {"role": "user", "content": user},
+        ]
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
@@ -205,17 +219,7 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
 
         """
         del kwargs
-        user = self._prompt.segments["user"].format(
-            instruction=input_text,
-            response=output_text if output_text is not None else input_text,
-            reference_answer=self.reference_answer or "",
-            rubric=self.rubric,
-        )
-        messages: ChatMessages = [
-            {"role": "system", "content": self._prompt.segments["system"]},
-            {"role": "user", "content": user},
-        ]
-        return GuardrailPreprocessOutput(data={"messages": messages})
+        return GuardrailPreprocessOutput(data={"messages": self._build_messages(input_text, output_text)})
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[PrometheusPreprocessData]
@@ -224,8 +228,7 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
             messages=model_inputs.data["messages"], max_new_tokens=MAX_NEW_TOKENS, do_sample=False
         )
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[PrometheusInferenceData]) -> GuardrailOutput:
-        text = model_outputs.data["generated_text"]
+    def _build_result(self, text: str, prompt_tokens: int | None, completion_tokens: int | None) -> GuardrailOutput:
         # The verdict is the LAST score marker: feedback often references other rubric
         # levels inline (e.g. "a Score: 2 response would... [RESULT] 4"), so leftmost-match
         # would capture the wrong number. Take the final match.
@@ -234,14 +237,35 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         rubric_score = int(matches[-1].group(1))
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
-        feedback = text.split("[RESULT]")[0].replace("Feedback:", "").strip() or text
+        feedback = text.split("[RESULT]", maxsplit=1)[0].replace("Feedback:", "").strip() or text
         return GuardrailOutput(
             valid=passed,
             score=normalize_rubric_to_risk(rubric_score, SCORE_MIN, SCORE_MAX, higher_is_better=self.higher_is_better),
             explanation=feedback,
             extra={"rubric_score": rubric_score},
-            usage=GuardrailUsage(
-                prompt_tokens=model_outputs.data.get("prompt_token_count"),
-                completion_tokens=model_outputs.data.get("completion_token_count"),
-            ),
+            usage=GuardrailUsage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens),
         )
+
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[PrometheusInferenceData]) -> GuardrailOutput:
+        data = model_outputs.data
+        return self._build_result(
+            data["generated_text"], data.get("prompt_token_count"), data.get("completion_token_count")
+        )
+
+    def _validate_batch(
+        self, input_texts: list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> list[GuardrailOutput]:
+        if not input_texts:
+            return []
+        if not isinstance(self.provider, HuggingFaceProvider):
+            return super()._validate_batch(input_texts, output_text=output_text, **kwargs)
+        outputs = broadcast_optional(output_text, len(input_texts), "output_text")
+        batch = [self._build_messages(t, o) for t, o in zip(input_texts, outputs, strict=True)]
+        result = self.provider.generate_chat(messages=batch, max_new_tokens=MAX_NEW_TOKENS, do_sample=False)
+        data = result.data
+        return [
+            self._build_result(text, prompt_tokens, completion_tokens)
+            for text, prompt_tokens, completion_tokens in zip(
+                data["generated_text"], data["prompt_token_count"], data["completion_token_count"], strict=True
+            )
+        ]
