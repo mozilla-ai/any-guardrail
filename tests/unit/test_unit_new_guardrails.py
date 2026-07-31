@@ -431,6 +431,16 @@ def test_prometheus_uses_final_result_not_inline_reference() -> None:
     assert result.valid is True
 
 
+def test_prometheus_feedback_not_truncated_by_earlier_result_marker() -> None:
+    """explanation must be sliced at the LAST [RESULT] marker, not the first literal occurrence."""
+    judge = _judge(Prometheus, pass_threshold=3)
+    text = "Feedback: a prior response scored [RESULT] 2, but this one is much better. [RESULT] 4"
+    result = judge._post_processing(_gen(text))
+    assert result.extra is not None
+    assert result.extra["rubric_score"] == 4
+    assert result.explanation == "a prior response scored [RESULT] 2, but this one is much better."
+
+
 def test_prometheus_fails_closed() -> None:
     judge = _judge(Prometheus)
     result = judge._post_processing(_gen("no result marker"))

@@ -237,7 +237,11 @@ class Prometheus(ThreeStageGuardrail[PrometheusPreprocessData, PrometheusInferen
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         rubric_score = int(matches[-1].group(1))
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
-        feedback = text.split("[RESULT]", maxsplit=1)[0].replace("Feedback:", "").strip() or text
+        # Slice at the LAST marker's start (matches the verdict just parsed above), not the
+        # first occurrence of a marker substring — feedback can quote earlier rubric levels
+        # inline (e.g. "a Score: 2 response would... [RESULT] 4"), which a naive split on the
+        # first "[RESULT]" would truncate at.
+        feedback = text[: matches[-1].start()].replace("Feedback:", "").strip() or text
         return GuardrailOutput(
             valid=passed,
             score=normalize_rubric_to_risk(rubric_score, SCORE_MIN, SCORE_MAX, higher_is_better=self.higher_is_better),

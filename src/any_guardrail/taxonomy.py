@@ -191,8 +191,11 @@ class GuardrailMetadata(BaseModel):
     supports_batch: bool = False
     """Whether ``validate()`` runs list input through one real batched inference call
     (a shared forward pass / batched ``generate_chat`` call) rather than the default
-    per-item loop. Every guardrail accepts list input via ``ThreeStageGuardrail.validate``;
-    this flags which ones do it efficiently."""
+    per-item loop. Most ``ThreeStageGuardrail`` subclasses accept list input via the
+    inherited ``validate()``; some override it to reject lists with ``TypeError``
+    instead. This flag only distinguishes real batching from the default loop among
+    guardrails that accept list input at all — it says nothing about whether list
+    input is accepted in the first place."""
 
     vendor: str
     """Organization that produced the model/service (e.g. ``"IBM"``, ``"Meta"``)."""
