@@ -9,9 +9,13 @@ its verdict as ``Rating: [[X]]`` with an integer from 1 to 10. The verdict is th
 *last* bracketed rating in the generation, so numbers the model quotes while
 justifying are not mistaken for the final rating.
 
-Inputs are single strings only (no batching): ``input_text`` is the instruction
-and ``output_text`` is the response being judged. When ``output_text`` is omitted,
-``input_text`` itself is placed in the response slot and judged directly.
+Inputs are strings: ``input_text`` is the instruction and ``output_text`` is the
+response being judged. When ``output_text`` is omitted, ``input_text`` itself is
+placed in the response slot and judged directly. ``input_text`` also accepts a
+``list[str]`` to judge a batch in one real batched ``generate_chat`` call when the
+provider is a ``HuggingFaceProvider`` (``output_text`` may then be a matching-length
+list, a single value broadcast to every item, or omitted); other providers fall back
+to one call per item.
 
 Verdict mapping onto ``GuardrailOutput``:
 
@@ -69,7 +73,7 @@ Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The instruction/prompt the response answers, as a single string (list inputs are not supported), e.g. ``"Summarize the article in two sentences."``. |
-| `output_text` | `str | None` | No | `None` | The response being judged — semantically the main text under evaluation. When ``None``, ``input_text`` itself is placed in the response slot of the judging prompt and judged directly. |
+| `input_text` | `str | list[str]` | Yes | — | The instruction/prompt the response answers, e.g. ``"Summarize the article in two sentences."``, or a ``list[str]`` to judge a batch in one call. |
+| `output_text` | `str | list[str] | None` | No | `None` | The response being judged — semantically the main text under evaluation. When ``None``, ``input_text`` itself is placed in the response slot of the judging prompt and judged directly. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`

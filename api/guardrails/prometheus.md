@@ -23,9 +23,12 @@ Verdict mapping onto ``GuardrailOutput``:
   ``extra={"parse_failure": True}``. The parser takes the **last** ``[RESULT]`` marker,
   because feedback often quotes other rubric levels inline.
 
-Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the
+Inputs are strings: ``input_text`` is the instruction and ``output_text`` is the
 response being graded (when ``output_text`` is omitted, ``input_text`` is graded as the
-response). List/batch input is not supported.
+response). ``input_text`` also accepts a ``list[str]`` to judge a batch in one real
+batched ``generate_chat`` call when the provider is a ``HuggingFaceProvider``
+(``output_text`` may then be a matching-length list, a single value broadcast to every
+item, or omitted); other providers fall back to one call per item.
 
 For more information, see:
 
@@ -66,7 +69,7 @@ Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The instruction the response was produced for, e.g. ``"Explain why the sky is blue to a five-year-old."``. Single string only; list/batch input is not supported and raises ``TypeError``. |
-| `output_text` | `str | None` | No | `None` | The response being graded against the rubric, e.g. ``"The sky is blue because sunlight scatters off the air."``. When ``None``, ``input_text`` itself is graded as the response. |
+| `input_text` | `str | list[str]` | Yes | — | The instruction the response was produced for, e.g. ``"Explain why the sky is blue to a five-year-old."``, or a ``list[str]`` to judge a batch in one call. |
+| `output_text` | `str | list[str] | None` | No | `None` | The response being graded against the rubric, e.g. ``"The sky is blue because sunlight scatters off the air."``. When ``None``, ``input_text`` itself is graded as the response. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
