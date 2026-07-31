@@ -12,6 +12,7 @@ from any_guardrail.guardrails.granite_guardian.granite_guardian import (
     MAX_NEW_TOKENS_THINK,
     _parse_generation,
 )
+from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.types import GuardrailInferenceOutput
 
 
@@ -264,6 +265,7 @@ def test_validate_forwards_documents_and_tools(guardian_instance: GraniteGuardia
     _, kwargs = provider.generate_chat.call_args
     assert kwargs["chat_template_kwargs"]["documents"] == docs
     assert kwargs["chat_template_kwargs"]["available_tools"] == tools
+    assert isinstance(result, GuardrailOutput)
     assert result.valid is True
     assert result.extra is not None
     assert result.extra["raw_answer"] == "no"
@@ -351,3 +353,66 @@ def test_risk_constants_are_nonempty_strings() -> None:
         value = getattr(GraniteGuardianRisk, name)
         assert isinstance(value, str)
         assert len(value) > 20
+
+
+def _make_mock_batch_provider(generated_texts: list[str]) -> MagicMock:
+    """Build a HuggingFaceProvider-spec'd mock whose generate_chat returns a batched output."""
+    provider = MagicMock(spec=HuggingFaceProvider)
+    provider.generate_chat.return_value = GuardrailInferenceOutput(
+        data={
+            "generated_text": generated_texts,
+            "prompt_token_count": [32] * len(generated_texts),
+            "completion_token_count": [7] * len(generated_texts),
+            "raw": None,
+        }
+    )
+    return provider
+
+
+def test_validate_batch_uses_real_batching_with_hf_provider(guardian_instance: GraniteGuardian) -> None:
+    """A HuggingFaceProvider-backed batch goes through one generate_chat call."""
+    provider = _make_mock_batch_provider(["<score>no</score>", "<score>yes</score>"])
+    guardian_instance.provider = provider
+
+    results = guardian_instance.validate(["q1", "q2"])
+
+    provider.generate_chat.assert_called_once()
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0].valid is True
+    assert results[1].valid is False
+
+
+def test_validate_batch_broadcasts_single_output_text(guardian_instance: GraniteGuardian) -> None:
+    provider = _make_mock_batch_provider(["<score>no</score>", "<score>no</score>"])
+    guardian_instance.provider = provider
+
+    guardian_instance.validate(["q1", "q2"], output_text="shared response")
+
+    _, kwargs = provider.generate_chat.call_args
+    messages_batch = kwargs["messages"]
+    assert len(messages_batch) == 2
+    assert {"role": "assistant", "content": "shared response"} in messages_batch[0]
+    assert {"role": "assistant", "content": "shared response"} in messages_batch[1]
+
+
+def test_validate_batch_falls_back_to_sequential_for_non_hf_provider(guardian_instance: GraniteGuardian) -> None:
+    """A non-HuggingFaceProvider backend loses the TypeError but still processes one call per item."""
+    provider = _make_mock_provider(generated_text="<score>no</score>")
+    guardian_instance.provider = provider
+
+    results = guardian_instance.validate(["q1", "q2", "q3"])
+
+    assert provider.generate_chat.call_count == 3
+    assert isinstance(results, list)
+    assert len(results) == 3
+
+
+def test_validate_batch_empty_list_returns_empty(guardian_instance: GraniteGuardian) -> None:
+    provider = _make_mock_batch_provider([])
+    guardian_instance.provider = provider
+
+    results = guardian_instance.validate([])
+
+    assert results == []
+    provider.generate_chat.assert_not_called()

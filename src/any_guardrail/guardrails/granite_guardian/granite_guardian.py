@@ -2,7 +2,7 @@ import re
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.guardrails.utils import default
+from any_guardrail.guardrails.utils import broadcast_optional, default
 from any_guardrail.prompt_registry import PROMPT_REGISTRY
 from any_guardrail.prompts import PromptSpec
 from any_guardrail.providers.base import StandardProvider
@@ -151,10 +151,15 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
     - When no verdict can be parsed the output fails closed: ``valid=False`` with
       ``extra={"parse_failure": True}``.
 
-    Expected inputs: a single ``input_text`` string (the user turn), plus an optional
-    ``output_text`` (the assistant turn being judged), optional ``documents`` for RAG
-    criteria, and optional ``available_tools`` for function-call criteria. Only single-string
-    inputs are supported — a list input raises ``TypeError``.
+    Expected inputs: ``input_text`` (the user turn), plus an optional ``output_text``
+    (the assistant turn being judged), optional ``documents`` for RAG criteria, and
+    optional ``available_tools`` for function-call criteria. ``input_text`` also accepts
+    a ``list[str]`` to judge a batch in one real batched ``generate_chat`` call when the
+    provider is a ``HuggingFaceProvider`` (``output_text`` may then be a matching-length
+    list or a single value broadcast to every item; other providers fall back to one call
+    per item). ``documents``/``available_tools`` apply uniformly across a whole batch (one
+    shared RAG context / tool set) rather than per item, since the chat template is
+    applied once per batched call.
 
     For more information, see:
 
@@ -252,55 +257,53 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
 
     def validate(  # type: ignore[override]
         self,
-        input_text: str,
-        output_text: str | None = None,
+        input_text: str | list[str],
+        output_text: str | list[str] | None = None,
         documents: list[AnyDict] | None = None,
         available_tools: list[AnyDict] | None = None,
         **kwargs: Any,
-    ) -> GuardrailOutput:
+    ) -> GuardrailOutput | list[GuardrailOutput]:
         """Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 
         Args:
-            input_text: The user turn. When ``output_text`` is also supplied, the
-                assistant turn is the text being judged; otherwise the user turn
-                is judged.
+            input_text: The user turn, or a ``list[str]`` to judge a batch in one call.
+                When ``output_text`` is also supplied, the assistant turn is the text
+                being judged; otherwise the user turn is judged.
             output_text: Optional assistant response. Required for criteria that
                 judge the assistant (e.g. groundedness, answer relevance,
                 function-call hallucination); omit to judge the user input
-                directly (e.g. jailbreak, harm, context relevance).
+                directly (e.g. jailbreak, harm, context relevance). For a batched
+                ``input_text``, this may be a matching-length list, a single value
+                broadcast to every item, or omitted.
             documents: Optional RAG documents (dicts with ``doc_id`` and ``text``).
-                Required for groundedness and context-relevance criteria.
+                Required for groundedness and context-relevance criteria. Applies
+                uniformly across a whole batch, not per item.
             available_tools: Optional tool definitions (dicts with ``name``,
                 ``description``, ``parameters``). Required for function-call
-                hallucination checks.
+                hallucination checks. Applies uniformly across a whole batch, not
+                per item.
             **kwargs: Additional keyword arguments forwarded to the provider's
                 chat template via ``chat_template_kwargs``.
 
         Returns:
-            A :class:`GuardrailOutput` where ``valid=True`` means the criterion is
-            **not** met (safe, when criteria are phrased as violations),
-            ``categories`` holds one entry for the criterion (``triggered=True``
-            when the model answered ``yes``), ``extra["raw_answer"]`` is the raw
-            ``"yes"``/``"no"`` string, and ``explanation`` is the full raw decoded
-            generation (including any ``<think>...</think>`` block in think mode).
-            When the score cannot be parsed, the output fails closed:
-            ``valid=False`` with ``extra={"parse_failure": True}``.
+            A :class:`GuardrailOutput` (or a list, one per item, in order, for a
+            batched call) where ``valid=True`` means the criterion is **not** met
+            (safe, when criteria are phrased as violations), ``categories`` holds
+            one entry for the criterion (``triggered=True`` when the model
+            answered ``yes``), ``extra["raw_answer"]`` is the raw ``"yes"``/``"no"``
+            string, and ``explanation`` is the full raw decoded generation
+            (including any ``<think>...</think>`` block in think mode). When the
+            score cannot be parsed, the output fails closed: ``valid=False`` with
+            ``extra={"parse_failure": True}``.
 
         """
-        result = super().validate(
+        return super().validate(
             input_text,
             output_text=output_text,
             documents=documents,
             available_tools=available_tools,
             **kwargs,
         )
-        # Granite Guardian only supports single-string inputs; ``super().validate``
-        # is statically typed as returning a union to support batch on other
-        # subclasses, but the runtime contract here is always a single output.
-        if isinstance(result, list):
-            msg = "GraniteGuardian.validate received a list input but only supports single strings."
-            raise TypeError(msg)
-        return result
 
     def _build_guardian_block(self) -> str:
         judge_instruction = GUARDIAN_JUDGE_THINK if self.think else GUARDIAN_JUDGE_NOTHINK
@@ -317,6 +320,17 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             messages.append({"role": "assistant", "content": output_text})
         messages.append({"role": "user", "content": self._build_guardian_block()})
         return messages
+
+    @staticmethod
+    def _build_chat_template_kwargs(
+        documents: list[AnyDict] | None, available_tools: list[AnyDict] | None, kwargs: AnyDict
+    ) -> AnyDict:
+        chat_template_kwargs: AnyDict = {**kwargs}
+        if documents is not None:
+            chat_template_kwargs["documents"] = documents
+        if available_tools is not None:
+            chat_template_kwargs["available_tools"] = available_tools
+        return chat_template_kwargs
 
     def _pre_processing(
         self,
@@ -351,13 +365,7 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
 
         """
         messages = self._build_messages(input_text, output_text)
-
-        chat_template_kwargs: AnyDict = {**kwargs}
-        if documents is not None:
-            chat_template_kwargs["documents"] = documents
-        if available_tools is not None:
-            chat_template_kwargs["available_tools"] = available_tools
-
+        chat_template_kwargs = self._build_chat_template_kwargs(documents, available_tools, kwargs)
         return GuardrailPreprocessOutput(
             data={
                 "messages": messages,
@@ -377,6 +385,11 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
             chat_template_kwargs=model_inputs.data["chat_template_kwargs"] or None,
         )
 
+    def _build_result(self, text: str, prompt_tokens: int | None, completion_tokens: int | None) -> GuardrailOutput:
+        result = _parse_generation(text, self.criteria)
+        result.usage = GuardrailUsage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens)
+        return result
+
     def _post_processing(
         self, model_outputs: GuardrailInferenceOutput[GraniteGuardianInferenceData]
     ) -> GuardrailOutput:
@@ -395,12 +408,49 @@ class GraniteGuardian(ThreeStageGuardrail[GraniteGuardianPreprocessData, Granite
           ``<think>...</think>`` reasoning block).
 
         """
-        result = _parse_generation(model_outputs.data["generated_text"], self.criteria)
-        result.usage = GuardrailUsage(
-            prompt_tokens=model_outputs.data.get("prompt_token_count"),
-            completion_tokens=model_outputs.data.get("completion_token_count"),
+        data = model_outputs.data
+        return self._build_result(
+            data["generated_text"], data.get("prompt_token_count"), data.get("completion_token_count")
         )
-        return result
+
+    def _validate_batch(
+        self,
+        input_texts: list[str],
+        output_text: str | list[str] | None = None,
+        documents: list[AnyDict] | None = None,
+        available_tools: list[AnyDict] | None = None,
+        **kwargs: Any,
+    ) -> list[GuardrailOutput]:
+        """Batch-validate via one real ``generate_chat`` call when the provider supports it.
+
+        ``documents``/``available_tools`` apply uniformly across the whole batch (one
+        shared RAG context / tool set), not per item — the chat template is applied
+        once per batched ``generate_chat`` call, so per-item RAG context isn't
+        expressible without a separate call per item.
+        """
+        if not input_texts:
+            return []
+        if not isinstance(self.provider, HuggingFaceProvider):
+            return super()._validate_batch(
+                input_texts, output_text=output_text, documents=documents, available_tools=available_tools, **kwargs
+            )
+        outputs = broadcast_optional(output_text, len(input_texts), "output_text")
+        batch = [self._build_messages(t, o) for t, o in zip(input_texts, outputs, strict=True)]
+        chat_template_kwargs = self._build_chat_template_kwargs(documents, available_tools, kwargs)
+        max_new_tokens = MAX_NEW_TOKENS_THINK if self.think else MAX_NEW_TOKENS_NOTHINK
+        result = self.provider.generate_chat(
+            messages=batch,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            chat_template_kwargs=chat_template_kwargs or None,
+        )
+        data = result.data
+        return [
+            self._build_result(text, prompt_tokens, completion_tokens)
+            for text, prompt_tokens, completion_tokens in zip(
+                data["generated_text"], data["prompt_token_count"], data["completion_token_count"], strict=True
+            )
+        ]
 
 
 def _parse_generation(text: str, criteria: str) -> GuardrailOutput:

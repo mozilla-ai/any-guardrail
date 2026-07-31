@@ -26,9 +26,8 @@ Inputs are single strings: ``input_text`` (required) plus an optional
 ``output_text`` judged alongside it (typically a model response); list/batch
 input is not supported.
 
-Note: this guardrail runs the model through a ``transformers`` text-generation
-pipeline directly; the ``provider`` argument is reserved for future
-extensibility and is currently unused.
+It runs through ``provider.generate_chat``, so it can be served from either a
+``HuggingFaceProvider`` or a ``LlamafileProvider``.
 
 For more information, see:
 
@@ -51,7 +50,7 @@ Raises:
 | `rubric` | `str` | Yes | — | A free-text scoring rubric telling the model what each score means, e.g. ``"0: contains unsupported claims. 1: all claims are supported."``. |
 | `pass_threshold` | `int` | Yes | — | The rubric score at which the text counts as passing. ``valid`` is ``rubric_score >= pass_threshold`` (or ``<=`` when ``higher_is_better=False``). Must be on the same scale as the rubric. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``PatronusAI/glider``. |
-| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Reserved for future extensibility; currently unused. GLIDER runs through a ``transformers`` text-generation pipeline instead. |
+| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` / ``AutoTokenizer`` (transformers is imported lazily here). Pass a ``LlamafileProvider`` to run a GGUF build without the huggingface extra. |
 | `higher_is_better` | `bool` | No | `True` | Whether higher rubric scores mean better/passing text. Set to ``False`` for rubrics where higher scores mean worse text (e.g. a severity scale). |
 | `score_range` | `tuple[int, int] | None` | No | `None` | Optional ``(min, max)`` bounds of the rubric scale, e.g. ``(0, 1)`` or ``(1, 5)``. Supplying it enables the normalized canonical risk in ``GuardrailOutput.score``; when omitted, ``score`` is ``None`` and the raw rubric value is still available in ``extra["rubric_score"]``. |
 | `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (system prompt filling ``{data}`` / ``{pass_criteria}`` / ``{rubric}`` plus the ``input`` / ``input_output`` data wrappers). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |

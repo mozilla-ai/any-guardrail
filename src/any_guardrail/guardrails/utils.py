@@ -1,6 +1,28 @@
 from collections.abc import Sequence
+from typing import TypeVar
 
 from any_guardrail.types import AnyDict, CategoryResult, GuardrailInferenceOutput, GuardrailOutput
+
+T = TypeVar("T")
+
+
+def broadcast_optional(value: T | list[T] | None, n: int, param_name: str) -> list[T | None]:
+    """Broadcast an optional batch validate() kwarg (e.g. ``output_text``) to length ``n``.
+
+    A caller judging a batch may supply one shared value for every item (broadcast to
+    ``n`` copies), a parallel list already sized to the batch (used as-is after a length
+    check), or omit it entirely (``n`` copies of ``None``).
+
+    Raises:
+        ValueError: If ``value`` is a list whose length doesn't match ``n``.
+
+    """
+    if isinstance(value, list):
+        if len(value) != n:
+            msg = f"{param_name} has {len(value)} items but input_text has {n}."
+            raise ValueError(msg)
+        return list(value)
+    return [value] * n
 
 
 def normalize_rubric_to_risk(raw: float, lo: int, hi: int, *, higher_is_better: bool) -> float | None:

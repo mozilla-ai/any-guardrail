@@ -13,6 +13,7 @@ import pytest
 
 from any_guardrail.guardrails.granite_guardian import GraniteGuardian, GraniteGuardianRisk
 from any_guardrail.providers.llamafile import LlamafileProvider
+from any_guardrail.types import GuardrailOutput
 
 # `e2e` is auto-applied to everything under tests/integration/ by the
 # directory conftest. The platform skipif is preserved: this test exercises
@@ -34,6 +35,8 @@ def test_granite_guardian_via_llamafile() -> None:
         unsafe = guardrail.validate(UNSAFE_PROMPT)
         safe = guardrail.validate(SAFE_PROMPT)
 
+        assert isinstance(unsafe, GuardrailOutput)
+        assert isinstance(safe, GuardrailOutput)
         assert unsafe.valid is False
         assert safe.valid is True
         assert unsafe.extra is not None

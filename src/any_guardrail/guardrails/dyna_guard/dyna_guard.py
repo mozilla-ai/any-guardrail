@@ -2,7 +2,7 @@ import re
 from typing import Any, ClassVar
 
 from any_guardrail.base import GuardrailName, GuardrailOutput, ThreeStageGuardrail
-from any_guardrail.guardrails.utils import default
+from any_guardrail.guardrails.utils import broadcast_optional, default
 from any_guardrail.prompt_registry import PROMPT_REGISTRY, resolve_prompt
 from any_guardrail.prompts import PromptSpec, PromptTemplate
 from any_guardrail.providers.base import StandardProvider
@@ -68,11 +68,14 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
       an ``<answer>`` block nor a bare ``PASS``/``FAIL`` token can be parsed (e.g. the
       generation was truncated mid-reasoning).
 
-    Expected inputs: a single ``input_text`` (the user turn / transcript; required) plus
-    an optional ``output_text`` (the agent's response). The two are assembled into a
+    Expected inputs: ``input_text`` (the user turn / transcript; required) plus an
+    optional ``output_text`` (the agent's response). The two are assembled into a
     ``User: ... Agent: ...`` transcript (the turns joined by a newline) before being
-    wrapped with the ``policy``. List/batch input is not supported — passing a list
-    raises ``TypeError``.
+    wrapped with the ``policy``. ``input_text`` also accepts a ``list[str]`` to judge a
+    batch in one real batched ``generate_chat`` call when the provider is a
+    ``HuggingFaceProvider`` (``output_text`` may then be a matching-length list, a
+    single value broadcast to every item, or omitted); other providers fall back to
+    one call per item.
 
     For more information, see:
 
@@ -157,37 +160,40 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def validate(  # type: ignore[override]
-        self, input_text: str, output_text: str | None = None, **kwargs: Any
-    ) -> GuardrailOutput:
+        self, input_text: str | list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> GuardrailOutput | list[GuardrailOutput]:
         """Evaluate a conversation transcript against the configured policy.
 
         Args:
             input_text: The user turn (or the transcript to evaluate), e.g.
-                ``"Please refund my last order."``. A single string; list/batch input is
-                rejected with ``TypeError``.
+                ``"Please refund my last order."``, or a ``list[str]`` to judge a batch
+                in one call.
             output_text: Optional agent response judged alongside the user turn, e.g.
                 ``"Sure, I've issued your refund."``. When supplied, the two are
                 assembled into a ``User: ... Agent: ...`` transcript (turns joined by a
-                newline).
+                newline). For a batched ``input_text``, this may be a matching-length
+                list, a single value broadcast to every item, or omitted.
             **kwargs: Reserved for forward compatibility; forwarded to the base pipeline
                 and otherwise ignored.
 
         Returns:
-            GuardrailOutput where ``valid`` is ``True`` on ``PASS`` / ``False`` on
-            ``FAIL``, ``categories`` carries the ``policy_violation`` flag,
-            ``extra["verdict"]`` holds the raw verdict token, ``explanation`` is the raw
-            generation, and ``usage`` holds token counts. Fails closed (``valid=False``
-            with ``extra={"parse_failure": True}``) when no verdict can be parsed.
-
-        Raises:
-            TypeError: If a list input is supplied (only single strings are supported).
+            GuardrailOutput (or a list, one per item, in order, for a batched call)
+            where ``valid`` is ``True`` on ``PASS`` / ``False`` on ``FAIL``,
+            ``categories`` carries the ``policy_violation`` flag, ``extra["verdict"]``
+            holds the raw verdict token, ``explanation`` is the raw generation, and
+            ``usage`` holds token counts. Fails closed (``valid=False`` with
+            ``extra={"parse_failure": True}``) when no verdict can be parsed.
 
         """
-        result = super().validate(input_text, output_text=output_text, **kwargs)
-        if isinstance(result, list):
-            msg = "DynaGuard.validate received a list input but only supports single strings."
-            raise TypeError(msg)
-        return result
+        return super().validate(input_text, output_text=output_text, **kwargs)
+
+    def _build_messages(self, input_text: str, output_text: str | None) -> ChatMessages:
+        transcript = f"User: {input_text}\nAgent: {output_text}" if output_text is not None else input_text
+        user = self._prompt.segments["user"].format(policy=self.policy, transcript=transcript)
+        return [
+            {"role": "system", "content": self._prompt.segments["system"]},
+            {"role": "user", "content": user},
+        ]
 
     def _pre_processing(
         self, input_text: str, output_text: str | None = None, **kwargs: Any
@@ -207,13 +213,7 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
 
         """
         del kwargs
-        transcript = f"User: {input_text}\nAgent: {output_text}" if output_text is not None else input_text
-        user = self._prompt.segments["user"].format(policy=self.policy, transcript=transcript)
-        messages: ChatMessages = [
-            {"role": "system", "content": self._prompt.segments["system"]},
-            {"role": "user", "content": user},
-        ]
-        return GuardrailPreprocessOutput(data={"messages": messages})
+        return GuardrailPreprocessOutput(data={"messages": self._build_messages(input_text, output_text)})
 
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[DynaGuardPreprocessData]
@@ -223,8 +223,7 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
             messages=model_inputs.data["messages"], max_new_tokens=max_new_tokens, do_sample=False
         )
 
-    def _post_processing(self, model_outputs: GuardrailInferenceOutput[DynaGuardInferenceData]) -> GuardrailOutput:
-        text = model_outputs.data["generated_text"]
+    def _build_result(self, text: str, prompt_tokens: int | None, completion_tokens: int | None) -> GuardrailOutput:
         cleaned = _EXPLANATION_PATTERN.sub("", _THINK_PATTERN.sub("", text)).strip()
         answer = _ANSWER_PATTERN.search(cleaned)
         if answer is not None:
@@ -243,8 +242,30 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
             explanation=text,
             categories=[CategoryResult(name="policy_violation", triggered=violated)],
             extra={"verdict": verdict},
-            usage=GuardrailUsage(
-                prompt_tokens=model_outputs.data.get("prompt_token_count"),
-                completion_tokens=model_outputs.data.get("completion_token_count"),
-            ),
+            usage=GuardrailUsage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens),
         )
+
+    def _post_processing(self, model_outputs: GuardrailInferenceOutput[DynaGuardInferenceData]) -> GuardrailOutput:
+        data = model_outputs.data
+        return self._build_result(
+            data["generated_text"], data.get("prompt_token_count"), data.get("completion_token_count")
+        )
+
+    def _validate_batch(
+        self, input_texts: list[str], output_text: str | list[str] | None = None, **kwargs: Any
+    ) -> list[GuardrailOutput]:
+        if not input_texts:
+            return []
+        if not isinstance(self.provider, HuggingFaceProvider):
+            return super()._validate_batch(input_texts, output_text=output_text, **kwargs)
+        max_new_tokens = MAX_NEW_TOKENS_THINK if self.think else MAX_NEW_TOKENS_FAST
+        outputs = broadcast_optional(output_text, len(input_texts), "output_text")
+        batch = [self._build_messages(t, o) for t, o in zip(input_texts, outputs, strict=True)]
+        result = self.provider.generate_chat(messages=batch, max_new_tokens=max_new_tokens, do_sample=False)
+        data = result.data
+        return [
+            self._build_result(text, prompt_tokens, completion_tokens)
+            for text, prompt_tokens, completion_tokens in zip(
+                data["generated_text"], data["prompt_token_count"], data["completion_token_count"], strict=True
+            )
+        ]

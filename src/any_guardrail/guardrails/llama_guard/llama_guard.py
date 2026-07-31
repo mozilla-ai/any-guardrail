@@ -56,13 +56,15 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     Llama Guard is Meta's instruction-tuned safety model. Each call wraps a user prompt (and,
     optionally, an assistant response) in the model's moderation template listing the 14 MLCommons
     hazard categories (``S1`` Violent Crimes ... ``S14`` Code Interpreter Abuse), then generates a
-    verdict: ``safe``, or ``unsafe`` followed by the violated category codes. This wrapper supports
-    both Llama Guard 3 (1B / 8B, text-only) and Llama Guard 4 (12B, natively multimodal — this
-    integration passes text content only); the per-variant chat-template quirks (v3 evaluates the
-    conversation as-is without an appended assistant prefix, v4 uses the standard template) are
-    handled internally, so callers select a variant purely via ``model_id``. Llama Guard 3 is
-    trained for multilingual moderation across eight languages (English, French, German, Hindi,
-    Italian, Portuguese, Spanish, Thai).
+    verdict: ``safe``, or ``unsafe`` followed by the violated category codes. This wrapper covers
+    Llama Guard 3 (1B / 8B, text-only), evaluating the conversation as-is without an appended
+    assistant prefix. Llama Guard 3 is trained for multilingual moderation across eight languages
+    (English, French, German, Hindi, Italian, Portuguese, Spanish, Thai).
+
+    ``meta-llama/Llama-Guard-4-12B`` is deliberately not supported: it is a natively multimodal
+    ``llama4`` checkpoint whose image-processing stack (``pillow`` + ``torchvision``) is not part
+    of any declared extra, and its multimodal path is not reachable through this guardrail's
+    text-only ``validate()`` anyway.
 
     Verdict mapping onto ``GuardrailOutput``:
 
@@ -86,26 +88,21 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     For more information, see:
 
     - [Llama Guard 3 model card (Meta)](https://www.llama.com/docs/model-cards-and-prompt-formats/llama-guard-3/)
-    - [Llama Guard 4 model card (Meta)](https://www.llama.com/docs/model-cards-and-prompt-formats/llama-guard-4/)
     - [meta-llama/Llama-Guard-3-1B](https://huggingface.co/meta-llama/Llama-Guard-3-1B)
     - [meta-llama/Llama-Guard-3-8B](https://huggingface.co/meta-llama/Llama-Guard-3-8B)
-    - [meta-llama/Llama-Guard-4-12B](https://huggingface.co/meta-llama/Llama-Guard-4-12B)
 
     Args:
         model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to
-            ``meta-llama/Llama-Guard-3-1B`` (Llama Guard 3). Pass ``meta-llama/Llama-Guard-4-12B``
-            to select the Llama Guard 4 variant.
+            ``meta-llama/Llama-Guard-3-1B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading
-            the right head for the variant (a causal LM for v3, ``Llama4ForConditionalGeneration``
-            for v4). A supplied ``HuggingFaceProvider`` is corrected to the same classes at load
-            time; a non-HF provider (e.g. ``LlamafileProvider``) is used as-is.
+            the model as a causal LM. A supplied ``HuggingFaceProvider`` is corrected to the same
+            classes at load time; a non-HF provider (e.g. ``LlamafileProvider``) is used as-is.
 
     """
 
     SUPPORTED_MODELS: ClassVar = [
         "meta-llama/Llama-Guard-3-1B",
         "meta-llama/Llama-Guard-3-8B",
-        "meta-llama/Llama-Guard-4-12B",
     ]
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.LLAMA_GUARD]
@@ -120,34 +117,23 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         Args:
             model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Selects
                 the variant — ``meta-llama/Llama-Guard-3-1B`` (default) or
-                ``meta-llama/Llama-Guard-3-8B`` for Llama Guard 3, ``meta-llama/Llama-Guard-4-12B``
-                for Llama Guard 4.
+                ``meta-llama/Llama-Guard-3-8B``.
             provider: Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is
-                built with the correct model / tokenizer classes for the selected variant (a causal
-                LM for v3; ``Llama4ForConditionalGeneration`` + ``AutoProcessor`` for v4). A
-                supplied ``HuggingFaceProvider`` is corrected to the same classes at load time
-                (without mutating it); any other provider (e.g. ``LlamafileProvider``) is used
-                as-is.
+                built targeting ``AutoModelForCausalLM`` / ``AutoTokenizer``. A supplied
+                ``HuggingFaceProvider`` is corrected to the same classes at load time (without
+                mutating it); any other provider (e.g. ``LlamafileProvider``) is used as-is.
 
         Raises:
             ValueError: If ``model_id`` is not one of ``SUPPORTED_MODELS``.
 
         """
         self.model_id = model_id or self.SUPPORTED_MODELS[0]
-
-        # Determine per-variant chat-template behavior up-front so this is the only
-        # place that knows the v3-vs-v4 quirk, regardless of which provider is used.
-        if self._is_version_4:
-            # v4 wants the standard "add the assistant prefix" template behavior;
-            # provider.generate_chat already defaults to that, so no override.
-            self._chat_template_kwargs: AnyDict = {}
-        elif self.model_id in self.SUPPORTED_MODELS:
-            # Llama Guard 3 expects to evaluate the conversation as-is, without an
-            # appended assistant prefix.
-            self._chat_template_kwargs = {"add_generation_prompt": False}
-        else:
+        if self.model_id not in self.SUPPORTED_MODELS:
             msg = f"Unsupported model_id: {self.model_id}"
             raise ValueError(msg)
+        # Llama Guard 3 expects to evaluate the conversation as-is, without an
+        # appended assistant prefix.
+        self._chat_template_kwargs: AnyDict = {"add_generation_prompt": False}
 
         # Lazy-import transformers so users on `any-guardrail[llamafile]`
         # (without the huggingface extra) can construct LlamaGuard with a
@@ -157,45 +143,25 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
         if provider is not None:
             self.provider = provider
             if isinstance(self.provider, HuggingFaceProvider):
-                # Llama Guard is a causal LM (or multimodal seq2seq for v4). A
-                # default-constructed HuggingFaceProvider targets
+                # A default-constructed HuggingFaceProvider targets
                 # AutoModelForSequenceClassification, which would silently load
-                # the wrong head. Enforce the right classes for this load
+                # the wrong head. Enforce the causal-LM classes for this load
                 # (does not mutate provider state).
-                if self._is_version_4:
-                    from transformers import AutoProcessor, Llama4ForConditionalGeneration
+                from transformers import AutoModelForCausalLM, AutoTokenizer
 
-                    load_kwargs = {
-                        "model_class": Llama4ForConditionalGeneration,
-                        "tokenizer_class": AutoProcessor,
-                    }
-                else:
-                    from transformers import AutoModelForCausalLM, AutoTokenizer
-
-                    load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
+                load_kwargs = {"model_class": AutoModelForCausalLM, "tokenizer_class": AutoTokenizer}
         else:
-            from transformers import (
-                AutoModelForCausalLM,
-                AutoProcessor,
-                AutoTokenizer,
-                Llama4ForConditionalGeneration,
-            )
+            from transformers import AutoModelForCausalLM, AutoTokenizer
 
-            if self._is_version_4:
-                self.provider = HuggingFaceProvider(
-                    model_class=Llama4ForConditionalGeneration,
-                    tokenizer_class=AutoProcessor,
-                )
-            else:
-                self.provider = HuggingFaceProvider(
-                    model_class=AutoModelForCausalLM,
-                    tokenizer_class=AutoTokenizer,
-                )
+            self.provider = HuggingFaceProvider(
+                model_class=AutoModelForCausalLM,
+                tokenizer_class=AutoTokenizer,
+            )
         self.provider.load_model(self.model_id, **load_kwargs)
 
     def _build_conversation(self, input_text: str, output_text: str | None) -> list[AnyDict]:
         """Shape the chat conversation per model variant."""
-        uses_multimodal_content = self.model_id == self.SUPPORTED_MODELS[0] or self._is_version_4
+        uses_multimodal_content = self.model_id == self.SUPPORTED_MODELS[0]
         if uses_multimodal_content:
             user_turn: AnyDict = {"role": "user", "content": [{"type": "text", "text": input_text}]}
         else:
@@ -237,17 +203,15 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     def _inference(
         self, model_inputs: GuardrailPreprocessOutput[LlamaGuardPreprocessData]
     ) -> GuardrailInferenceOutput[LlamaGuardInferenceData]:
-        """Dispatch to ``provider.generate_chat`` with version-appropriate gen params."""
-        max_new_tokens = 10 if self._is_version_4 else 20
+        """Dispatch to ``provider.generate_chat``."""
         # Llama Guard 3 was historically generated with ``pad_token_id=0``; preserve
         # that to keep generation behavior bit-identical with the pre-refactor path.
-        generation_kwargs: AnyDict | None = None if self._is_version_4 else {"pad_token_id": 0}
         return self.provider.generate_chat(
             messages=model_inputs.data["messages"],
-            max_new_tokens=max_new_tokens,
+            max_new_tokens=20,
             do_sample=False,
             chat_template_kwargs=model_inputs.data["chat_template_kwargs"] or None,
-            generation_kwargs=generation_kwargs,
+            generation_kwargs={"pad_token_id": 0},
         )
 
     def _post_processing(self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]) -> GuardrailOutput:
@@ -262,7 +226,3 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
                 completion_tokens=model_outputs.data.get("completion_token_count"),
             ),
         )
-
-    @property
-    def _is_version_4(self) -> bool:
-        return self.model_id == self.SUPPORTED_MODELS[-1]
