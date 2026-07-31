@@ -296,6 +296,9 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         sequence is padded to the longest prompt) — sizing batches is the
         caller's responsibility.
         """
+        if not messages:
+            msg = "generate_chat requires at least one message/conversation; got an empty list."
+            raise ValueError(msg)
         is_batch = isinstance(messages[0], list)
         if is_batch and not apply_chat_template:
             msg = "generate_chat batching requires apply_chat_template=True (no raw-prompt batch path)."

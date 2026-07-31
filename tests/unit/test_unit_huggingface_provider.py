@@ -679,3 +679,14 @@ def test_generate_chat_batch_rejects_no_chat_template() -> None:
             max_new_tokens=5,
             apply_chat_template=False,
         )
+
+
+def test_generate_chat_rejects_empty_messages() -> None:
+    provider, _, _ = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2]],
+        full_output_ids_per_row=[[1, 2, 3]],
+        decoded_texts=["x"],
+    )
+
+    with pytest.raises(ValueError, match="at least one message"):
+        provider.generate_chat(messages=[], max_new_tokens=5)
