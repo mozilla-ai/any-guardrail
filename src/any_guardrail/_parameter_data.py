@@ -1326,11 +1326,10 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": [
         "meta-llama/Llama-Guard-3-1B",
-        "meta-llama/Llama-Guard-3-8B",
-        "meta-llama/Llama-Guard-4-12B"
+        "meta-llama/Llama-Guard-3-8B"
       ],
       "default": null,
-      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Selects the variant \u2014 ``meta-llama/Llama-Guard-3-1B`` (default) or ``meta-llama/Llama-Guard-3-8B`` for Llama Guard 3, ``meta-llama/Llama-Guard-4-12B`` for Llama Guard 4.",
+      "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Selects the variant \u2014 ``meta-llama/Llama-Guard-3-1B`` (default) or ``meta-llama/Llama-Guard-3-8B``.",
       "effectively_required": false,
       "env_var": null,
       "name": "model_id",

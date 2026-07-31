@@ -145,8 +145,9 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                   ``AutoModelForCausalLM`` even when the caller supplied a
                   default-constructed ``HuggingFaceProvider`` configured for
                   sequence classification. ``self.model_class`` is not mutated.
-                - ``tokenizer_class``: same idea for the tokenizer class (e.g.
-                  ``AutoProcessor`` for Llama Guard 4).
+                - ``tokenizer_class``: same idea for the tokenizer class (e.g. a
+                  multimodal guardrail needing ``AutoProcessor`` instead of
+                  ``AutoTokenizer``).
 
         """
         model_class = kwargs.pop("model_class", None) or self.model_class

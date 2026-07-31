@@ -133,7 +133,7 @@ def test_load_model_tokenizer_class_override_used_for_this_call_only(
 ) -> None:
     """``tokenizer_class`` kwarg overrides the provider's default for this call only.
 
-    Needed for Llama Guard 4, which uses ``AutoProcessor`` instead of
+    Needed for a multimodal guardrail that requires ``AutoProcessor`` instead of
     ``AutoTokenizer``. The provider's stored ``tokenizer_class`` must not be mutated.
     """
     model_class, default_tokenizer_class = mock_classes

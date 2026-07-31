@@ -255,14 +255,12 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         backend=BackendType.LOCAL_DECODER,
         optional_validate_kwargs=frozenset({"output_text"}),
         multilingual=True,
-        multimodal=True,
         vendor="Meta",
-        # Default is Llama-Guard-3-1B (Llama 3.2); the 8B and 4-12B variants carry different Llama terms.
+        # Default is Llama-Guard-3-1B (Llama 3.2); the 8B variant carries different Llama terms.
         default_license="llama-3.2",
         variant_licenses=(
             VariantLicense(model_id="meta-llama/Llama-Guard-3-1B", license="llama-3.2"),
             VariantLicense(model_id="meta-llama/Llama-Guard-3-8B", license="llama-3.1"),
-            VariantLicense(model_id="meta-llama/Llama-Guard-4-12B", license="llama-4"),
         ),
     ),
     GuardrailName.AZURE_CONTENT_SAFETY: GuardrailMetadata(

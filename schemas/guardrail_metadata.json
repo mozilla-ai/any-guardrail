@@ -642,7 +642,7 @@
     "description": "Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.",
     "display_name": "Llama Guard",
     "multilingual": true,
-    "multimodal": true,
+    "multimodal": false,
     "optional_validate_kwargs": [
       "output_text"
     ],
@@ -665,10 +665,6 @@
       {
         "license": "llama-3.1",
         "model_id": "meta-llama/Llama-Guard-3-8B"
-      },
-      {
-        "license": "llama-4",
-        "model_id": "meta-llama/Llama-Guard-4-12B"
       }
     ],
     "vendor": "Meta"
