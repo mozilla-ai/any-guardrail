@@ -188,6 +188,12 @@ class GuardrailMetadata(BaseModel):
     multimodal: bool = False
     """Whether the guardrail accepts non-text input (e.g. images)."""
 
+    supports_batch: bool = False
+    """Whether ``validate()`` runs list input through one real batched inference call
+    (a shared forward pass / batched ``generate_chat`` call) rather than the default
+    per-item loop. Every guardrail accepts list input via ``ThreeStageGuardrail.validate``;
+    this flags which ones do it efficiently."""
+
     vendor: str
     """Organization that produced the model/service (e.g. ``"IBM"``, ``"Meta"``)."""
 
