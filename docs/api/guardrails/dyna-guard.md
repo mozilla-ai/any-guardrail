@@ -26,11 +26,14 @@ Verdict mapping onto ``GuardrailOutput``:
   an ``<answer>`` block nor a bare ``PASS``/``FAIL`` token can be parsed (e.g. the
   generation was truncated mid-reasoning).
 
-Expected inputs: a single ``input_text`` (the user turn / transcript; required) plus
-an optional ``output_text`` (the agent's response). The two are assembled into a
+Expected inputs: ``input_text`` (the user turn / transcript; required) plus an
+optional ``output_text`` (the agent's response). The two are assembled into a
 ``User: ... Agent: ...`` transcript (the turns joined by a newline) before being
-wrapped with the ``policy``. List/batch input is not supported — passing a list
-raises ``TypeError``.
+wrapped with the ``policy``. ``input_text`` also accepts a ``list[str]`` to judge a
+batch in one real batched ``generate_chat`` call when the provider is a
+``HuggingFaceProvider`` (``output_text`` may then be a matching-length list, a
+single value broadcast to every item, or omitted); other providers fall back to
+one call per item.
 
 For more information, see:
 
@@ -66,7 +69,7 @@ Evaluate a conversation transcript against the configured policy.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The user turn (or the transcript to evaluate), e.g. ``"Please refund my last order."``. A single string; list/batch input is rejected with ``TypeError``. |
-| `output_text` | `str | None` | No | `None` | Optional agent response judged alongside the user turn, e.g. ``"Sure, I've issued your refund."``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). |
+| `input_text` | `str | list[str]` | Yes | — | The user turn (or the transcript to evaluate), e.g. ``"Please refund my last order."``, or a ``list[str]`` to judge a batch in one call. |
+| `output_text` | `str | list[str] | None` | No | `None` | Optional agent response judged alongside the user turn, e.g. ``"Sure, I've issued your refund."``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
