@@ -527,3 +527,155 @@ def test_generate_chat_returns_raw_output() -> None:
     )
 
     assert result.data["raw"].tolist() == [[1, 2, 9, 10]]
+
+
+def _make_batch_chat_provider(
+    prompt_token_ids_per_row: list[list[int]],
+    full_output_ids_per_row: list[list[int]],
+    decoded_texts: list[str],
+    initial_padding_side: str = "right",
+) -> tuple[HuggingFaceProvider, MagicMock, MagicMock]:
+    """Build a HuggingFaceProvider wired up for batched ``generate_chat`` tests.
+
+    Both id lists are already padded to a common width (as a real padded tokenizer/
+    generate call would produce); ``attention_mask`` is derived by treating trailing
+    zeros as padding.
+    """
+    tokenizer = MagicMock()
+    tokenizer.padding_side = initial_padding_side
+    attention_masks = [[1 if tok != 0 else 0 for tok in row] for row in prompt_token_ids_per_row]
+
+    def apply_chat_template(*_args: object, **_kwargs: object) -> dict[str, torch.Tensor]:
+        return {
+            "input_ids": torch.tensor(prompt_token_ids_per_row),
+            "attention_mask": torch.tensor(attention_masks),
+        }
+
+    tokenizer.apply_chat_template.side_effect = apply_chat_template
+    tokenizer.batch_decode.return_value = decoded_texts
+
+    model = MagicMock()
+    model.generate.return_value = torch.tensor(full_output_ids_per_row)
+
+    provider = HuggingFaceProvider()
+    provider.tokenizer = tokenizer
+    provider.model = model
+    return provider, tokenizer, model
+
+
+def test_generate_chat_batch_detected_by_nested_list() -> None:
+    """A list[list[dict]] messages argument is treated as a batch."""
+    provider, tokenizer, _ = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2, 3], [1, 2, 3]],
+        full_output_ids_per_row=[[1, 2, 3, 4, 5], [1, 2, 3, 6, 7]],
+        decoded_texts=["<score>no</score>", "<score>yes</score>"],
+    )
+
+    result = provider.generate_chat(
+        messages=[
+            [{"role": "user", "content": "a"}],
+            [{"role": "user", "content": "b"}],
+        ],
+        max_new_tokens=10,
+    )
+
+    tokenizer.apply_chat_template.assert_called_once()
+    _, template_kwargs = tokenizer.apply_chat_template.call_args
+    assert template_kwargs["padding"] is True
+
+    assert result.data["generated_text"] == ["<score>no</score>", "<score>yes</score>"]
+    assert result.data["prompt_token_count"] == [3, 3]
+    assert result.data["completion_token_count"] == [2, 2]
+
+
+def test_generate_chat_batch_sets_left_padding_and_restores_prior_side() -> None:
+    provider, tokenizer, _ = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2], [1, 2]],
+        full_output_ids_per_row=[[1, 2, 3], [1, 2, 4]],
+        decoded_texts=["x", "y"],
+        initial_padding_side="right",
+    )
+
+    padding_side_during_call = []
+    original_side_effect = tokenizer.apply_chat_template.side_effect
+
+    def capture(*args: object, **kwargs: object) -> dict[str, torch.Tensor]:
+        padding_side_during_call.append(tokenizer.padding_side)
+        return original_side_effect(*args, **kwargs)  # type: ignore[no-any-return]
+
+    tokenizer.apply_chat_template.side_effect = capture
+
+    provider.generate_chat(
+        messages=[[{"role": "user", "content": "a"}], [{"role": "user", "content": "b"}]],
+        max_new_tokens=5,
+    )
+
+    assert padding_side_during_call == ["left"]
+    # Restored afterward so other (non-batch) callers aren't affected.
+    assert tokenizer.padding_side == "right"
+
+
+def test_generate_chat_batch_leaves_padding_side_alone_if_already_left() -> None:
+    provider, tokenizer, _ = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2], [1, 2]],
+        full_output_ids_per_row=[[1, 2, 3], [1, 2, 4]],
+        decoded_texts=["x", "y"],
+        initial_padding_side="left",
+    )
+
+    provider.generate_chat(
+        messages=[[{"role": "user", "content": "a"}], [{"role": "user", "content": "b"}]],
+        max_new_tokens=5,
+    )
+
+    assert tokenizer.padding_side == "left"
+
+
+def test_generate_chat_batch_restores_padding_side_even_on_error() -> None:
+    provider, tokenizer, model = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2], [1, 2]],
+        full_output_ids_per_row=[[1, 2, 3], [1, 2, 4]],
+        decoded_texts=["x", "y"],
+        initial_padding_side="right",
+    )
+    model.generate.side_effect = RuntimeError("boom")
+
+    with pytest.raises(RuntimeError, match="boom"):
+        provider.generate_chat(
+            messages=[[{"role": "user", "content": "a"}], [{"role": "user", "content": "b"}]],
+            max_new_tokens=5,
+        )
+
+    assert tokenizer.padding_side == "right"
+
+
+def test_generate_chat_single_conversation_unaffected_by_batching_changes() -> None:
+    """A plain list[dict] call still takes the pre-existing scalar code path."""
+    provider, tokenizer, _ = _make_chat_provider(
+        prompt_token_ids=[1, 2, 3, 4],
+        full_output_ids=[1, 2, 3, 4, 5, 6, 7],
+        decoded_text="<score>no</score>",
+    )
+
+    result = provider.generate_chat(messages=[{"role": "user", "content": "ping"}], max_new_tokens=10)
+
+    _, template_kwargs = tokenizer.apply_chat_template.call_args
+    assert "padding" not in template_kwargs
+    assert isinstance(result.data["generated_text"], str)
+    assert result.data["prompt_token_count"] == 4
+    assert result.data["completion_token_count"] == 3
+
+
+def test_generate_chat_batch_rejects_no_chat_template() -> None:
+    provider, _, _ = _make_batch_chat_provider(
+        prompt_token_ids_per_row=[[1, 2], [1, 2]],
+        full_output_ids_per_row=[[1, 2, 3], [1, 2, 4]],
+        decoded_texts=["x", "y"],
+    )
+
+    with pytest.raises(NotImplementedError, match="apply_chat_template"):
+        provider.generate_chat(
+            messages=[[{"role": "user", "content": "a"}], [{"role": "user", "content": "b"}]],
+            max_new_tokens=5,
+            apply_chat_template=False,
+        )

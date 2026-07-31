@@ -258,7 +258,7 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
 
     def generate_chat(
         self,
-        messages: list[AnyDict],
+        messages: list[AnyDict] | list[list[AnyDict]],
         *,
         max_new_tokens: int,
         do_sample: bool = False,
@@ -281,7 +281,25 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
         model verbatim (for models shipping their own instruction wrapper, e.g.
         WildGuard). Set ``skip_special_tokens=False`` to keep special tokens in the
         decoded output (for models whose verdict is a special token, e.g. Kanana).
+
+        ``messages`` can be a single conversation (``list[dict]``) or a batch of
+        conversations (``list[list[dict]]``, detected structurally). For a batch,
+        ``generated_text`` / ``prompt_token_count`` / ``completion_token_count``
+        are returned as lists, one entry per conversation, in order; for a single
+        conversation they're scalars, unchanged from before. Batching left-pads
+        the tokenizer for the duration of this call (restored afterward) — this
+        mutates shared tokenizer state and isn't safe for concurrent calls on the
+        same provider instance. ``completion_token_count`` for a batch is the
+        padded generation width for every row (an upper bound, not each row's
+        true generated length), and peak memory scales with batch size (every
+        sequence is padded to the longest prompt) — sizing batches is the
+        caller's responsibility.
         """
+        is_batch = isinstance(messages[0], list)
+        if is_batch and not apply_chat_template:
+            msg = "generate_chat batching requires apply_chat_template=True (no raw-prompt batch path)."
+            raise NotImplementedError(msg)
+
         if apply_chat_template:
             template_kwargs: AnyDict = {
                 "add_generation_prompt": True,
@@ -290,9 +308,20 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
                 "return_tensors": "pt",
                 **(chat_template_kwargs or {}),
             }
-            inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+            if is_batch:
+                template_kwargs["padding"] = True
+            prior_padding_side = self.tokenizer.padding_side
+            try:
+                if is_batch and prior_padding_side != "left":
+                    self.tokenizer.padding_side = "left"
+                inputs = self.tokenizer.apply_chat_template(messages, **template_kwargs)
+            finally:
+                if is_batch and prior_padding_side != "left":
+                    self.tokenizer.padding_side = prior_padding_side
         else:
-            inputs = self.tokenizer(messages[0]["content"], return_tensors="pt")
+            # Reached only when apply_chat_template=False; the NotImplementedError guard
+            # above already ruled out is_batch, so messages[0] is a single AnyDict here.
+            inputs = self.tokenizer(messages[0]["content"], return_tensors="pt")  # type: ignore[call-overload]
         if self.device is not None and hasattr(inputs, "to"):
             inputs = inputs.to(self.device)
 
@@ -308,8 +337,20 @@ class HuggingFaceProvider(Provider[AnyDict, AnyDict]):
             output = self.model.generate(**inputs, **gen_kwargs)
 
         generated = output[:, prompt_len:]
-        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=skip_special_tokens)
 
+        if is_batch:
+            texts: list[str] = self.tokenizer.batch_decode(generated, skip_special_tokens=skip_special_tokens)
+            prompt_token_counts: list[int] = inputs["attention_mask"].sum(dim=-1).tolist()
+            return GuardrailInferenceOutput(
+                data={
+                    "generated_text": texts,
+                    "prompt_token_count": prompt_token_counts,
+                    "completion_token_count": [int(generated.shape[-1])] * len(texts),
+                    "raw": output,
+                }
+            )
+
+        text: str = self.tokenizer.decode(generated[0], skip_special_tokens=skip_special_tokens)
         return GuardrailInferenceOutput(
             data={
                 "generated_text": text,
