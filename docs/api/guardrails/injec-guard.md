@@ -1,6 +1,6 @@
 # InjecGuard
 
-PIGuard — binary prompt-injection classifier built on DeBERTa-v3 and trained to mitigate over-defense (successor to InjecGuard).
+Binary prompt-injection classifier trained to mitigate over-defense.
 
 Runs PIGuard's DeBERTa-v3 encoder classifier over a single user prompt and reports whether the
 text is a prompt-injection attempt. The model is a two-class sequence classifier whose unsafe
@@ -56,3 +56,20 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.8 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0842105 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| gandalf (unspecified) | recall | native-valid | 0.955357 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| bipia_email (unspecified) | f1 | native-valid | 0.863755 | bir@fd86c16 | measured:bir@fd86c16 |  |
+| bipia_table (unspecified) | f1 | native-valid | 0.908286 | bir@fd86c16 | measured:bir@fd86c16 |  |
+
+## License
+
+- **Vendor:** leolee99
+- **Default license:** `mit` (of the default model/service)

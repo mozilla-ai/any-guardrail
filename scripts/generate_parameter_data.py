@@ -40,10 +40,100 @@ from any_guardrail.prompt_registry import list_prompt_versions  # noqa: E402
 
 DEFAULT_OUT = _SCRIPTS.parent / "src" / "any_guardrail" / "_parameter_data.py"
 
-# Constructor params that are execution plumbing / credentials, not user-facing config knobs.
-_SKIP_CREATE = frozenset({"self", "cls", "provider", "api_key"})
+# Constructor params that are pure execution plumbing (a live backend object), not config knobs.
+# NB: credentials (``api_key`` etc.) are deliberately NOT skipped — they surface with ``secret=True``
+# (see ``_SECRET_PARAMS``) so a config UI can render them, mask them, and know they must not be logged.
+_SKIP_CREATE = frozenset({"self", "cls", "provider"})
 # Content-registry-backed enum sources, keyed by parameter name.
 _CONTENT_CHOICES = {"criteria": list_criteria, "policy": list_policies, "rubric": list_rubrics}
+
+# --- Runtime-requirement declarations (issue #206 follow-up) ----------------------------------
+# These capture what the *signature* cannot: a value can be mandatory at runtime yet optional as an
+# argument, because it falls back to an environment variable or is one of several interchangeable
+# parameters. Hand-maintained (env fallbacks live in function bodies / docstrings, not signatures)
+# and cross-checked against the guardrail source by tests/unit/test_parameters.py so they cannot
+# silently drift. Keyed by snake_case guardrail (``GuardrailName`` value).
+
+# {guardrail: {parameter: ENV_VAR}} — the env var that back-fills the argument when it is not passed.
+_ENV_VAR_FALLBACKS: dict[str, dict[str, str]] = {
+    "alinia": {"api_key": "ALINIA_API_KEY", "endpoint": "ALINIA_ENDPOINT"},
+    "azure_content_safety": {"api_key": "CONTENT_SAFETY_KEY", "endpoint": "CONTENT_SAFETY_ENDPOINT"},
+    "azure_prompt_shields": {"api_key": "CONTENT_SAFETY_KEY", "endpoint": "CONTENT_SAFETY_ENDPOINT"},
+    "lakera_guard": {"api_key": "LAKERA_API_KEY"},
+    "openai_moderation": {"api_key": "OPENAI_API_KEY"},
+    "patronus": {"api_key": "PATRONUS_API_KEY"},
+    "watsonx_guardian": {
+        "api_key": "WATSONX_APIKEY",
+        "url": "WATSONX_URL",
+        "project_id": "WATSONX_PROJECT_ID",
+        "space_id": "WATSONX_SPACE_ID",
+    },
+}
+
+# {guardrail: {parameter, ...}} — credential parameters (rendered masked; never logged). Includes
+# credential-bearing objects (``api_client``, ``boto3_session``) that embed auth, not just strings.
+_SECRET_PARAMS: dict[str, frozenset[str]] = {
+    "alinia": frozenset({"api_key"}),
+    "azure_content_safety": frozenset({"api_key"}),
+    "azure_prompt_shields": frozenset({"api_key"}),
+    "bedrock_guardrails": frozenset({"aws_access_key_id", "aws_secret_access_key", "boto3_session"}),
+    "lakera_guard": frozenset({"api_key"}),
+    "openai_moderation": frozenset({"api_key"}),
+    "patronus": frozenset({"api_key"}),
+    "watsonx_guardian": frozenset({"api_key", "api_client"}),
+}
+
+# {guardrail: {parameter, ...}} — params with a signature default that the guardrail nonetheless
+# requires a resolved value for (raises if neither the argument nor its env var is set). Members of
+# a one-of ``_REQUIREMENT_GROUPS`` entry are recorded there instead, never here — which is why
+# ``watsonx_guardian`` is absent: its api_key/url/project_id/space_id are all group members (each
+# group also satisfiable by the ``api_client`` escape hatch), so no single one raises unconditionally.
+_EFFECTIVELY_REQUIRED: dict[str, frozenset[str]] = {
+    "alinia": frozenset({"api_key", "endpoint"}),
+    "azure_content_safety": frozenset({"api_key", "endpoint"}),
+    "azure_prompt_shields": frozenset({"api_key", "endpoint"}),
+    "lakera_guard": frozenset({"api_key"}),
+    "openai_moderation": frozenset({"api_key"}),
+    "patronus": frozenset({"api_key"}),
+}
+
+# {guardrail: [{"description", "parameters": [...], "env_vars": [...]}]} — at-least-one-of groups.
+# Only genuine "at least one of these interchangeable params (or their env fallback) must resolve"
+# constraints go here. Deliberately EXCLUDED after review:
+#   * flowjudge (metric vs. the full name/criteria/rubric/required_inputs/required_output bundle) —
+#     an "A or ALL of B" bundle, not "at least one of"; its param descriptions state the rule.
+#   * azure_prompt_shields (user_prompt vs. documents at validate time) — user_prompt is the primary
+#     input, not a configurable schema parameter, so it never appears in get_parameter_schema.
+# watsonx folds its ``api_client`` escape hatch into each credential group as an alternative member,
+# so supplying api_client satisfies all three exactly as the runtime ``if api_client is None`` guard does.
+_REQUIREMENT_GROUPS: dict[str, list[dict[str, Any]]] = {
+    "watsonx_guardian": [
+        {
+            "description": (
+                "An IBM Cloud IAM API key is required: pass ``api_key`` (or set ``WATSONX_APIKEY``), "
+                "or supply a pre-built ``api_client``."
+            ),
+            "parameters": ["api_key", "api_client"],
+            "env_vars": ["WATSONX_APIKEY"],
+        },
+        {
+            "description": (
+                "A watsonx.ai region URL is required: pass ``url`` (or set ``WATSONX_URL``), "
+                "or supply a pre-built ``api_client``."
+            ),
+            "parameters": ["url", "api_client"],
+            "env_vars": ["WATSONX_URL"],
+        },
+        {
+            "description": (
+                "A project or space is required: pass ``project_id`` or ``space_id`` (or set "
+                "``WATSONX_PROJECT_ID`` / ``WATSONX_SPACE_ID``), or supply a pre-built ``api_client``."
+            ),
+            "parameters": ["project_id", "space_id", "api_client"],
+            "env_vars": ["WATSONX_PROJECT_ID", "WATSONX_SPACE_ID"],
+        },
+    ],
+}
 
 
 def _classify(annotation: Any) -> tuple[str, tuple[str, ...] | None]:
@@ -114,6 +204,9 @@ def _spec(
         "type": ptype,
         "required": param.default is inspect.Parameter.empty,
         "default": _json_default(param),
+        "effectively_required": param.name in _EFFECTIVELY_REQUIRED.get(name, frozenset()),
+        "env_var": _ENV_VAR_FALLBACKS.get(name, {}).get(param.name),
+        "secret": param.name in _SECRET_PARAMS.get(name, frozenset()),
         "choices": list(choices) if choices is not None else None,
         "description": docs.get(param.name),
     }
@@ -150,28 +243,36 @@ def _validate_params(cls: type[Guardrail], name: str) -> list[dict[str, Any]]:
     return [_spec(name, param, "validate", cls, docs) for param in params[1:]]  # skip the primary input
 
 
-def build_payload() -> dict[str, list[dict[str, Any]]]:
-    """Build the ``{guardrail_name: [param_spec, ...]}`` mapping (create params, then validate)."""
-    payload: dict[str, list[dict[str, Any]]] = {}
+def build_payload() -> dict[str, Any]:
+    """Build ``{"parameters": {name: [spec, ...]}, "requirement_groups": {name: [group, ...]}}``.
+
+    ``parameters`` lists each guardrail's create params then validate params; ``requirement_groups``
+    carries the hand-declared one-of constraints, only for the guardrails that have them.
+    """
+    parameters: dict[str, list[dict[str, Any]]] = {}
     for gname in GuardrailName:
         cls = AnyGuardrail._get_guardrail_class(gname)
-        payload[gname.value] = _create_params(cls, gname.value) + _validate_params(cls, gname.value)
-    return payload
+        parameters[gname.value] = _create_params(cls, gname.value) + _validate_params(cls, gname.value)
+    requirement_groups = {name: groups for name, groups in _REQUIREMENT_GROUPS.items() if groups}
+    return {"parameters": parameters, "requirement_groups": requirement_groups}
 
 
-def render(payload: dict[str, list[dict[str, Any]]]) -> str:
-    """Render the committed ``_parameter_data.py`` (payload embedded as a parsed JSON string)."""
-    body = json.dumps(payload, indent=2, sort_keys=True)
+def render(payload: dict[str, Any]) -> str:
+    """Render the committed ``_parameter_data.py`` (payload embedded as parsed JSON strings)."""
+    params_body = json.dumps(payload["parameters"], indent=2, sort_keys=True)
+    groups_body = json.dumps(payload["requirement_groups"], indent=2, sort_keys=True)
     return (
         '"""Generated parameter data for the import-free parameter registry (issue #206).\n\n'
         "Auto-generated by ``scripts/generate_parameter_data.py`` from guardrail signatures +\n"
         "docstrings. Do not edit by hand; run ``python scripts/generate_parameter_data.py`` to\n"
-        "regenerate. The payload is embedded as a JSON string so this module stays trivially stable.\n"
+        "regenerate. The payloads are embedded as JSON strings so this module stays trivially stable.\n"
         '"""\n\n'
         "import json\n"
         "from typing import Any\n\n"
-        f'_PARAMETER_DATA_JSON = r"""\n{body}\n"""\n\n'
-        "PARAMETER_DATA: dict[str, list[dict[str, Any]]] = json.loads(_PARAMETER_DATA_JSON)\n"
+        f'_PARAMETER_DATA_JSON = r"""\n{params_body}\n"""\n\n'
+        f'_REQUIREMENT_GROUPS_JSON = r"""\n{groups_body}\n"""\n\n'
+        "PARAMETER_DATA: dict[str, list[dict[str, Any]]] = json.loads(_PARAMETER_DATA_JSON)\n\n"
+        "REQUIREMENT_GROUPS: dict[str, list[dict[str, Any]]] = json.loads(_REQUIREMENT_GROUPS_JSON)\n"
     )
 
 

@@ -1,6 +1,6 @@
 # Prometheus
 
-Prometheus — open rubric-based LLM judge grading a response on a user-defined 1-5 rubric (KAIST / prometheus-eval).
+Open rubric-based LLM judge grading a response on a user-defined 1-5 rubric.
 
 Prometheus is an open-source decoder LLM specialized in evaluating other models'
 outputs. This guardrail drives it in **absolute grading** mode: each call wraps the
@@ -23,9 +23,12 @@ Verdict mapping onto ``GuardrailOutput``:
   ``extra={"parse_failure": True}``. The parser takes the **last** ``[RESULT]`` marker,
   because feedback often quotes other rubric levels inline.
 
-Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the
+Inputs are strings: ``input_text`` is the instruction and ``output_text`` is the
 response being graded (when ``output_text`` is omitted, ``input_text`` is graded as the
-response). List/batch input is not supported.
+response). ``input_text`` also accepts a ``list[str]`` to judge a batch in one real
+batched ``generate_chat`` call when the provider is a ``HuggingFaceProvider``
+(``output_text`` may then be a matching-length list, a single value broadcast to every
+item, or omitted); other providers fall back to one call per item.
 
 For more information, see:
 
@@ -53,6 +56,8 @@ For more information, see:
 | `higher_is_better` | `bool` | No | `True` | Whether higher rubric scores mean better responses. Set ``False`` for rubrics where a higher number is worse (e.g. a severity scale). Defaults to ``True``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``prometheus-eval/prometheus-7b-v2.0``. |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting ``AutoModelForCausalLM`` / ``AutoTokenizer`` (transformers is imported lazily here). Pass a ``LlamafileProvider`` to run a GGUF build without the huggingface extra. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{instruction}`` / ``{response}`` / ``{reference_answer}`` / ``{rubric}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the Prometheus guardrail.
 
@@ -64,7 +69,36 @@ Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The instruction the response was produced for, e.g. ``"Explain why the sky is blue to a five-year-old."``. Single string only; list/batch input is not supported and raises ``TypeError``. |
-| `output_text` | `str | None` | No | `None` | The response being graded against the rubric, e.g. ``"The sky is blue because sunlight scatters off the air."``. When ``None``, ``input_text`` itself is graded as the response. |
+| `input_text` | `str | list[str]` | Yes | — | The instruction the response was produced for, e.g. ``"Explain why the sky is blue to a five-year-old."``, or a ``list[str]`` to judge a batch in one call. |
+| `output_text` | `str | list[str] | None` | No | `None` | The response being graded against the rubric, e.g. ``"The sky is blue because sunlight scatters off the air."``. When ``None``, ``input_text`` itself is graded as the response. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.557895 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.515789 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.319298 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.698246 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.54386 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** KAIST / prometheus-eval
+- **Default license:** `apache-2.0` (of the default model/service)
+
+| Model variant | License |
+| --- | --- |
+| `prometheus-eval/prometheus-13b-v1.0` | `llama-2` |
+| `prometheus-eval/prometheus-7b-v1.0` | `llama-2` |
+| `prometheus-eval/prometheus-7b-v2.0` | `apache-2.0` |
+| `prometheus-eval/prometheus-8x7b-v2.0` | `apache-2.0` |

@@ -1,6 +1,6 @@
 # Sentinel
 
-Sentinel — binary prompt-injection classifier built on DeBERTa (Qualifire).
+Binary prompt-injection classifier.
 
 Runs Qualifire's DeBERTa-based encoder classifier over a single user prompt and reports whether
 the text is a prompt-injection / jailbreak attempt. The model is a two-class sequence classifier
@@ -46,3 +46,20 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.857143 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.242105 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 1 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| bipia_email (unspecified) | f1 | native-valid | 0.874435 | bir@fd86c16 | measured:bir@fd86c16 |  |
+| bipia_table (unspecified) | f1 | native-valid | 0.0314807 | bir@fd86c16 | measured:bir@fd86c16 |  |
+
+## License
+
+- **Vendor:** Qualifire
+- **Default license:** `elastic-2.0` (of the default model/service)

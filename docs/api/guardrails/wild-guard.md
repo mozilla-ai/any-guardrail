@@ -1,6 +1,6 @@
 # WildGuard
 
-WildGuard — one-pass safety-moderation judge reporting prompt harm, response harm, and refusal (Allen Institute for AI).
+One-pass safety-moderation judge reporting prompt harm, response harm, and refusal.
 
 WildGuard is a generative safety classifier that evaluates a prompt-response
 interaction in a single forward pass, reporting three signals: (1) whether the
@@ -47,6 +47,8 @@ For more information, see:
 |-----------|------|----------|---------|-------------|
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``allenai/wildguard``. |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading the model as a causal LM. When a ``HuggingFaceProvider`` is supplied, it is loaded with ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer`` so its default sequence-classification loader is corrected. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (must fill ``{prompt}`` / ``{response}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the WildGuard guardrail.
 
@@ -62,3 +64,21 @@ Classify a user request and, optionally, the assistant response to it.
 | `output_text` | `str | None` | No | `None` | Optional assistant response judged alongside the request, e.g. ``"I can't help with that."``. When omitted, only request harm is evaluated and the response-side signals may be absent. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.816327 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.012 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.955932 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| aegis (unspecified) | f1 | native-valid | 0.860606 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.811475 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.789474 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Allen Institute for AI
+- **Default license:** `apache-2.0` (of the default model/service)

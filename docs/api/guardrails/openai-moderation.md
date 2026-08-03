@@ -1,6 +1,6 @@
 # OpenaiModeration
 
-OpenAI Moderation — hosted moderation API flagging content across 13 harm categories with calibrated scores (OpenAI).
+Hosted moderation API flagging content across 13 harm categories with calibrated scores.
 
 Wraps OpenAI's hosted moderation classifier (default model:
 ``omni-moderation-latest``) to flag content across 13 harm
@@ -62,3 +62,12 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** OpenAI
+- **Default license:** `proprietary` (of the default model/service)

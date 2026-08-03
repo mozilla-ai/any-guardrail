@@ -160,7 +160,10 @@ def test_license_section_renders_variant_table() -> None:
     section = generate_api_docs._license_section(GuardrailName.LLAMA_GUARD)
     assert "## License" in section
     assert "Meta" in section
-    assert "meta-llama/Llama-Guard-4-12B" in section  # per-variant licenses (from #211)
+    # Per-variant licenses (from #211): Llama-Guard-3-8B carries `llama-3.1`, distinct from the
+    # `llama-3.2` default, so the variant table must render it rather than collapsing to the default.
+    assert "meta-llama/Llama-Guard-3-8B" in section
+    assert "llama-3.1" in section
 
 
 # --- parity + leaf invariants -------------------------------------------------

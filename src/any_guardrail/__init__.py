@@ -1,6 +1,7 @@
 from .api import AnyGuardrail
 from .base import Guardrail, GuardrailName, ThreeStageGuardrail
 from .content_registry import CONTENT_REGISTRY
+from .evaluate import EvaluateArgumentError
 from .prompt_registry import PROMPT_REGISTRY
 from .providers import HuggingFaceProvider, Provider
 from .registry import GUARDRAIL_METADATA
@@ -33,6 +34,7 @@ from .types import (
     PromptAssembly,
     PromptSpec,
     PromptTemplate,
+    RequirementGroup,
     SpanResult,
     TokenizerDict,
 )
@@ -52,6 +54,7 @@ __all__ = [
     "ChatMessages",
     "ComparisonCohort",
     "ContentKind",
+    "EvaluateArgumentError",
     "Guardrail",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
@@ -72,6 +75,7 @@ __all__ = [
     "PromptSpec",
     "PromptTemplate",
     "Provider",
+    "RequirementGroup",
     "SpanResult",
     "ThreeStageGuardrail",
     "TokenizerDict",

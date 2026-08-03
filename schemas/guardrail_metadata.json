@@ -29,6 +29,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Alinia AI"
   },
@@ -60,6 +61,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Mozilla AI"
   },
@@ -86,6 +88,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Microsoft"
   },
@@ -103,7 +106,8 @@
       "documents"
     ],
     "output_shapes": [
-      "binary"
+      "binary",
+      "score"
     ],
     "primary_category": "prompt_injection",
     "required_validate_kwargs": [],
@@ -112,6 +116,7 @@
       "input",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Microsoft"
   },
@@ -130,7 +135,8 @@
     "multimodal": false,
     "optional_validate_kwargs": [],
     "output_shapes": [
-      "categorical"
+      "categorical",
+      "score"
     ],
     "primary_category": "content_safety",
     "required_validate_kwargs": [],
@@ -140,6 +146,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Amazon"
   },
@@ -166,6 +173,7 @@
       "input",
       "output"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "SpeakLeash / Bielik.AI"
   },
@@ -191,6 +199,7 @@
     "stages": [
       "output"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "OpenCompass"
   },
@@ -215,6 +224,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "deepset"
   },
@@ -242,6 +252,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [
       {
         "license": "apache-2.0",
@@ -282,6 +293,7 @@
       "input",
       "output"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "DynaGuard"
   },
@@ -308,6 +320,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Flow AI"
   },
@@ -334,6 +347,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Fastino"
   },
@@ -363,6 +377,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Fastino"
   },
@@ -389,6 +404,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Patronus AI"
   },
@@ -413,6 +429,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "OpenAI"
   },
@@ -437,8 +454,7 @@
       "output_text"
     ],
     "output_shapes": [
-      "categorical",
-      "score"
+      "categorical"
     ],
     "primary_category": "general_judge",
     "required_validate_kwargs": [],
@@ -448,6 +464,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "IBM"
   },
@@ -476,6 +493,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "hbseong"
   },
@@ -500,6 +518,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "leolee99"
   },
@@ -524,6 +543,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "JasperLS"
   },
@@ -551,6 +571,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Kakao"
   },
@@ -568,7 +589,8 @@
     "multimodal": false,
     "optional_validate_kwargs": [],
     "output_shapes": [
-      "categorical"
+      "categorical",
+      "score"
     ],
     "primary_category": "prompt_injection",
     "required_validate_kwargs": [],
@@ -577,6 +599,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Lakera"
   },
@@ -606,6 +629,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "KRLabs"
   },
@@ -618,7 +642,7 @@
     "description": "Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy.",
     "display_name": "Llama Guard",
     "multilingual": true,
-    "multimodal": true,
+    "multimodal": false,
     "optional_validate_kwargs": [
       "output_text"
     ],
@@ -632,6 +656,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [
       {
         "license": "llama-3.2",
@@ -640,10 +665,6 @@
       {
         "license": "llama-3.1",
         "model_id": "meta-llama/Llama-Guard-3-8B"
-      },
-      {
-        "license": "llama-4",
-        "model_id": "meta-llama/Llama-Guard-4-12B"
       }
     ],
     "vendor": "Meta"
@@ -671,6 +692,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "NVIDIA"
   },
@@ -697,6 +719,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "GovTech Singapore"
   },
@@ -723,6 +746,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "OpenAI"
   },
@@ -747,6 +771,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "dcarpintero"
   },
@@ -780,6 +805,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Patronus AI"
   },
@@ -806,6 +832,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [
       {
         "license": "mrl",
@@ -844,6 +871,7 @@
     "stages": [
       "output"
     ],
+    "supports_batch": true,
     "variant_licenses": [
       {
         "license": "llama-2",
@@ -885,6 +913,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "Meta"
   },
@@ -909,6 +938,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "ProtectAI"
   },
@@ -936,6 +966,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Qwen"
   },
@@ -954,6 +985,7 @@
     ],
     "output_shapes": [
       "categorical",
+      "score",
       "span"
     ],
     "primary_category": "content_safety",
@@ -963,6 +995,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Qwen"
   },
@@ -988,6 +1021,7 @@
     "stages": [
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Atla"
   },
@@ -1012,6 +1046,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": true,
     "variant_licenses": [],
     "vendor": "Qualifire"
   },
@@ -1036,6 +1071,7 @@
     "stages": [
       "input"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Google"
   },
@@ -1056,6 +1092,7 @@
     "optional_validate_kwargs": [],
     "output_shapes": [
       "multi_label",
+      "score",
       "span"
     ],
     "primary_category": "content_safety",
@@ -1066,6 +1103,7 @@
       "output",
       "rag_context"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "IBM"
   },
@@ -1093,6 +1131,7 @@
       "input",
       "output"
     ],
+    "supports_batch": false,
     "variant_licenses": [],
     "vendor": "Allen Institute for AI"
   }

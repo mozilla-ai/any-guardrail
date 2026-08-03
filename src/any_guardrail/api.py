@@ -6,8 +6,10 @@ from typing import Any
 
 import any_guardrail.content_registry as _content
 from any_guardrail.base import Guardrail, GuardrailName
+from any_guardrail.evaluate import build_validate_call
 from any_guardrail.parameter_registry import get_parameter_schema as _registry_get_parameter_schema
-from any_guardrail.parameters import ParameterSpec
+from any_guardrail.parameter_registry import get_requirement_groups as _registry_get_requirement_groups
+from any_guardrail.parameters import ParameterSpec, RequirementGroup
 from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
 from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
 from any_guardrail.prompts import PromptTemplate
@@ -20,6 +22,7 @@ from any_guardrail.taxonomy import (
     GuardrailStage,
     OutputShape,
 )
+from any_guardrail.types import GuardrailOutput
 
 # Metadata dimensions that hold a set of values (matched by any-overlap) vs a
 # single scalar value (matched by equality) when filtering / grouping.
@@ -189,13 +192,32 @@ class AnyGuardrail:
         Each :class:`~any_guardrail.parameters.ParameterSpec` carries the parameter's ``name``,
         ``stage`` (``create`` / ``validate``), ``type`` (string / integer / number / boolean /
         enum / json), whether it is ``required``, its ``default``, its ``choices`` (for enums,
-        e.g. ``model_id`` from ``SUPPORTED_MODELS``), and a one-line ``description``. Returns an
-        empty list for a guardrail that takes no configurable parameters.
+        e.g. ``model_id`` from ``SUPPORTED_MODELS``), and a one-line ``description``. It also
+        records what the signature alone cannot: ``env_var`` (an environment variable that
+        back-fills the argument), ``secret`` (a credential to mask and never log), and
+        ``effectively_required`` (a value that must exist at runtime even though the argument has a
+        default). For "at least one of these" choices spanning several parameters, see
+        :meth:`get_requirement_groups`. Returns an empty list for a guardrail that takes no
+        configurable parameters.
 
         Reads the import-free parameter registry and does not import the guardrail
         implementation or any model backend, so it works in a bare install.
         """
         return _registry_get_parameter_schema(guardrail_name)
+
+    @classmethod
+    def get_requirement_groups(cls, guardrail_name: GuardrailName) -> list[RequirementGroup]:
+        """Return a guardrail's one-of requirement groups (:class:`~any_guardrail.parameters.RequirementGroup`).
+
+        A group means "at least one of these interchangeable parameters (or their env-var
+        fallbacks) must be provided" — the constraint that no single parameter's ``required`` /
+        ``effectively_required`` flag can express (e.g. watsonx's ``project_id`` / ``space_id``).
+        Returns an empty list for the (majority of) guardrails that have no such constraint.
+
+        Reads the import-free parameter registry and does not import the guardrail
+        implementation or any model backend, so it works in a bare install.
+        """
+        return _registry_get_requirement_groups(guardrail_name)
 
     @classmethod
     def list_policies(cls, guardrail_name: GuardrailName) -> list[str]:
@@ -256,10 +278,23 @@ class AnyGuardrail:
 
     @classmethod
     def get_all_supported_models(cls) -> dict[str, list[str]]:
-        """Get all model IDs supported by all guardrails."""
+        """Get all model IDs supported by all guardrails.
+
+        Guardrails whose optional extra isn't installed are skipped rather than
+        raising, since this is a discovery API and the natural use is "what can I
+        run here?" on a partial install. Every guardrail module that gates an
+        optional SDK re-raises the failed import as ``raise ImportError(msg) from
+        e``, so only an ``ImportError`` with a chained cause is treated as a
+        missing-extra signal; an uncaused ``ImportError`` (e.g. an unresolvable
+        module path or class name) is a real bug and propagates.
+        """
         model_ids = {}
         for guardrail_name in cls.get_supported_guardrails():
-            model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
+            try:
+                model_ids[guardrail_name.value] = cls.get_supported_model(guardrail_name)
+            except ImportError as e:
+                if e.__cause__ is None:
+                    raise
         return model_ids
 
     @classmethod
@@ -284,6 +319,49 @@ class AnyGuardrail:
         if provider is not None:
             kwargs["provider"] = provider
         return guardrail_class(**kwargs)
+
+    @classmethod
+    def evaluate(
+        cls,
+        guardrail_name: GuardrailName,
+        guardrail: Guardrail,
+        prompt: str,
+        response: str | None = None,
+        **kwargs: Any,
+    ) -> GuardrailOutput | list[GuardrailOutput]:
+        """Drive any guardrail's ``validate()`` through one generic ``(prompt, response)`` call.
+
+        Judges come in several incompatible ``validate()`` shapes (text-pair, single-input,
+        keyed-dict, signature-locked pairs with a different parameter name). This maps a
+        generic call onto whichever shape ``guardrail_name`` actually uses, so callers that
+        want to drive judges interchangeably don't have to hard-code that mapping themselves.
+
+        Args:
+            guardrail_name: Which guardrail ``guardrail`` is an instance of (module->class
+                resolution isn't cleanly invertible from the instance alone, so this is
+                required rather than inferred from ``type(guardrail)``).
+            guardrail: An already-constructed guardrail instance (e.g. from ``create()``).
+                Constructor-only configuration (like ``gpt_oss_safeguard``'s ``policy``) is
+                unaffected since it was already baked in at construction time.
+            prompt: The primary text — the request/instruction/question being judged. Ignored
+                for guardrails with no free-text primary role (currently only ``flowjudge``,
+                which is documented as such).
+            response: The response/answer text being judged alongside ``prompt``, for
+                guardrails that support a response slot. ``None`` for a prompt-only call.
+            **kwargs: Extra arguments forwarded to ``validate()`` as-is (e.g. ``documents``,
+                ``inputs`` for ``flowjudge``, ``policy`` for ``any_llm``).
+
+        Returns:
+            Whatever ``guardrail.validate(...)`` returns.
+
+        Raises:
+            EvaluateArgumentError: If ``response`` is supplied for a guardrail with no
+                response slot, or if an argument the guardrail's ``validate()`` requires is
+                still missing after mapping the call.
+
+        """
+        args, call_kwargs = build_validate_call(guardrail_name, guardrail, prompt, response, kwargs)
+        return guardrail.validate(*args, **call_kwargs)
 
     @classmethod
     def _get_guardrail_class(cls, guardrail_name: GuardrailName) -> type[Guardrail]:

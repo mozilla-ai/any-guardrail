@@ -392,6 +392,12 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
         :class:`NotImplementedError` (rather than silently misbehaving) — use
         ``HuggingFaceProvider`` for guardrails that require either, e.g. WildGuard
         (raw prompt) or Kanana (special-token verdict).
+
+        Unlike :class:`HuggingFaceProvider`, this always processes exactly one
+        conversation per call — ``/v1/chat/completions`` has no cross-conversation
+        batching primitive to hook into. Judge guardrails whose ``_validate_batch``
+        checks ``isinstance(self.provider, HuggingFaceProvider)`` fall back to a
+        sequential per-item loop against this provider rather than batching.
         """
         if not skip_special_tokens:
             msg = "LlamafileProvider does not support skip_special_tokens=False; use HuggingFaceProvider."

@@ -1,11 +1,7 @@
 from unittest.mock import patch
 
-from transformers import (
-    AutoModelForCausalLM,
-    AutoProcessor,
-    AutoTokenizer,
-    Llama4ForConditionalGeneration,
-)
+import pytest
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.llama_guard.llama_guard import (
@@ -34,23 +30,6 @@ def test_v3_user_supplied_default_hf_provider_loaded_with_causal_lm() -> None:
     assert shared_provider.model_class is not AutoModelForCausalLM
 
 
-def test_v4_user_supplied_default_hf_provider_loaded_with_llama4_conditional() -> None:
-    """Llama Guard 4 with a default HuggingFaceProvider must load via ``Llama4ForConditionalGeneration``.
-
-    The v4 multimodal variant needs ``AutoProcessor`` (not ``AutoTokenizer``);
-    the default seq-classification provider would break both.
-    """
-    shared_provider = HuggingFaceProvider()
-
-    with patch.object(HuggingFaceProvider, "load_model") as mock_load:
-        LlamaGuard(model_id="meta-llama/Llama-Guard-4-12B", provider=shared_provider)
-
-    mock_load.assert_called_once()
-    _, load_kwargs = mock_load.call_args
-    assert load_kwargs["model_class"] is Llama4ForConditionalGeneration
-    assert load_kwargs["tokenizer_class"] is AutoProcessor
-
-
 def test_v3_no_provider_path_constructs_provider_with_causal_lm() -> None:
     """When no provider is supplied, v3 builds a HuggingFaceProvider with the right causal-LM classes."""
     with patch.object(HuggingFaceProvider, "load_model"):
@@ -61,14 +40,13 @@ def test_v3_no_provider_path_constructs_provider_with_causal_lm() -> None:
     assert guardrail.provider.tokenizer_class is AutoTokenizer
 
 
-def test_v4_no_provider_path_constructs_provider_with_llama4_conditional() -> None:
-    """When no provider is supplied, v4 builds a HuggingFaceProvider with ``Llama4ForConditionalGeneration``."""
-    with patch.object(HuggingFaceProvider, "load_model"):
-        guardrail = LlamaGuard(model_id="meta-llama/Llama-Guard-4-12B")
-
-    assert isinstance(guardrail.provider, HuggingFaceProvider)
-    assert guardrail.provider.model_class is Llama4ForConditionalGeneration
-    assert guardrail.provider.tokenizer_class is AutoProcessor
+def test_llama_guard_4_is_rejected() -> None:
+    """meta-llama/Llama-Guard-4-12B is deliberately unsupported (issue #236): its multimodal
+    image-processing stack (pillow + torchvision) isn't part of any declared extra, and its
+    multimodal path isn't reachable through this guardrail's text-only validate() anyway.
+    """
+    with pytest.raises(ValueError, match="Unsupported model_id"):
+        LlamaGuard(model_id="meta-llama/Llama-Guard-4-12B")
 
 
 def _guardrail_without_weights() -> LlamaGuard:

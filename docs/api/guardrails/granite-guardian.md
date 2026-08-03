@@ -1,6 +1,6 @@
 # GraniteGuardian
 
-Granite Guardian — hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria (IBM).
+Hybrid-thinking safety and judge model covering harm, RAG groundedness, and function-calling risks via bring-your-own-criteria.
 
 Granite Guardian is a decoder-LLM safeguard, derived from IBM's Granite models, that
 evaluates whether a given text meets a single user-specified criterion. It runs through
@@ -37,10 +37,15 @@ verdict maps onto ``GuardrailOutput`` as:
 - When no verdict can be parsed the output fails closed: ``valid=False`` with
   ``extra={"parse_failure": True}``.
 
-Expected inputs: a single ``input_text`` string (the user turn), plus an optional
-``output_text`` (the assistant turn being judged), optional ``documents`` for RAG
-criteria, and optional ``available_tools`` for function-call criteria. Only single-string
-inputs are supported — a list input raises ``TypeError``.
+Expected inputs: ``input_text`` (the user turn), plus an optional ``output_text``
+(the assistant turn being judged), optional ``documents`` for RAG criteria, and
+optional ``available_tools`` for function-call criteria. ``input_text`` also accepts
+a ``list[str]`` to judge a batch in one real batched ``generate_chat`` call when the
+provider is a ``HuggingFaceProvider`` (``output_text`` may then be a matching-length
+list or a single value broadcast to every item; other providers fall back to one call
+per item). ``documents``/``available_tools`` apply uniformly across a whole batch (one
+shared RAG context / tool set) rather than per item, since the chat template is
+applied once per batched call.
 
 For more information, see:
 
@@ -75,9 +80,62 @@ Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The user turn. When ``output_text`` is also supplied, the assistant turn is the text being judged; otherwise the user turn is judged. |
-| `output_text` | `str | None` | No | `None` | Optional assistant response. Required for criteria that judge the assistant (e.g. groundedness, answer relevance, function-call hallucination); omit to judge the user input directly (e.g. jailbreak, harm, context relevance). |
-| `documents` | `list[dict[str, Any]] | None` | No | `None` | Optional RAG documents (dicts with ``doc_id`` and ``text``). Required for groundedness and context-relevance criteria. |
-| `available_tools` | `list[dict[str, Any]] | None` | No | `None` | Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks. |
+| `input_text` | `str | list[str]` | Yes | — | The user turn, or a ``list[str]`` to judge a batch in one call. When ``output_text`` is also supplied, the assistant turn is the text being judged; otherwise the user turn is judged. |
+| `output_text` | `str | list[str] | None` | No | `None` | Optional assistant response. Required for criteria that judge the assistant (e.g. groundedness, answer relevance, function-call hallucination); omit to judge the user input directly (e.g. jailbreak, harm, context relevance). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
+| `documents` | `list[dict[str, Any]] | None` | No | `None` | Optional RAG documents (dicts with ``doc_id`` and ``text``). Required for groundedness and context-relevance criteria. Applies uniformly across a whole batch, not per item. |
+| `available_tools` | `list[dict[str, Any]] | None` | No | `None` | Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks. Applies uniformly across a whole batch, not per item. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Bias
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bbq (unspecified) | f1 | native-valid | 0.334884 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.853147 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.164 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.883212 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.831683 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.820084 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.782456 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.62807 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.673684 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.389474 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Hallucination
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| halueval (unspecified) | f1 | native-valid | 0.828358 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.613636 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0421053 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.741071 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.831579 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.57193 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** IBM
+- **Default license:** `apache-2.0` (of the default model/service)

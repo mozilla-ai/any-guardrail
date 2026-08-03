@@ -1,6 +1,6 @@
 # NemotronContentSafety
 
-Nemotron Content Safety — 4B reasoning safety classifier covering a 22-category content-safety taxonomy (NVIDIA).
+Reasoning safety classifier covering a 22-category content-safety taxonomy.
 
 Decoder LLM (Gemma-3-4B base) that classifies a user prompt and an optional assistant response
 against NVIDIA's 22-category content-safety taxonomy (``S1`` Violence ... ``S22``
@@ -54,3 +54,21 @@ Classify ``input_text`` and, optionally, an assistant ``output_text``.
 | `output_text` | `str | None` | No | `None` | Optional assistant response moderated alongside the prompt. When provided, a missing or unparsable response verdict causes the guardrail to fail closed. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.82392 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.26 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.888136 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.853333 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| jbb (unspecified) | f1 | native-valid | 0.834043 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.673684 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** NVIDIA
+- **Default license:** `gemma` (of the default model/service)

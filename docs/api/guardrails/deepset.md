@@ -1,6 +1,6 @@
 # Deepset
 
-Deepset — binary prompt-injection classifier built on DeBERTa-v3-base (deepset).
+Binary prompt-injection classifier.
 
 Encoder sequence classifier that labels a text as ``LEGIT`` or ``INJECTION``.
 Feed it the raw user prompt (or any untrusted text such as retrieved snippets);
@@ -44,3 +44,20 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.991597 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| notinject (unspecified) | fpr | native-valid | 0.705263 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.883929 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| bipia_email (unspecified) | f1 | native-valid | 0.7806 | bir@fd86c16 | measured:bir@fd86c16 |  |
+| bipia_table (unspecified) | f1 | native-valid | 0.876783 | bir@fd86c16 | measured:bir@fd86c16 |  |
+
+## License
+
+- **Vendor:** deepset
+- **Default license:** `mit` (of the default model/service)

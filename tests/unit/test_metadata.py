@@ -274,3 +274,28 @@ def test_standard_guardrails_use_inherited_validate() -> None:
     cls = _guardrail_class(GuardrailName.PROTECTAI)
     assert "validate" not in cls.__dict__
     assert issubclass(cls, ThreeStageGuardrail)
+
+
+def test_output_shapes_score_signal_accuracy() -> None:
+    """Regression test for issue #225.
+
+    ``OutputShape.SCORE``/``RUBRIC`` membership is the queryable contract for
+    whether ``GuardrailOutput.score`` is ever populated. These six entries had
+    drifted from actual guardrail behavior (confirmed against each guardrail's
+    ``GuardrailOutput(score=...)`` call sites); pin the corrected values so the
+    drift can't silently reappear.
+    """
+    expected_has_score = {
+        GuardrailName.GRANITE_GUARDIAN: False,  # only ever emits a categorical yes/no verdict
+        GuardrailName.QWEN3_GUARD_STREAM: True,
+        GuardrailName.LAKERA_GUARD: True,
+        GuardrailName.WATSONX_GUARDIAN: True,
+        GuardrailName.AZURE_PROMPT_SHIELDS: True,
+        GuardrailName.BEDROCK_GUARDRAILS: True,
+    }
+    for name, has_score in expected_has_score.items():
+        output_shapes = GUARDRAIL_METADATA[name].output_shapes
+        declares_score = bool({OutputShape.SCORE, OutputShape.RUBRIC} & output_shapes)
+        assert declares_score == has_score, (
+            f"{name.value}: expected SCORE/RUBRIC membership {has_score}, got {output_shapes}"
+        )

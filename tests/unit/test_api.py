@@ -12,7 +12,6 @@ from any_guardrail.guardrails.any_llm import AnyLlm
 from any_guardrail.guardrails.azure_content_safety import AzureContentSafety
 from any_guardrail.guardrails.azure_prompt_shields import AzurePromptShields
 from any_guardrail.guardrails.bedrock_guardrails import BedrockGuardrails
-from any_guardrail.guardrails.glider.glider import Glider
 from any_guardrail.guardrails.lakera_guard import LakeraGuard
 from any_guardrail.guardrails.llama_guard import LlamaGuard
 from any_guardrail.guardrails.off_topic.off_topic import OffTopic
@@ -113,7 +112,6 @@ def test_model_load() -> None:
             or guardrail_class is Patronus  # API-based, no provider.load_model
             or guardrail_class is WatsonxGuardian  # SDK-based, no provider.load_model
             or guardrail_class is OpenaiModeration  # API-based, no provider.load_model
-            or guardrail_class is Glider  # Loads model directly, no provider
             or guardrail_class is OffTopic  # Loads model directly, no provider
         ):
             continue
@@ -162,6 +160,10 @@ def test_model_load() -> None:
                 elif guardrail_name in (GuardrailName.PROMETHEUS, GuardrailName.SELENE):
                     kwargs["rubric"] = "Score 1: bad. Score 5: good."
                     kwargs["pass_threshold"] = 3
+                elif guardrail_name == GuardrailName.GLIDER:
+                    kwargs["pass_criteria"] = "Dummy criteria"
+                    kwargs["rubric"] = "Score 1: bad. Score 5: good."
+                    kwargs["pass_threshold"] = 3
                 elif guardrail_name == GuardrailName.COMPASS_JUDGER:
                     kwargs["criteria"] = "Dummy"
                     kwargs["rubric"] = "Dummy rubric"
@@ -169,6 +171,48 @@ def test_model_load() -> None:
                 guardrail = AnyGuardrail.create(guardrail_name=guardrail_name, **kwargs)
                 mock_load.assert_called_once()
                 assert hasattr(guardrail, "provider")
+
+
+def test_get_all_supported_models_skips_guardrails_with_missing_extras() -> None:
+    """A guardrail whose optional extra isn't installed shouldn't break the aggregate query.
+
+    Mirrors the real failure shape: every guardrail module that gates an optional
+    SDK does ``raise ImportError(msg) from e``, chaining the original
+    ModuleNotFoundError as the cause.
+    """
+    real_get_guardrail_class = AnyGuardrail._get_guardrail_class
+
+    def flaky_get_guardrail_class(guardrail_name: GuardrailName) -> type[Guardrail]:
+        if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
+            msg = "azure-ai-contentsafety package is not installed"
+            raise ImportError(msg) from ModuleNotFoundError(name="azure.ai.contentsafety")
+        return real_get_guardrail_class(guardrail_name)
+
+    with patch.object(AnyGuardrail, "_get_guardrail_class", staticmethod(flaky_get_guardrail_class)):
+        model_ids = AnyGuardrail.get_all_supported_models()
+
+    assert GuardrailName.AZURE_CONTENT_SAFETY.value not in model_ids
+    assert GuardrailName.LLAMA_GUARD.value in model_ids
+    assert len(model_ids) == len(GuardrailName) - 1
+
+
+def test_get_all_supported_models_reraises_uncaused_import_error() -> None:
+    """An ImportError with no chained cause is a real bug (bad module path, unresolvable
+    class), not a missing extra, and must propagate rather than being silently skipped.
+    """
+    real_get_guardrail_class = AnyGuardrail._get_guardrail_class
+
+    def broken_get_guardrail_class(guardrail_name: GuardrailName) -> type[Guardrail]:
+        if guardrail_name == GuardrailName.AZURE_CONTENT_SAFETY:
+            msg = "Could not resolve guardrail class for 'azure_content_safety'"
+            raise ImportError(msg)
+        return real_get_guardrail_class(guardrail_name)
+
+    with (
+        patch.object(AnyGuardrail, "_get_guardrail_class", staticmethod(broken_get_guardrail_class)),
+        pytest.raises(ImportError, match="Could not resolve guardrail class"),
+    ):
+        AnyGuardrail.get_all_supported_models()
 
 
 def test_post_processing_implementation() -> None:

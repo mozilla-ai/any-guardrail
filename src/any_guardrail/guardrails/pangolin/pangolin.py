@@ -14,12 +14,9 @@ PANGOLIN_INJECTION_LABEL = "unsafe"
 class Pangolin(StandardGuardrail):
     """Binary prompt-injection classifier.
 
-    Runs one of dcarpintero's ModernBERT encoder classifiers over a single user prompt and reports
-    whether the text is a prompt-injection / jailbreak attempt. Each model is a two-class sequence
-    classifier whose unsafe class is labeled ``"unsafe"``; the guardrail treats that class as the
-    risky one. The default ``pangolin-guard-base`` is ModernBERT-base; ``pangolin-guard-large`` is a
-    higher-accuracy ModernBERT-large drop-in with an 8192-token context and the same ``"unsafe"``
-    label.
+    Runs dcarpintero's ModernBERT-base encoder classifier over a single user prompt and reports
+    whether the text is a prompt-injection / jailbreak attempt. It is a two-class sequence classifier
+    whose unsafe class is labeled ``"unsafe"``; the guardrail treats that class as the risky one.
 
     Expected input: prompt-only text. ``validate(input_text)`` accepts a single string, or a
     ``list[str]`` to classify a batch in one call; there is no prompt+response or chat-message mode.
@@ -35,13 +32,11 @@ class Pangolin(StandardGuardrail):
 
     For more information, see:
 
-    - [Pangolin Guard base](https://huggingface.co/dcarpintero/pangolin-guard-base) (default) — ModernBERT-base.
-    - [Pangolin Guard large](https://huggingface.co/dcarpintero/pangolin-guard-large) — ModernBERT-large;
-      higher accuracy, 8192-token context. Same ``"unsafe"`` label, so it is a drop-in alternative.
+    - [Pangolin Guard base](https://huggingface.co/dcarpintero/pangolin-guard-base) — ModernBERT-base.
 
     """
 
-    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base", "dcarpintero/pangolin-guard-large"]
+    SUPPORTED_MODELS: ClassVar = ["dcarpintero/pangolin-guard-base"]
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.PANGOLIN]
 
@@ -50,9 +45,7 @@ class Pangolin(StandardGuardrail):
 
         Args:
             model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults
-                to ``dcarpintero/pangolin-guard-base`` (ModernBERT-base). Pass
-                ``"dcarpintero/pangolin-guard-large"`` for the higher-accuracy ModernBERT-large
-                variant with an 8192-token context. Both share the same ``"unsafe"`` label.
+                to ``dcarpintero/pangolin-guard-base`` (ModernBERT-base).
             provider: Execution backend that loads the model and runs inference. Defaults to a
                 ``HuggingFaceProvider`` targeting ``AutoModelForSequenceClassification``. Supply your
                 own to control device, dtype, or ``cache_dir``, or to run against a different backend.

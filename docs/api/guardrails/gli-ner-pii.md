@@ -59,6 +59,19 @@ Detect PII spans in ``input_text`` and emit a redacted copy.
 | `input_text` | `str` | Yes | — | The text to scan for PII. A single string. |
 | `entity_types` | `list[str] | None` | No | `None` | PII entity types to detect. Defaults to ``DEFAULT_PII_ENTITIES``. |
 | `threshold` | `float | None` | No | `None` | Confidence threshold for this call. Defaults to the instance ``threshold``. |
-| `redaction_placeholder` | `str` | No | `"[REDACTED_{label}]"` | Format string used to replace each detected span in ``modified_text``; ``{label}`` is substituted with the upper-cased entity type (e.g. ``"[REDACTED_EMAIL]"``). |
+| `redaction_placeholder` | `str` | No | `"[REDACTED_{label}]"` | Template used to replace each detected span in ``modified_text``; the substring ``{label}`` is replaced with the upper-cased entity type (e.g. ``"[REDACTED_EMAIL]"``). Any other braces are kept literal, so an arbitrary placeholder never raises. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Pii
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| ai4privacy_pii (unspecified) | recall | native-valid | 0.880702 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Fastino
+- **Default license:** `apache-2.0` (of the default model/service)

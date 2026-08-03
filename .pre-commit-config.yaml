@@ -19,7 +19,7 @@ repos:
         exclude: \.ambr$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.22"
+    rev: "v0.16.1"
     hooks:
       - id: ruff
         args:
@@ -71,7 +71,7 @@ repos:
         entry: "uv run python scripts/generate_parameter_data.py --check"
         language: system
         pass_filenames: false
-        files: ^(src/any_guardrail/(guardrails/.*|parameters|content_registry|prompt_registry|base)\.py|src/any_guardrail/_parameter_data\.py|scripts/generate_parameter_data\.py)$
+        files: ^(src/any_guardrail/(guardrails/.*|parameters|content_registry|_authored_content_data|prompt_registry|base)\.py|src/any_guardrail/_parameter_data\.py|scripts/generate_parameter_data\.py)$
 
       - id: guardrail-parameters-json
         name: check guardrail parameters JSON is up to date

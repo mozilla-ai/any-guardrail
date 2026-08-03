@@ -71,10 +71,33 @@ class ParameterSpec(BaseModel):
     """The value shape (see :class:`ParameterType`)."""
 
     required: bool
-    """Whether the parameter must be supplied (has no default in the signature)."""
+    """Whether the parameter must be *supplied as this argument* — i.e. the signature has no
+    default. This is a property of the function signature, not of what the model needs at
+    runtime: a value that also has an env-var fallback (see :attr:`env_var`) or is one of a
+    :class:`RequirementGroup` reads ``required = False`` here even though a value is mandatory.
+    For "must a value exist to run at all", consult :attr:`effectively_required` and the
+    guardrail's requirement groups instead."""
 
     default: Any = None
     """The signature default in JSON-native form, or ``None`` when required or unset."""
+
+    effectively_required: bool = False
+    """Whether a value for this parameter must exist at runtime for the guardrail to run, even
+    though the signature gives it a default (so :attr:`required` is ``False``). ``True`` when the
+    guardrail raises if the value resolves from neither the argument nor its :attr:`env_var`. This
+    is the field a config UI should gate its required-marker on for single-source settings.
+    Members of a one-of :class:`RequirementGroup` are ``False`` here — the group carries their
+    (collective) requirement instead."""
+
+    env_var: str | None = None
+    """The environment variable that supplies this parameter's value when the argument is not
+    passed (e.g. ``"ALINIA_ENDPOINT"``), or ``None`` when there is no env-var fallback. Lets a UI
+    tell the user "provide this, or set ``$ENV``"."""
+
+    secret: bool = False
+    """Whether this parameter is a credential (API key, token, secret access key, credential-
+    bearing client/session). A UI should render it as a masked field and must not log or persist
+    it in plain text."""
 
     choices: tuple[str, ...] | None = None
     """Allowed values for ``enum`` parameters (e.g. ``model_id`` from ``SUPPORTED_MODELS``,
@@ -82,3 +105,27 @@ class ParameterSpec(BaseModel):
 
     description: str | None = None
     """One-line description parsed from the guardrail's docstring, when available."""
+
+
+class RequirementGroup(BaseModel):
+    """A guardrail-level "at least one of these must be provided" constraint.
+
+    Some guardrails require *a value* that no single parameter's :attr:`ParameterSpec.required`
+    or :attr:`ParameterSpec.effectively_required` can express, because it can be satisfied by any
+    of several parameters — e.g. watsonx needs a ``project_id`` *or* a ``space_id``. Each group
+    names the interchangeable parameters (and any environment variables that also satisfy it); a
+    config UI should require the user to supply at least one member.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    description: str
+    """Human-readable statement of the constraint, e.g. ``"A project or space is required."``"""
+
+    parameters: tuple[str, ...]
+    """The interchangeable ``create``/``validate`` parameter names — at least one must be given
+    (unless satisfied by one of :attr:`env_vars`)."""
+
+    env_vars: tuple[str, ...] = ()
+    """Environment variables that also satisfy the group (e.g. ``("WATSONX_PROJECT_ID",
+    "WATSONX_SPACE_ID")``); empty when the group can only be satisfied by passing an argument."""

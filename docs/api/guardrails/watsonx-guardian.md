@@ -1,6 +1,6 @@
 # WatsonxGuardian
 
-watsonx Guardian — hosted text-detection moderation API running configurable Granite Guardian detectors (IBM).
+Hosted text-detection moderation API running configurable Granite Guardian detectors.
 
 This is the hosted, pay-per-use counterpart to the locally-run
 :class:`~any_guardrail.guardrails.granite_guardian.granite_guardian.GraniteGuardian`
@@ -81,3 +81,12 @@ Screen ``content`` against the configured watsonx detectors.
 | `content` | `str` | Yes | — | The text to screen. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** IBM
+- **Default license:** `proprietary` (of the default model/service)

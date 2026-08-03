@@ -1,6 +1,6 @@
 # Jasper
 
-Jasper — binary prompt-injection classifiers built on DeBERTa-v3-base and gELECTRA-base (JasperLS).
+Binary prompt-injection classifiers.
 
 Runs one of JasperLS's encoder classifiers over a single user prompt and reports whether the
 text is a prompt-injection attempt. Each model is a two-class sequence classifier whose unsafe
@@ -55,3 +55,20 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.983051 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| notinject (unspecified) | fpr | native-valid | 0.842105 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.919643 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| bipia_email (unspecified) | f1 | native-valid | 0.776049 | bir@fd86c16 | measured:bir@fd86c16 |  |
+| bipia_table (unspecified) | f1 | native-valid | 0.873905 | bir@fd86c16 | measured:bir@fd86c16 |  |
+
+## License
+
+- **Vendor:** JasperLS
+- **Default license:** `mit` (of the default model/service)

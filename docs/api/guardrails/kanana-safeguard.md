@@ -1,6 +1,6 @@
 # KananaSafeguard
 
-Kanana Safeguard — Korean safety decoder models covering harmful content, legal risk, and prompt attacks (Kakao).
+Korean safety decoder models covering harmful content, legal risk, and prompt attacks.
 
 Decoder LLMs, trained primarily for Korean text, that emit a single verdict token:
 ``<SAFE>`` or an ``<UNSAFE-*>`` code. Three variants cover different taxonomies:
@@ -57,3 +57,29 @@ Classify ``input_text`` (and, for the harm model, an assistant ``output_text``).
 | `output_text` | `str | None` | No | `None` | Optional assistant response. Only the harm model (``kakaocorp/kanana-safeguard-8b``) is trained to judge an assistant turn; the ``-siren-8b`` and ``-prompt-2.1b`` variants silently ignore this argument. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.773006 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.492 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.862745 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.804665 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.733591 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.592982 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.405063 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0315789 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.348214 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Kakao
+- **Default license:** `apache-2.0` (of the default model/service)

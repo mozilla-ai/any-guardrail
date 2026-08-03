@@ -1,6 +1,6 @@
 # Patronus
 
-Patronus — hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging (Patronus AI).
+Hosted evaluation API running configurable evaluators for hallucination, toxicity, PII, prompt injection, and custom judging.
 
 This is the hosted, pay-per-use counterpart to the locally-run
 :class:`~any_guardrail.guardrails.glider.glider.Glider` (GLIDER) judge and the
@@ -86,3 +86,12 @@ Run the configured evaluators against the supplied model interaction.
 | `retrieved_context` | `str | list[str] | None` | No | `None` | RAG context document(s). Required by grounding / hallucination evaluators. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Patronus AI
+- **Default license:** `proprietary` (of the default model/service)

@@ -1,6 +1,6 @@
 # DynaGuard
 
-DynaGuard — dynamic guardian model evaluating conversation compliance with user-defined policies.
+Dynamic guardian model evaluating conversation compliance with user-defined policies.
 
 A decoder-LLM guardian model (University of Maryland / Capital One) that checks a
 conversation transcript against a bring-your-own ``policy`` — a numbered list of
@@ -26,11 +26,14 @@ Verdict mapping onto ``GuardrailOutput``:
   an ``<answer>`` block nor a bare ``PASS``/``FAIL`` token can be parsed (e.g. the
   generation was truncated mid-reasoning).
 
-Expected inputs: a single ``input_text`` (the user turn / transcript; required) plus
-an optional ``output_text`` (the agent's response). The two are assembled into a
+Expected inputs: ``input_text`` (the user turn / transcript; required) plus an
+optional ``output_text`` (the agent's response). The two are assembled into a
 ``User: ... Agent: ...`` transcript (the turns joined by a newline) before being
-wrapped with the ``policy``. List/batch input is not supported — passing a list
-raises ``TypeError``.
+wrapped with the ``policy``. ``input_text`` also accepts a ``list[str]`` to judge a
+batch in one real batched ``generate_chat`` call when the provider is a
+``HuggingFaceProvider`` (``output_text`` may then be a matching-length list, a
+single value broadcast to every item, or omitted); other providers fall back to
+one call per item.
 
 For more information, see:
 
@@ -53,6 +56,8 @@ For more information, see:
 | `think` | `bool` | No | `False` | If ``True``, request chain-of-thought reasoning before the verdict, which raises the generation token budget and latency. Defaults to ``False``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``tomg-group-umd/DynaGuard-8B``. |
 | `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading the model as a causal LM. When a ``HuggingFaceProvider`` is supplied, it is loaded with ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer``. |
+| `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (system prompt plus a user template filling ``{policy}`` / ``{transcript}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
+| `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 
 Initialize the DynaGuard guardrail.
 
@@ -64,7 +69,40 @@ Evaluate a conversation transcript against the configured policy.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `input_text` | `str` | Yes | — | The user turn (or the transcript to evaluate), e.g. ``"Please refund my last order."``. A single string; list/batch input is rejected with ``TypeError``. |
-| `output_text` | `str | None` | No | `None` | Optional agent response judged alongside the user turn, e.g. ``"Sure, I've issued your refund."``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). |
+| `input_text` | `str | list[str]` | Yes | — | The user turn (or the transcript to evaluate), e.g. ``"Please refund my last order."``, or a ``list[str]`` to judge a batch in one call. |
+| `output_text` | `str | list[str] | None` | No | `None` | Optional agent response judged alongside the user turn, e.g. ``"Sure, I've issued your refund."``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
-**Returns:** `GuardrailOutput`
+**Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.81746 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.032 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.933824 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.744 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.834123 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.242105 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.557895 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.480702 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.2 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.880702 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.617544 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** DynaGuard
+- **Default license:** `apache-2.0` (of the default model/service)

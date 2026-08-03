@@ -1,6 +1,6 @@
 # AzureContentSafety
 
-Azure AI Content Safety — hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores (Microsoft).
+Hosted moderation of text and images across hate, sexual, self-harm, and violence categories with 0-7 severity scores.
 
 Calls the Azure AI Content Safety ``analyze_text`` / ``analyze_image`` APIs. ``validate``
 takes a single string: plain text is sent to text analysis, while a string that is an
@@ -55,3 +55,12 @@ Validate content using Azure Content Safety.
 | `content` | `str` | Yes | — | The content to be evaluated. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Microsoft
+- **Default license:** `proprietary` (of the default model/service)
