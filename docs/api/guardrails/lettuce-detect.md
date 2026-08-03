@@ -59,3 +59,24 @@ Detect hallucinated spans in ``input_text`` (the answer) against ``context``.
 | `question` | `str | None` | No | `None` | Optional question the answer responds to. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.508772 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.62807 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.319298 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Hallucination
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| halueval (unspecified) | f1 | native-valid | 0.672 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** KRLabs
+- **Default license:** `mit` (of the default model/service)

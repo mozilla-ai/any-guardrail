@@ -70,3 +70,18 @@ Use the provided pass criteria and rubric to judge the input and output text pro
 | `output_text` | `str | None` | No | `None` | Optional second text, wrapped in ``<OUTPUT>`` tags and judged alongside ``input_text`` — typically the model response when the pass criteria compare a response against a prompt (e.g. ``"Does the OUTPUT answer the question in the INPUT?"``). |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.624561 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.533333 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.305263 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Patronus AI
+- **Default license:** `cc-by-nc-4.0` (of the default model/service)

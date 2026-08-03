@@ -77,3 +77,12 @@ Moderate a user prompt and, optionally, the assistant response to it.
 | `output_text` | `str | None` | No | `None` | Optional assistant response moderated token-by-token, e.g. ``"I can't help with that."``. When supplied, flagged token runs are returned as ``spans`` with character offsets into this text; when omitted, only the prompt is moderated and no spans are produced. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Qwen
+- **Default license:** `apache-2.0` (of the default model/service)

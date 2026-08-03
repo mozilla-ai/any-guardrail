@@ -205,6 +205,103 @@ def _section(title: str, level: int = 2) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Model-card sections (issue #194): benchmarks + license
+# ---------------------------------------------------------------------------
+
+
+def _guardrail_name_from_module(module_path: str) -> Any:
+    """Derive the ``GuardrailName`` from a guardrail module path, or ``None`` if it isn't one."""
+    from any_guardrail.base import GuardrailName
+
+    try:
+        return GuardrailName(module_path.rsplit(".", 1)[-1])
+    except ValueError:
+        return None
+
+
+def _benchmark_result_table(results: list[Any]) -> str:
+    """Render a guardrail's benchmark results as a Markdown table (pure; used by the page + tests).
+
+    One row per result, grouped by category. A missing value renders as ``—`` (never ``0``);
+    a contamination flag adds ``⚠️``; provenance and the comparison-cohort keys (dataset revision,
+    metric, threshold policy, harness) are shown so scores are never silently treated as comparable.
+    """
+    from any_guardrail.benchmarks import BenchmarkSourceKind
+
+    by_category: dict[str, list[Any]] = {}
+    for result in results:
+        by_category.setdefault(result.category, []).append(result)
+
+    lines: list[str] = []
+    for category in sorted(by_category):
+        lines.append(_section(category.replace("_", " ").title(), level=3))
+        lines.append("| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- |")
+        for result in by_category[category]:
+            cohort = result.cohort
+            value = "—" if result.value is None else f"{result.value:g}"
+            if result.source.kind is BenchmarkSourceKind.PUBLISHED:
+                source = f"[published]({result.source.url})" if result.source.url else "published"
+            else:
+                source = f"measured:{result.source.harness_version}"
+            contam = "⚠️" if result.contamination else ""
+            lines.append(
+                f"| {_table_cell(f'{cohort.dataset} ({cohort.dataset_revision})')} "
+                f"| {_table_cell(cohort.metric)} | {_table_cell(cohort.threshold_policy)} "
+                f"| {value} | {_table_cell(cohort.harness)} | {source} | {contam} |"
+            )
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _benchmarks_section(gname: Any) -> str:
+    """Render the ``## Benchmarks`` section for a guardrail (empty note when no results)."""
+    try:
+        from any_guardrail.benchmark_registry import get_benchmarks
+
+        results = get_benchmarks(gname)
+        lines = [_section("Benchmarks")]
+        if not results:
+            lines.append(
+                "No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) "
+                "for how numbers are harvested (published) or measured and added.\n"
+            )
+            return "\n".join(lines)
+        lines.append(_benchmark_result_table(results))
+        return "\n".join(lines)
+    except ImportError:
+        # Only a partial install (no benchmark registry) is swallowed; a real renderer/registry
+        # bug propagates so it surfaces instead of silently producing incomplete docs.
+        return ""
+
+
+def _license_section(gname: Any) -> str:
+    """Render the ``## License`` section for a guardrail from the taxonomy metadata."""
+    try:
+        from any_guardrail.registry import GUARDRAIL_METADATA
+
+        meta = GUARDRAIL_METADATA[gname]
+        lines = [
+            _section("License"),
+            f"- **Vendor:** {meta.vendor}",
+            f"- **Default license:** `{meta.default_license}` (of the default model/service)",
+        ]
+        if meta.variant_licenses:
+            lines.append("")
+            lines.append("| Model variant | License |")
+            lines.append("| --- | --- |")
+            lines.extend(
+                f"| `{variant.model_id}` | `{variant.license}` |"
+                for variant in sorted(meta.variant_licenses, key=lambda v: v.model_id)
+            )
+        lines.append("")
+        return "\n".join(lines)
+    except ImportError:
+        # Only a partial install is swallowed; a real metadata-shape bug propagates and fails loudly.
+        return ""
+
+
+# ---------------------------------------------------------------------------
 # Page generators
 # ---------------------------------------------------------------------------
 
@@ -253,6 +350,13 @@ def _guardrail_page(module_path: str, class_name: str) -> str:
         ret = _return_annotation(validate)
         if ret:
             lines.append(f"**Returns:** `{ret}`\n")
+
+    # Model-card sections (issue #194): benchmark evidence + license, derived from the registries.
+    gname = _guardrail_name_from_module(module_path)
+    if gname is not None:
+        for section in (_benchmarks_section(gname), _license_section(gname)):
+            if section:
+                lines.append(section)
 
     return "\n".join(lines)
 

@@ -78,3 +78,25 @@ Classifies the desired input and output according to the associated metric provi
 | `output` | `dict[str, str]` | Yes | — | A single-key dictionary mapping the ``required_output`` name to the text being graded, e.g. ``{"response": "The capital of France is Paris."}``. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.585965 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.624561 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.329825 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.712281 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.691228 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** Flow AI
+- **Default license:** `apache-2.0` (of the default model/service)

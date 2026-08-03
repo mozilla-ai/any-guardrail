@@ -73,3 +73,32 @@ Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 | `output_text` | `str | list[str] | None` | No | `None` | The response being graded against the rubric, e.g. ``"The sky is blue because sunlight scatters off the air."``. When ``None``, ``input_text`` itself is graded as the response. For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.557895 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.515789 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.319298 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.698246 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.54386 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** KAIST / prometheus-eval
+- **Default license:** `apache-2.0` (of the default model/service)
+
+| Model variant | License |
+| --- | --- |
+| `prometheus-eval/prometheus-13b-v1.0` | `llama-2` |
+| `prometheus-eval/prometheus-7b-v1.0` | `llama-2` |
+| `prometheus-eval/prometheus-7b-v2.0` | `apache-2.0` |
+| `prometheus-eval/prometheus-8x7b-v2.0` | `apache-2.0` |

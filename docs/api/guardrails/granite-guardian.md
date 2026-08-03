@@ -86,3 +86,56 @@ Score ``input_text`` (and optionally ``output_text``) against ``self.criteria``.
 | `available_tools` | `list[dict[str, Any]] | None` | No | `None` | Optional tool definitions (dicts with ``name``, ``description``, ``parameters``). Required for function-call hallucination checks. Applies uniformly across a whole batch, not per item. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Bias
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bbq (unspecified) | f1 | native-valid | 0.334884 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.853147 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.164 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.883212 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.831683 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.820084 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.782456 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.62807 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.673684 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.389474 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Hallucination
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| halueval (unspecified) | f1 | native-valid | 0.828358 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.613636 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0421053 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.741071 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.831579 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.57193 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** IBM
+- **Default license:** `apache-2.0` (of the default model/service)

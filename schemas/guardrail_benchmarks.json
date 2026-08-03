@@ -1,0 +1,4223 @@
+{
+  "bielik_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7235494880546075
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.212
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5943396226415094
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6094420600858368
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4697986577181208
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.1543859649122807
+    },
+    {
+      "category": "toxicity",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "real_toxicity",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "toxic>=0.5=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "bielik_guard",
+      "notes": "requested model speakleash/Bielik-Guard-0.5B-v1.1 failed to build (OSError); used the default",
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5279187817258884
+    }
+  ],
+  "compass_judger": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "compass_judger",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.631578947368421
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "compass_judger",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7403508771929824
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "compass_judger",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4842105263157895
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bfcl",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "compass_judger",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9122807017543859
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "hammerbench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "compass_judger",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6210526315789474
+    }
+  ],
+  "deepset": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": true,
+      "guardrail": "deepset",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9915966386554621
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "deepset",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7052631578947368
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "deepset",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8839285714285714
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "deepset",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7805995004163198
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "deepset",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8767827916764087
+    }
+  ],
+  "duo_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7896678966789668
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.028
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.875
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8109965635738831
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7938144329896908
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.24210526315789474
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4749999999999999
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.010526315789473684
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4732142857142857
+    },
+    {
+      "category": "toxicity",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "real_toxicity",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "toxic>=0.5=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "duo_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.30857142857142855
+    }
+  ],
+  "dyna_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8174603174603174
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.032
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9338235294117646
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.744
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8341232227488151
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.24210526315789474
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5578947368421052
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4807017543859649
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.2
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bfcl",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8807017543859649
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "hammerbench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "dyna_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6175438596491228
+    }
+  ],
+  "flowjudge": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "flowjudge",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5859649122807018
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "flowjudge",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.624561403508772
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "flowjudge",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3298245614035088
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bfcl",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "flowjudge",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.712280701754386
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "hammerbench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "flowjudge",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6912280701754386
+    }
+  ],
+  "gli_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7425149700598802
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.184
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9333333333333335
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8170731707317072
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7586206896551725
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6807017543859649
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4999999999999999
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.11578947368421053
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6160714285714286
+    },
+    {
+      "category": "toxicity",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "real_toxicity",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "toxic>=0.5=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7062706270627063
+    }
+  ],
+  "gli_ner_pii": [
+    {
+      "category": "pii",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "ai4privacy_pii",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "pii_present=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gli_ner_pii",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8807017543859649
+    }
+  ],
+  "glider": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "glider",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.624561403508772
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "glider",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5333333333333333
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "glider",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.30526315789473685
+    }
+  ],
+  "gpt_oss_safeguard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8250000000000001
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.1
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9163636363636363
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7756653992395438
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8173076923076923
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.43859649122807015
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6596491228070176
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.743859649122807
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "gpt_oss_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.47368421052631576
+    }
+  ],
+  "granite_guardian": [
+    {
+      "category": "bias",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bbq",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "stereotype=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.33488372093023255
+    },
+    {
+      "category": "hallucination",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "halueval",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "hallucinated=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "data",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8283582089552238
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6136363636363636
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.042105263157894736
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7410714285714286
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8531468531468531
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.164
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8832116788321167
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8316831683168315
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8200836820083681
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7824561403508772
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bfcl",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8315789473684211
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "hammerbench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5719298245614035
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6280701754385964
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6736842105263158
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "granite_guardian",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3894736842105263
+    }
+  ],
+  "harm_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8153310104529616
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.036
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9583333333333333
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8164556962025316
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8711111111111111
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.28771929824561404
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.38961038961038963
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.017543859649122806
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3125
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6286682398499426
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "harm_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.17068330025517434
+    }
+  ],
+  "injec_guard": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "injec_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": true,
+      "guardrail": "injec_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.08421052631578947
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "injec_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9553571428571429
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "injec_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8637550725219977
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "injec_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.908285677430451
+    }
+  ],
+  "jasper": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": true,
+      "guardrail": "jasper",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.983050847457627
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "jasper",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8421052631578947
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "jasper",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9196428571428571
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "jasper",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7760493912323664
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "jasper",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8739051909968344
+    }
+  ],
+  "kanana_safeguard": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4050632911392405
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.031578947368421054
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3482142857142857
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7730061349693251
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.492
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8627450980392156
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8046647230320699
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7335907335907336
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "kanana_safeguard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5929824561403508
+    }
+  ],
+  "lettuce_detect": [
+    {
+      "category": "hallucination",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "halueval",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "hallucinated=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "data",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "lettuce_detect",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6719999999999999
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "lettuce_detect",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5087719298245614
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "lettuce_detect",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6280701754385964
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "lettuce_detect",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3192982456140351
+    }
+  ],
+  "llama_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8408163265306122
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.028
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8300395256916996
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7649402390438247
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.890909090909091
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "llama_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.12631578947368421
+    }
+  ],
+  "nemotron_content_safety": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8239202657807309
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.26
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.888135593220339
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": true,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8533333333333335
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8340425531914895
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "nemotron_content_safety",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6736842105263158
+    }
+  ],
+  "off_topic": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "off_topic",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.45263157894736844
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "off_topic",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.4982456140350877
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "off_topic",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.27017543859649124
+    }
+  ],
+  "pangolin": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "pangolin",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8679245283018869
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "pangolin",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.1824561403508772
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "pangolin",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8928571428571429
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "pangolin",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6744897041632947
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "pangolin",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8015953522685355
+    }
+  ],
+  "poly_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8172757475083056
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.016
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9657534246575343
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.855305466237942
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7604562737642586
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "poly_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7333333333333333
+    }
+  ],
+  "prometheus": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prometheus",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5578947368421052
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prometheus",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5157894736842106
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prometheus",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3192982456140351
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bfcl",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prometheus",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6982456140350877
+    },
+    {
+      "category": "tool_use",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "hammerbench",
+        "dataset_revision": "unspecified",
+        "harness": "router_judge@c06603a",
+        "label_mapping": "unspecified",
+        "metric": "accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prometheus",
+      "notes": null,
+      "source": {
+        "harness_version": "router_judge@c06603a",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.543859649122807
+    }
+  ],
+  "prompt_guard": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prompt_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.23529411764705882
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prompt_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.031578947368421054
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "prompt_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9732142857142857
+    }
+  ],
+  "protectai": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "protectai",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5365853658536585
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "protectai",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.3824561403508772
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "protectai",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 1.0
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "protectai",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.24097604146911944
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "protectai",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.016865665760334162
+    }
+  ],
+  "qwen3_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7975077881619937
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.128
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9690721649484535
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8632218844984803
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7604562737642586
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "qwen3_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8140350877192982
+    }
+  ],
+  "selene": [
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "judgebench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "selene",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.5649122807017544
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "llmbar",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "selene",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6350877192982456
+    },
+    {
+      "category": "general_judge",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "rewardbench2",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unspecified",
+        "metric": "choice_accuracy",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "selene",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.36140350877192984
+    }
+  ],
+  "sentinel": [
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "deepset_pi",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "sentinel",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8571428571428571
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "notinject",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "sentinel",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.24210526315789474
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "gandalf",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "injection=positive",
+        "metric": "recall",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "sentinel",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 1.0
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_email",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "sentinel",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8744348153730218
+    },
+    {
+      "category": "prompt_injection",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "bipia_table",
+        "dataset_revision": "unspecified",
+        "harness": "bir@fd86c16",
+        "label_mapping": "injection=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "sentinel",
+      "notes": null,
+      "source": {
+        "harness_version": "bir@fd86c16",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.03148069579974544
+    }
+  ],
+  "shield_gemma": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7692307692307693
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.108
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8016194331983805
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7244094488188976
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.6666666666666666
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "shield_gemma",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.1368421052631579
+    }
+  ],
+  "wild_guard": [
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "openai_moderation",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8163265306122448
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "xstest",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "safe=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "prompts",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.012
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "wildguardmix",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": true,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.9559322033898306
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "aegis",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "unsafe=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "test",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8606060606060606
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "jbb",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "harmful=positive",
+        "metric": "f1",
+        "metric_impl": null,
+        "split": "all",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.8114754098360656
+    },
+    {
+      "category": "content_safety",
+      "cohort": {
+        "aggregation": "dataset",
+        "dataset": "orbench",
+        "dataset_revision": "unspecified",
+        "harness": "guardrail-bench+ag0.7.4",
+        "label_mapping": "benign=negative",
+        "metric": "fpr",
+        "metric_impl": null,
+        "split": "train",
+        "threshold_policy": "native-valid"
+      },
+      "contamination": false,
+      "guardrail": "wild_guard",
+      "notes": null,
+      "source": {
+        "harness_version": "guardrail-bench+ag0.7.4",
+        "kind": "measured",
+        "url": null
+      },
+      "value": 0.7894736842105263
+    }
+  ]
+}

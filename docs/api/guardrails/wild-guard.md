@@ -64,3 +64,21 @@ Classify a user request and, optionally, the assistant response to it.
 | `output_text` | `str | None` | No | `None` | Optional assistant response judged alongside the request, e.g. ``"I can't help with that."``. When omitted, only request harm is evaluated and the response-side signals may be absent. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.816327 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.012 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.955932 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 | ⚠️ |
+| aegis (unspecified) | f1 | native-valid | 0.860606 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.811475 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.789474 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Allen Institute for AI
+- **Default license:** `apache-2.0` (of the default model/service)

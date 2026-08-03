@@ -87,3 +87,12 @@ in **any** of the supplied documents.
 | `documents` | `list[str] | None` | No | `None` | Auxiliary documents (e.g. retrieved context, tool outputs) to scan for indirect (data-borne) prompt-injection. If ``None``, only the user prompt is analyzed. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Microsoft
+- **Default license:** `proprietary` (of the default model/service)

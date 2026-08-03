@@ -85,3 +85,12 @@ Validate a string or chat-message list against the Lakera Guard API.
 | `content` | `str | list[dict[str, str]]` | Yes | — | Either a plain string (wrapped as a single user-role message, the common prompt-screening case) or a pre-formed list of chat messages following the ``[{"role": "user", "content": "..."}]`` shape. Pass the message-list form to screen a whole conversation, e.g. ``[{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "..."}]``. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Lakera
+- **Default license:** `proprietary` (of the default model/service)

@@ -40,3 +40,12 @@ Validate the `input_text` against the given `policy`.
 | `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``system_prompt`` is not given. Defaults to ``None`` (the default version). See :meth:`any_guardrail.AnyGuardrail.list_prompt_versions`. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Mozilla AI
+- **Default license:** `apache-2.0` (of the default model/service)

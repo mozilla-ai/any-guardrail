@@ -62,3 +62,18 @@ Judge ``output_text`` (the response) given ``input_text`` (the instruction).
 | `output_text` | `str | None` | No | `None` | The response being graded against the rubric, e.g. ``"The article argues that remote work boosts productivity."``. When ``None``, ``input_text`` itself is graded as the response. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.564912 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.635088 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.361404 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Atla
+- **Default license:** `llama-3.1` (of the default model/service)

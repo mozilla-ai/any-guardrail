@@ -73,3 +73,36 @@ Evaluate a conversation transcript against the configured policy.
 | `output_text` | `str | list[str] | None` | No | `None` | Optional agent response judged alongside the user turn, e.g. ``"Sure, I've issued your refund."``. When supplied, the two are assembled into a ``User: ... Agent: ...`` transcript (turns joined by a newline). For a batched ``input_text``, this may be a matching-length list, a single value broadcast to every item, or omitted. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.81746 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.032 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.933824 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.744 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.834123 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.242105 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.557895 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.480702 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.2 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+### Tool Use
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| bfcl (unspecified) | accuracy | native-valid | 0.880702 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| hammerbench (unspecified) | accuracy | native-valid | 0.617544 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** DynaGuard
+- **Default license:** `apache-2.0` (of the default model/service)

@@ -81,3 +81,12 @@ Screen ``content`` against the configured watsonx detectors.
 | `content` | `str` | Yes | — | The text to screen. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** IBM
+- **Default license:** `proprietary` (of the default model/service)

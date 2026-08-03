@@ -60,3 +60,21 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.769231 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.108 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.801619 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.724409 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.666667 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.136842 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Google
+- **Default license:** `gemma` (of the default model/service)

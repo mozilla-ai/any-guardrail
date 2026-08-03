@@ -58,3 +58,21 @@ Moderate ``input_text`` (or, when ``output_text`` is given, the assistant respon
 | `output_text` | `str | None` | No | `None` |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.797508 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.128 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.969072 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.863222 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.760456 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.814035 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Qwen
+- **Default license:** `apache-2.0` (of the default model/service)
