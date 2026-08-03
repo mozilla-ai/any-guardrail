@@ -61,15 +61,24 @@ def _result(
 # --- registry -----------------------------------------------------------------
 
 
-def test_registry_covers_all_guardrails_and_ships_empty() -> None:
-    """Every GuardrailName has an entry, and the committed registry is empty (a ready-to-fill skeleton)."""
+def test_registry_covers_all_guardrails() -> None:
+    """Every GuardrailName has an entry, and each result files under the guardrail it belongs to.
+
+    The registry shipped empty until the out-of-repo harness runs landed; it now carries measured
+    results, so the invariant is coverage + correct grouping rather than emptiness.
+    """
     assert set(BENCHMARK_REGISTRY) == set(GuardrailName)
-    assert sum(len(results) for results in BENCHMARK_REGISTRY.values()) == 0
+    for name, results in BENCHMARK_REGISTRY.items():
+        for result in results:
+            assert result.guardrail == name.value
 
 
 @pytest.mark.parametrize("name", list(GuardrailName), ids=lambda n: n.value)
 def test_get_benchmarks_returns_list(name: GuardrailName) -> None:
-    assert get_benchmarks(name) == []
+    results = get_benchmarks(name)
+    assert isinstance(results, list)
+    # a guardrail with no committed results returns an empty list, never None or a KeyError
+    assert all(isinstance(result, BenchmarkResult) for result in results)
 
 
 # --- provenance ---------------------------------------------------------------
@@ -136,7 +145,10 @@ def test_benchmark_table_shows_provenance_contamination_and_cohort_keys() -> Non
 
 
 def test_empty_benchmarks_section_renders_a_note() -> None:
-    section = generate_api_docs._benchmarks_section(GuardrailName.LLAMA_GUARD)
+    # Uses a guardrail with no committed results, so this keeps testing the empty-render path now that
+    # most guardrails carry measured numbers.
+    empty = next(name for name in GuardrailName if not get_benchmarks(name))
+    section = generate_api_docs._benchmarks_section(empty)
     assert "## Benchmarks" in section
     assert "No benchmark results recorded yet" in section
 
