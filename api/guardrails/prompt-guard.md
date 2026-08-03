@@ -56,3 +56,18 @@ Default validation pipeline: preprocess -> inference -> postprocess.
 | `input_text` | `str | list[str]` | Yes | — | The text to validate. If a list is supplied, each item is validated and a list of GuardrailOutputs is returned in the same order. Subclasses can override ``_validate_batch`` to enable true batched inference; the default iterates over inputs. |
 
 **Returns:** `GuardrailOutput | list[GuardrailOutput]`
+
+## Benchmarks
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.235294 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0315789 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.973214 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Meta
+- **Default license:** `llama-4` (of the default model/service)

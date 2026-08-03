@@ -57,3 +57,12 @@ This can be used for validation using any of the API endpoints provided by Alini
 | `context_documents` | `list[str] | None` | No | `None` | Optional context documents (e.g. retrieved RAG passages) that give output-side detections the grounding text to check against. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Alinia AI
+- **Default license:** `proprietary` (of the default model/service)

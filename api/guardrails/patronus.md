@@ -86,3 +86,12 @@ Run the configured evaluators against the supplied model interaction.
 | `retrieved_context` | `str | list[str] | None` | No | `None` | RAG context document(s). Required by grounding / hallucination evaluators. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Patronus AI
+- **Default license:** `proprietary` (of the default model/service)

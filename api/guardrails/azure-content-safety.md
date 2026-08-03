@@ -55,3 +55,12 @@ Validate content using Azure Content Safety.
 | `content` | `str` | Yes | — | The content to be evaluated. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+No benchmark results recorded yet. See the [benchmark methodology](../../benchmarks.md) for how numbers are harvested (published) or measured and added.
+
+## License
+
+- **Vendor:** Microsoft
+- **Default license:** `proprietary` (of the default model/service)

@@ -65,3 +65,18 @@ Judge whether ``input_text`` is on-topic relative to ``comparison_text``.
 | `comparison_text` | `str | None` | No | `None` | The reference topic to compare against — typically the system prompt or the app's intended subject, e.g. ``"You are a customer-support bot for an online bookstore."``. Although it defaults to ``None`` for signature reasons, it is semantically required: a missing or empty value raises ``ValueError``. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.452632 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.498246 | router_judge@c06603a | measured:router_judge@c06603a |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.270175 | router_judge@c06603a | measured:router_judge@c06603a |  |
+
+## License
+
+- **Vendor:** GovTech Singapore
+- **Default license:** `mit` (of the default model/service)

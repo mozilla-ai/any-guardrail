@@ -60,3 +60,27 @@ Classify ``input_text`` and, optionally, an assistant ``output_text``.
 | `output_text` | `str | None` | No | `None` | Optional assistant response, judged for harm and refusal alongside the request. When omitted, the response slot is left empty. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.817276 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.016 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.965753 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.855305 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.760456 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.733333 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** ToxicityPrompts
+- **Default license:** `mrl` (of the default model/service)
+
+| Model variant | License |
+| --- | --- |
+| `ToxicityPrompts/PolyGuard-Ministral` | `mrl` |
+| `ToxicityPrompts/PolyGuard-Qwen` | `apache-2.0` |
+| `ToxicityPrompts/PolyGuard-Qwen-Smol` | `apache-2.0` |

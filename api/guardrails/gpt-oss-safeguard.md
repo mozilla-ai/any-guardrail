@@ -56,3 +56,29 @@ Classify ``input_text`` against the configured policy.
 | `input_text` | `str` | Yes | — | The content to moderate, sent as the user message beneath the policy system message. Single string only; list input raises ``TypeError``. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.825 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.1 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.916364 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.775665 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.817308 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.438596 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### General Judge
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| judgebench (unspecified) | choice_accuracy | native-valid | 0.659649 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| llmbar (unspecified) | choice_accuracy | native-valid | 0.74386 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| rewardbench2 (unspecified) | choice_accuracy | native-valid | 0.473684 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** OpenAI
+- **Default license:** `apache-2.0` (of the default model/service)

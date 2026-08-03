@@ -55,3 +55,31 @@ Validate whether the input (and optionally the response) is safe.
 | `output_text` | `str | None` | No | `None` | Optional model response. When provided, ``input_text`` and ``output_text`` are tokenized as a text pair so the response is judged for safety in the context of the prompt; when ``None``, only the prompt is judged. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Content Safety
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| openai_moderation (unspecified) | f1 | native-valid | 0.815331 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| xstest (unspecified) | fpr | native-valid | 0.036 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| wildguardmix (unspecified) | f1 | native-valid | 0.958333 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| aegis (unspecified) | f1 | native-valid | 0.816456 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| jbb (unspecified) | f1 | native-valid | 0.871111 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| orbench (unspecified) | fpr | native-valid | 0.287719 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+### Prompt Injection
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| deepset_pi (unspecified) | f1 | native-valid | 0.38961 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| notinject (unspecified) | fpr | native-valid | 0.0175439 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| gandalf (unspecified) | recall | native-valid | 0.3125 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+| bipia_email (unspecified) | f1 | native-valid | 0.628668 | bir@fd86c16 | measured:bir@fd86c16 |  |
+| bipia_table (unspecified) | f1 | native-valid | 0.170683 | bir@fd86c16 | measured:bir@fd86c16 |  |
+
+## License
+
+- **Vendor:** hbseong
+- **Default license:** `apache-2.0` (of the default model/service)

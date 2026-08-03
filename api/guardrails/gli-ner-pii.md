@@ -62,3 +62,16 @@ Detect PII spans in ``input_text`` and emit a redacted copy.
 | `redaction_placeholder` | `str` | No | `"[REDACTED_{label}]"` | Template used to replace each detected span in ``modified_text``; the substring ``{label}`` is replaced with the upper-cased entity type (e.g. ``"[REDACTED_EMAIL]"``). Any other braces are kept literal, so an arbitrary placeholder never raises. |
 
 **Returns:** `GuardrailOutput`
+
+## Benchmarks
+
+### Pii
+
+| Dataset (rev) | Metric | Threshold | Value | Harness | Source | Contam. |
+| --- | --- | --- | --- | --- | --- | --- |
+| ai4privacy_pii (unspecified) | recall | native-valid | 0.880702 | guardrail-bench+ag0.7.4 | measured:guardrail-bench+ag0.7.4 |  |
+
+## License
+
+- **Vendor:** Fastino
+- **Default license:** `apache-2.0` (of the default model/service)
