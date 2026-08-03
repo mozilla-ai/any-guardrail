@@ -144,11 +144,14 @@ def test_benchmark_table_shows_provenance_contamination_and_cohort_keys() -> Non
     assert "qwen3-report" in table  # harness visible
 
 
-def test_empty_benchmarks_section_renders_a_note() -> None:
-    # Uses a guardrail with no committed results, so this keeps testing the empty-render path now that
-    # most guardrails carry measured numbers.
-    empty = next(name for name in GuardrailName if not get_benchmarks(name))
-    section = generate_api_docs._benchmarks_section(empty)
+def test_empty_benchmarks_section_renders_a_note(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Force the empty case rather than hunting for a guardrail that happens to have no committed
+    # results: that search raises StopIteration once every guardrail is measured, and the empty-render
+    # path has to stay covered regardless of what is committed.
+    import any_guardrail.benchmark_registry as registry
+
+    monkeypatch.setattr(registry, "get_benchmarks", lambda name: [])
+    section = generate_api_docs._benchmarks_section(GuardrailName.LLAMA_GUARD)
     assert "## Benchmarks" in section
     assert "No benchmark results recorded yet" in section
 
