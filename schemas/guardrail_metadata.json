@@ -1075,6 +1075,31 @@
     "variant_licenses": [],
     "vendor": "Google"
   },
+  "susfactor": {
+    "backend": "local_encoder",
+    "categories": [
+      "prompt_injection"
+    ],
+    "default_license": "proprietary",
+    "description": "Binary prompt-injection and jailbreak classifier using a chunked e5-large encoder with a trained MLP head.",
+    "display_name": "SusFactor",
+    "multilingual": false,
+    "multimodal": false,
+    "optional_validate_kwargs": [],
+    "output_shapes": [
+      "binary",
+      "score"
+    ],
+    "primary_category": "prompt_injection",
+    "required_validate_kwargs": [],
+    "requires_api_key": false,
+    "stages": [
+      "input"
+    ],
+    "supports_batch": false,
+    "variant_licenses": [],
+    "vendor": "0DIN"
+  },
   "watsonx_guardian": {
     "backend": "hosted_api",
     "categories": [

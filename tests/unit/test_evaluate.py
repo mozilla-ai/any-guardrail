@@ -36,6 +36,7 @@ SINGLE_NO_REQUIRED_KWARGS = [
     GuardrailName.PANGOLIN,
     GuardrailName.PROTECTAI,
     GuardrailName.SENTINEL,
+    GuardrailName.SUSFACTOR,
     GuardrailName.SHIELD_GEMMA,
     GuardrailName.PROMPT_GUARD,
     GuardrailName.BIELIK_GUARD,

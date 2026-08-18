@@ -2059,6 +2059,34 @@ _PARAMETER_DATA_JSON = r"""
       "type": "enum"
     }
   ],
+  "susfactor": [
+    {
+      "choices": [
+        "0dinai/susfactor-e5-large"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large``.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "model_id",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Per-chunk suspicious-probability cutoff at or above which a chunk (and therefore the whole input) is flagged unsafe. Defaults to 0.5.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "threshold",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "number"
+    }
+  ],
   "watsonx_guardian": [
     {
       "choices": null,

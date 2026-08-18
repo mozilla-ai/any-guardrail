@@ -64,6 +64,7 @@ class GuardrailName(StrEnum):
     PATRONUS = "patronus"
     QWEN3_GUARD = "qwen3_guard"
     QWEN3_GUARD_STREAM = "qwen3_guard_stream"
+    SUSFACTOR = "susfactor"
 
 
 class Guardrail(ABC):
