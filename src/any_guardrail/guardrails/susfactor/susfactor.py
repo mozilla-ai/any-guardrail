@@ -79,6 +79,9 @@ class Susfactor(StandardGuardrail):
 
     Expected input: a single ``input_text`` string. There is no prompt+response or chat-message mode.
 
+    See https://0din.ai/docs/defense/introduction for SusFactor's model card, threat-feed
+    training methodology, and benchmark results.
+
     The model repository (``0dinai/susfactor-e5-large-onnx``) is gated on HuggingFace; loading it
     requires an authenticated Hub token available via the standard
     ``transformers``/``huggingface_hub`` resolution (environment variable or cached login).
