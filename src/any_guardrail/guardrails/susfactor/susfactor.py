@@ -125,7 +125,10 @@ class Susfactor(StandardGuardrail):
             provider: Optional pre-configured provider. If ``None``, a default ``HuggingFaceProvider``
                 is built targeting a plain ``AutoModel`` encoder and the ``encoder/`` subfolder of
                 ``model_id`` is loaded. A supplied ``HuggingFaceProvider`` is corrected to
-                ``AutoModel``/``AutoTokenizer`` at load time; any other provider is used as-is. The
+                ``AutoModel``/``AutoTokenizer`` at load time. Regardless of provider type,
+                ``provider.tokenizer`` is always reloaded from ``model_id``'s ``encoder/`` subfolder
+                after ``load_model()`` runs, to work around ``HuggingFaceProvider.load_model()`` not
+                forwarding ``subfolder`` to the tokenizer's ``from_pretrained`` call. The
                 classification head (``head.pt``) is always downloaded and loaded separately,
                 regardless of which provider is used, since it isn't part of the encoder checkpoint.
 
