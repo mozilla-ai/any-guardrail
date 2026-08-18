@@ -1,9 +1,9 @@
 from typing import Any, ClassVar
 
+import numpy as np
+
 from any_guardrail.base import GuardrailName, StandardGuardrail
 from any_guardrail.guardrails.utils import default
-from any_guardrail.providers.base import StandardProvider
-from any_guardrail.providers.huggingface import HuggingFaceProvider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import GuardrailMetadata
 from any_guardrail.types import (
@@ -18,8 +18,6 @@ from any_guardrail.types import (
 )
 
 SUSFACTOR_DEFAULT_THRESHOLD = 0.5
-SUSFACTOR_ENCODER_SUBFOLDER = "encoder"
-SUSFACTOR_HEAD_FILENAME = "head.pt"
 
 EMBEDDING_DIM = 1024
 NUM_CLASSES = 2
@@ -54,26 +52,16 @@ def _chunk_token_ids(token_ids: list[int]) -> list[list[int]]:
     return chunks
 
 
-def _mean_pool(last_hidden_state: Any, attention_mask: Any) -> Any:
-    """Mean-pool encoder token embeddings over non-padding positions.
-
-    ``sum(masked token embeddings) / sum(mask)`` — no max-pooling, no L2
-    normalization.
-    """
-    mask = attention_mask.unsqueeze(-1).to(last_hidden_state.dtype)
-    summed = (last_hidden_state * mask).sum(dim=1)
-    counts = mask.sum(dim=1).clamp(min=1.0)
-    return summed / counts
-
-
 class Susfactor(StandardGuardrail):
     """Binary prompt-injection and jailbreak classifier using a chunked e5-large encoder with a trained MLP head.
 
-    SusFactor is 0DIN's proprietary classifier: an e5-large ``AutoModel`` encoder feeds a small
-    trained MLP head (``1024 -> 256 -> 2`` with GELU) applied to the mean-pooled ``last_hidden_state``.
-    Unlike most encoder classifiers here, the two stages are not fused into a single HuggingFace
-    sequence-classification checkpoint — the encoder is loaded from an ``encoder/`` subfolder of the
-    model repo, and the head's weights (``head.pt``) are downloaded and loaded separately.
+    SusFactor is 0DIN's proprietary classifier: an e5-large encoder and its trained MLP head
+    (``1024 -> 256 -> 2`` with GELU, applied to the mean-pooled ``last_hidden_state``) are fused
+    into a single ONNX graph, exported ahead of time and shipped as ``onnx/model.onnx`` (plus a
+    companion ``onnx/model.onnx_data`` external-data file) in the model repository. Unlike the
+    ``HuggingFaceProvider``-based guardrails in this codebase, Susfactor bypasses the provider
+    layer entirely and runs the fused graph directly through ``onnxruntime.InferenceSession`` — no
+    ``torch``/``transformers`` model classes are involved at inference time, only a tokenizer.
 
     The input text is tokenized untruncated. Sequences that exceed ``MAX_CONTENT_TOKENS`` (510,
     leaving room for [CLS]/[SEP] in the 512-token encoder limit) are split into overlapping chunks
@@ -91,21 +79,22 @@ class Susfactor(StandardGuardrail):
 
     Expected input: a single ``input_text`` string. There is no prompt+response or chat-message mode.
 
-    The model repository (``0dinai/susfactor-e5-large``) is gated on HuggingFace; loading it requires
-    an authenticated Hub token available via the standard ``transformers``/``huggingface_hub``
-    resolution (environment variable or cached login).
+    The model repository (``0dinai/susfactor-e5-large-onnx``) is gated on HuggingFace; loading it
+    requires an authenticated Hub token available via the standard
+    ``transformers``/``huggingface_hub`` resolution (environment variable or cached login).
 
     Args:
         model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to
-            ``0dinai/susfactor-e5-large``.
+            ``0dinai/susfactor-e5-large-onnx``.
         threshold: Per-chunk suspicious-probability cutoff at or above which a chunk (and therefore
             the whole input) is flagged. Defaults to 0.5.
-        provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading the
-            ``encoder/`` subfolder of ``model_id`` as a plain ``AutoModel``.
+        session: Optional pre-built ``onnxruntime.InferenceSession``. Useful for testing: when both
+            ``session`` and ``tokenizer`` are supplied, no download or model loading happens.
+        tokenizer: Optional pre-built tokenizer. Useful for testing; see ``session``.
 
     """
 
-    SUPPORTED_MODELS: ClassVar = ["0dinai/susfactor-e5-large"]
+    SUPPORTED_MODELS: ClassVar = ["0dinai/susfactor-e5-large-onnx"]
 
     METADATA: ClassVar[GuardrailMetadata] = GUARDRAIL_METADATA[GuardrailName.SUSFACTOR]
 
@@ -113,68 +102,43 @@ class Susfactor(StandardGuardrail):
         self,
         model_id: str | None = None,
         threshold: float = SUSFACTOR_DEFAULT_THRESHOLD,
-        provider: StandardProvider | None = None,
+        session: Any = None,
+        tokenizer: Any = None,
     ) -> None:
         """Initialize the Susfactor guardrail.
 
         Args:
             model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults
-                to ``0dinai/susfactor-e5-large``.
+                to ``0dinai/susfactor-e5-large-onnx``.
             threshold: Per-chunk suspicious-probability cutoff at or above which a chunk (and
                 therefore the whole input) is flagged unsafe. Defaults to 0.5.
-            provider: Optional pre-configured provider. If ``None``, a default ``HuggingFaceProvider``
-                is built targeting a plain ``AutoModel`` encoder and the ``encoder/`` subfolder of
-                ``model_id`` is loaded. A supplied ``HuggingFaceProvider`` is corrected to
-                ``AutoModel``/``AutoTokenizer`` at load time. Regardless of provider type,
-                ``provider.tokenizer`` is always reloaded from ``model_id``'s ``encoder/`` subfolder
-                after ``load_model()`` runs, to work around ``HuggingFaceProvider.load_model()`` not
-                forwarding ``subfolder`` to the tokenizer's ``from_pretrained`` call. The
-                classification head (``head.pt``) is always downloaded and loaded separately,
-                regardless of which provider is used, since it isn't part of the encoder checkpoint.
+            session: Optional pre-built ``onnxruntime.InferenceSession``. If supplied together with
+                ``tokenizer``, it is used directly and no download/model loading happens.
+            tokenizer: Optional pre-built tokenizer. If supplied together with ``session``, it is
+                used directly and no download/model loading happens.
 
         Raises:
             ValueError: If ``model_id`` is not in ``SUPPORTED_MODELS``.
 
         """
-        self.model_id = default(model_id, self.SUPPORTED_MODELS)
         self.threshold = threshold
 
-        # Lazy-import torch/transformers/huggingface_hub so importing Susfactor
-        # does not require the huggingface extra at module load time.
-        import torch
-        from huggingface_hub import hf_hub_download
-        from torch import nn
-        from transformers import AutoModel, AutoTokenizer
+        if session is not None and tokenizer is not None:
+            self.model_id = model_id or self.SUPPORTED_MODELS[0]
+            self._session = session
+            self._tokenizer = tokenizer
+            return
 
-        load_kwargs: AnyDict = {}
-        if provider is not None:
-            self.provider = provider
-            if isinstance(self.provider, HuggingFaceProvider):
-                load_kwargs = {"model_class": AutoModel, "tokenizer_class": AutoTokenizer}
-        else:
-            self.provider = HuggingFaceProvider(model_class=AutoModel, tokenizer_class=AutoTokenizer)
-        self.provider.load_model(self.model_id, subfolder=SUSFACTOR_ENCODER_SUBFOLDER, **load_kwargs)
+        # Lazy-import onnxruntime/huggingface_hub/transformers so importing
+        # Susfactor does not require the onnx extra at module load time.
+        import onnxruntime
+        from huggingface_hub import snapshot_download
+        from transformers import AutoTokenizer
 
-        # HuggingFaceProvider.load_model() does not forward `subfolder` to the
-        # tokenizer's from_pretrained call, so the tokenizer above was loaded
-        # from the (wrong) repo root. Reload it explicitly from the encoder
-        # subfolder.
-        self.provider.tokenizer = AutoTokenizer.from_pretrained(  # type: ignore[attr-defined]
-            self.model_id, subfolder=SUSFACTOR_ENCODER_SUBFOLDER
-        )
-
-        self._head = nn.Sequential(
-            nn.Dropout(0.0),
-            nn.Linear(EMBEDDING_DIM, DEFAULT_HIDDEN_DIM),
-            nn.GELU(),
-            nn.Dropout(0.0),
-            nn.Linear(DEFAULT_HIDDEN_DIM, NUM_CLASSES),
-        )
-        head_path = hf_hub_download(repo_id=self.model_id, filename=SUSFACTOR_HEAD_FILENAME)
-        state_dict = torch.load(head_path, map_location="cpu")
-        state_dict = {k.removeprefix("classifier."): v for k, v in state_dict.items()}
-        self._head.load_state_dict(state_dict)
-        self._head.eval()
+        self.model_id = default(model_id, self.SUPPORTED_MODELS)
+        local_dir = snapshot_download(self.model_id)
+        self._tokenizer = AutoTokenizer.from_pretrained(local_dir, local_files_only=True)
+        self._session = onnxruntime.InferenceSession(f"{local_dir}/onnx/model.onnx")  # type: ignore[attr-defined]
 
     def _pre_processing(self, input_text: str) -> StandardPreprocessOutput:
         """Tokenize the full input untruncated and split it into overlapping chunks.
@@ -184,44 +148,48 @@ class Susfactor(StandardGuardrail):
 
         Returns:
             GuardrailPreprocessOutput wrapping ``{"chunks": [...]}``, one
-            ``{"input_ids", "attention_mask"}`` tensor pair per chunk, each with
-            [CLS]/[SEP] added back and a batch dimension of 1.
+            ``{"input_ids", "attention_mask"}`` numpy array pair per chunk, each
+            with [CLS]/[SEP] added back and a batch dimension of 1.
 
         """
-        import torch
-
-        tokenizer = self.provider.tokenizer  # type: ignore[attr-defined]
-        content_ids: list[int] = tokenizer(input_text, add_special_tokens=False, truncation=False)["input_ids"]
-        cls_id = tokenizer.cls_token_id
-        sep_id = tokenizer.sep_token_id
+        content_ids: list[int] = self._tokenizer(input_text, add_special_tokens=False, truncation=False)["input_ids"]
+        cls_id = self._tokenizer.cls_token_id
+        sep_id = self._tokenizer.sep_token_id
 
         chunks: list[AnyDict] = []
         for token_chunk in _chunk_token_ids(content_ids):
             ids = [cls_id, *token_chunk, sep_id]
             chunks.append(
                 {
-                    "input_ids": torch.tensor([ids]),
-                    "attention_mask": torch.tensor([[1] * len(ids)]),
+                    "input_ids": np.array([ids], dtype=np.int64),
+                    "attention_mask": np.array([[1] * len(ids)], dtype=np.int64),
                 }
             )
         return GuardrailPreprocessOutput(data={"chunks": chunks})
 
     def _inference(self, model_inputs: StandardPreprocessOutput) -> StandardInferenceOutput:
-        """Run each chunk through the encoder + MLP head and softmax to P(suspicious).
+        """Run each chunk through the fused ONNX graph and softmax to P(suspicious).
 
-        Bypasses ``provider.infer()`` (which assumes a fused sequence-classification
-        head): the encoder and the trained MLP head are run explicitly per chunk.
+        Bypasses ``provider.infer()`` entirely: the fused encoder+head graph is run
+        directly through ``onnxruntime.InferenceSession.run()`` per chunk.
         """
-        import torch
+        required_names = {inp.name for inp in self._session.get_inputs()}
+        output_names = [output.name for output in self._session.get_outputs()]
+        logits_idx = output_names.index("logits") if "logits" in output_names else 0
 
         chunk_scores: list[float] = []
-        with torch.no_grad():
-            for chunk in model_inputs.data["chunks"]:
-                encoder_output = self.provider.model(**chunk)  # type: ignore[attr-defined]
-                pooled = _mean_pool(encoder_output.last_hidden_state, chunk["attention_mask"])
-                logits = self._head(pooled)
-                probabilities = torch.softmax(logits, dim=-1)
-                chunk_scores.append(probabilities[0, 1].item())
+        for chunk in model_inputs.data["chunks"]:
+            onnx_inputs: AnyDict = {
+                "input_ids": chunk["input_ids"],
+                "attention_mask": chunk["attention_mask"],
+            }
+            if "token_type_ids" in required_names:
+                onnx_inputs["token_type_ids"] = np.zeros_like(chunk["input_ids"])
+            outputs = self._session.run(None, onnx_inputs)
+            logits = outputs[logits_idx][0]
+            exp_logits = np.exp(logits - np.max(logits))
+            probabilities = exp_logits / exp_logits.sum()
+            chunk_scores.append(float(probabilities[1]))
         return GuardrailInferenceOutput(data={"chunk_scores": chunk_scores})
 
     def _post_processing(self, model_outputs: StandardInferenceOutput) -> GuardrailOutput:

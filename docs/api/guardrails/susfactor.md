@@ -2,11 +2,13 @@
 
 Binary prompt-injection and jailbreak classifier using a chunked e5-large encoder with a trained MLP head.
 
-SusFactor is 0DIN's proprietary classifier: an e5-large ``AutoModel`` encoder feeds a small
-trained MLP head (``1024 -> 256 -> 2`` with GELU) applied to the mean-pooled ``last_hidden_state``.
-Unlike most encoder classifiers here, the two stages are not fused into a single HuggingFace
-sequence-classification checkpoint — the encoder is loaded from an ``encoder/`` subfolder of the
-model repo, and the head's weights (``head.pt``) are downloaded and loaded separately.
+SusFactor is 0DIN's proprietary classifier: an e5-large encoder and its trained MLP head
+(``1024 -> 256 -> 2`` with GELU, applied to the mean-pooled ``last_hidden_state``) are fused
+into a single ONNX graph, exported ahead of time and shipped as ``onnx/model.onnx`` (plus a
+companion ``onnx/model.onnx_data`` external-data file) in the model repository. Unlike the
+``HuggingFaceProvider``-based guardrails in this codebase, Susfactor bypasses the provider
+layer entirely and runs the fused graph directly through ``onnxruntime.InferenceSession`` — no
+``torch``/``transformers`` model classes are involved at inference time, only a tokenizer.
 
 The input text is tokenized untruncated. Sequences that exceed ``MAX_CONTENT_TOKENS`` (510,
 leaving room for [CLS]/[SEP] in the 512-token encoder limit) are split into overlapping chunks
@@ -24,21 +26,22 @@ Verdict mapping onto ``GuardrailOutput``:
 
 Expected input: a single ``input_text`` string. There is no prompt+response or chat-message mode.
 
-The model repository (``0dinai/susfactor-e5-large``) is gated on HuggingFace; loading it requires
-an authenticated Hub token available via the standard ``transformers``/``huggingface_hub``
-resolution (environment variable or cached login).
+The model repository (``0dinai/susfactor-e5-large-onnx``) is gated on HuggingFace; loading it
+requires an authenticated Hub token available via the standard
+``transformers``/``huggingface_hub`` resolution (environment variable or cached login).
 
 ## Supported Models
 
-- `0dinai/susfactor-e5-large`
+- `0dinai/susfactor-e5-large-onnx`
 
 ## Constructor
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large``. |
+| `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large-onnx``. |
 | `threshold` | `float` | No | `0.5` | Per-chunk suspicious-probability cutoff at or above which a chunk (and therefore the whole input) is flagged unsafe. Defaults to 0.5. |
-| `provider` | `Optional[Provider[dict[str, Any], dict[str, Any]]]` | No | `None` | Optional pre-configured provider. If ``None``, a default ``HuggingFaceProvider`` is built targeting a plain ``AutoModel`` encoder and the ``encoder/`` subfolder of ``model_id`` is loaded. A supplied ``HuggingFaceProvider`` is corrected to ``AutoModel``/``AutoTokenizer`` at load time; any other provider is used as-is. The classification head (``head.pt``) is always downloaded and loaded separately, regardless of which provider is used, since it isn't part of the encoder checkpoint. |
+| `session` | `Any` | No | `None` | Optional pre-built ``onnxruntime.InferenceSession``. If supplied together with ``tokenizer``, it is used directly and no download/model loading happens. |
+| `tokenizer` | `Any` | No | `None` | Optional pre-built tokenizer. If supplied together with ``session``, it is used directly and no download/model loading happens. |
 
 Initialize the Susfactor guardrail.
 
