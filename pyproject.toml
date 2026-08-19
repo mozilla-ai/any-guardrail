@@ -18,7 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai,lettucedetect,gliner,watsonx]"
+  "any-guardrail[flowjudge,huggingface,azure-content-safety,encoderfile,bedrock,llamafile,openai,lettucedetect,gliner,watsonx,onnx]"
 ]
 
 bedrock = [
@@ -76,6 +76,13 @@ encoderfile = [
     "huggingface-hub>=0.33.4",
     "hf-xet>=1.1.5",
     "numpy>=1.26",
+]
+
+onnx = [
+    "onnxruntime>=1.20.0",
+    "huggingface-hub>=0.33.4",
+    "hf-xet>=1.1.5",
+    "transformers>=4.53.2",
 ]
 
 llamafile = [

@@ -122,6 +122,7 @@ def test_model_load() -> None:
             GuardrailName.LETTUCE_DETECT,  # Wraps the lettucedetect library
             GuardrailName.GLI_GUARD,  # Wraps the gliner2 library
             GuardrailName.GLI_NER_PII,  # Wraps the gliner2 library
+            GuardrailName.SUSFACTOR,  # Runs onnxruntime directly, no provider
         ):
             continue
 

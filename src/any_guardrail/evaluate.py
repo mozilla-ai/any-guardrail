@@ -139,6 +139,7 @@ _BUILDERS: dict[GuardrailName, _Builder] = {
     GuardrailName.PANGOLIN: _single(),
     GuardrailName.PROTECTAI: _single(),
     GuardrailName.SENTINEL: _single(),
+    GuardrailName.SUSFACTOR: _single(),
     GuardrailName.SHIELD_GEMMA: _single(),
     GuardrailName.PROMPT_GUARD: _single(),
     GuardrailName.BIELIK_GUARD: _single(),

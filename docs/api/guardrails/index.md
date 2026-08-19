@@ -18,6 +18,7 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | [Prompt Guard 2](prompt-guard.md) | Encoder classifier for prompt-injection and jailbreak detection. |
 | [ProtectAI](protectai.md) | Binary prompt-injection classifiers. |
 | [Sentinel](sentinel.md) | Binary prompt-injection classifier. |
+| [SusFactor](susfactor.md) | Binary prompt-injection and jailbreak classifier using a chunked e5-large encoder with a trained MLP head. |
 
 ## Content Safety
 

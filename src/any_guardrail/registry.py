@@ -589,4 +589,17 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         vendor="Qwen",
         default_license="apache-2.0",
     ),
+    GuardrailName.SUSFACTOR: GuardrailMetadata(
+        description=(
+            "Binary prompt-injection and jailbreak classifier using a chunked e5-large encoder with a trained MLP head."
+        ),
+        display_name="SusFactor",
+        categories=frozenset({GuardrailCategory.PROMPT_INJECTION}),
+        primary_category=GuardrailCategory.PROMPT_INJECTION,
+        stages=frozenset({GuardrailStage.INPUT}),
+        output_shapes=frozenset({OutputShape.BINARY, OutputShape.SCORE}),
+        backend=BackendType.LOCAL_ENCODER,
+        vendor="0DIN",
+        default_license="proprietary",
+    ),
 }

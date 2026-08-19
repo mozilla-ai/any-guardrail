@@ -37,6 +37,7 @@
     * [Prompt Guard 2](api/guardrails/prompt-guard.md)
     * [ProtectAI](api/guardrails/protectai.md)
     * [Sentinel](api/guardrails/sentinel.md)
+    * [SusFactor](api/guardrails/susfactor.md)
   * Content Safety
     * [Alinia](api/guardrails/alinia.md)
     * [Azure Content Safety](api/guardrails/azure-content-safety.md)

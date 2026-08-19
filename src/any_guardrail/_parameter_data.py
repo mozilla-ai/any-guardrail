@@ -2059,6 +2059,58 @@ _PARAMETER_DATA_JSON = r"""
       "type": "enum"
     }
   ],
+  "susfactor": [
+    {
+      "choices": [
+        "0dinai/susfactor-e5-large-onnx"
+      ],
+      "default": null,
+      "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large-onnx``.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "model_id",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "enum"
+    },
+    {
+      "choices": null,
+      "default": 0.5,
+      "description": "Per-chunk suspicious-probability cutoff at or above which a chunk (and therefore the whole input) is flagged unsafe. Defaults to 0.5.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "threshold",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "number"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional pre-built ``onnxruntime.InferenceSession``. If supplied together with ``tokenizer``, it is used directly and no download/model loading happens.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "session",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "json"
+    },
+    {
+      "choices": null,
+      "default": null,
+      "description": "Optional pre-built tokenizer. If supplied together with ``session``, it is used directly and no download/model loading happens.",
+      "effectively_required": false,
+      "env_var": null,
+      "name": "tokenizer",
+      "required": false,
+      "secret": false,
+      "stage": "create",
+      "type": "json"
+    }
+  ],
   "watsonx_guardian": [
     {
       "choices": null,
