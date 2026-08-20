@@ -1,19 +1,37 @@
 """Central, import-free registry of guardrail parameter schemas (issue #206).
 
 Assembles the generated stdlib-only ``any_guardrail._parameter_data`` into typed, frozen
-:class:`~any_guardrail.parameters.ParameterSpec` tuples per guardrail. Imports only
+:class:`~any_guardrail.parameters.ParameterSpec` tuples per guardrail, layering on the
+hand-authored value shapes from ``any_guardrail._authored_parameter_shape_data`` (which describe
+the nesting of ``json`` parameters, something a signature cannot express). Imports only
 ``any_guardrail.base`` (for ``GuardrailName``), ``any_guardrail.parameters`` (leaf models), and
-the generated ``any_guardrail._parameter_data`` leaf — never a guardrail implementation — so
+those two stdlib-only data leaves — never a guardrail implementation — so
 parameter discovery never pulls in ``torch`` / ``transformers`` or spins up a backend, and works
 in a bare install. The public accessor is ``AnyGuardrail.get_parameter_schema(name)``.
 """
 
+from typing import Any
+
+from any_guardrail._authored_parameter_shape_data import PARAMETER_SHAPES
 from any_guardrail._parameter_data import PARAMETER_DATA, REQUIREMENT_GROUPS
 from any_guardrail.base import GuardrailName
 from any_guardrail.parameters import ParameterSpec, RequirementGroup
 
+
+def _with_shape(guardrail: str, spec: dict[str, Any]) -> dict[str, Any]:
+    """Layer the hand-authored value shape (if any) onto one generated spec dict.
+
+    The generated data describes what a signature can express; the authored table describes the
+    nesting of a ``json`` value, which it cannot. Absent an entry the spec is returned unchanged,
+    so an undescribed parameter keeps ``shape=None``.
+    """
+    shape = PARAMETER_SHAPES.get(guardrail, {}).get(spec["name"])
+    return spec if shape is None else {**spec, **shape}
+
+
 PARAMETER_REGISTRY: dict[GuardrailName, tuple[ParameterSpec, ...]] = {
-    GuardrailName(name): tuple(ParameterSpec(**spec) for spec in specs) for name, specs in PARAMETER_DATA.items()
+    GuardrailName(name): tuple(ParameterSpec(**_with_shape(name, spec)) for spec in specs)
+    for name, specs in PARAMETER_DATA.items()
 }
 
 REQUIREMENT_GROUP_REGISTRY: dict[GuardrailName, tuple[RequirementGroup, ...]] = {

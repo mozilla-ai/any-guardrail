@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import any_guardrail._authored_parameter_shape_data as shape_data_module
 import any_guardrail._parameter_data as parameter_data_module
 import any_guardrail.parameters as parameters_module
 from any_guardrail import AnyGuardrail, GuardrailName
@@ -368,3 +369,109 @@ def test_a_preset_value_may_be_a_dict() -> None:
     """Presets carry value fragments, so ``value`` must accept non-scalars without complaint."""
     preset = ParameterPreset(label="L", value=[{"evaluator": "lynx"}])
     assert preset.value == [{"evaluator": "lynx"}]
+
+
+def test_authored_shapes_module_is_stdlib_leaf() -> None:
+    """The hand-authored shape table depends only on the stdlib."""
+    roots = _import_roots(shape_data_module.__file__)
+    assert roots <= {"typing"}, f"_authored_parameter_shape_data.py imports beyond stdlib: {roots}"
+
+
+def test_authored_shapes_reference_real_json_parameters() -> None:
+    """Every authored entry names a parameter that still exists and is still ``json``.
+
+    Coverage is incremental by design (an undescribed parameter keeps ``shape=None``), so there is
+    deliberately no assertion that every ``json`` parameter is shaped. The direction that *does*
+    need pinning is the other one: an upstream rename, or a signature change that reclassifies a
+    parameter away from ``json``, must fail here rather than leave a dead entry behind.
+    """
+    valid_names = {n.value for n in GuardrailName}
+    for guardrail, params in shape_data_module.PARAMETER_SHAPES.items():
+        assert guardrail in valid_names, f"unknown guardrail {guardrail!r} in the shape table"
+        specs = {spec.name: spec for spec in get_parameter_schema(GuardrailName(guardrail))}
+        for param in params:
+            assert param in specs, f"{guardrail}:{param} is in the shape table but not in the registry"
+            assert specs[param].type == ParameterType.JSON, (
+                f"{guardrail}:{param} is shaped but typed {specs[param].type.value}; a shape only "
+                f"describes a json value"
+            )
+
+
+@pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
+def test_shape_declarations_are_internally_consistent(name: GuardrailName) -> None:
+    """Each shape carries exactly the accompanying structure its kind needs, and no other."""
+    for spec in get_parameter_schema(name):
+        label = f"{name.value}:{spec.name}"
+        if spec.shape is None:
+            assert not spec.item_fields, f"{label} has item_fields without a shape"
+            assert not spec.options, f"{label} has options without a shape"
+            assert not spec.presets, f"{label} has presets without a shape"
+            assert spec.scalar_alternative is None, f"{label} has a scalar_alternative without a shape"
+            continue
+
+        if spec.shape == ParameterShape.OBJECT_LIST:
+            assert spec.item_fields, f"{label} is object_list without item_fields"
+            assert any(field.required for field in spec.item_fields), (
+                f"{label} is object_list but no item_field is required, so an empty record would be valid"
+            )
+            assert not spec.options, f"{label} is object_list but declares options"
+        elif spec.shape == ParameterShape.OPTION_MAP:
+            assert spec.options, f"{label} is option_map without options"
+            assert not spec.item_fields, f"{label} is option_map but declares item_fields"
+        else:
+            assert not spec.item_fields, f"{label} is {spec.shape.value} but declares item_fields"
+            assert not spec.options, f"{label} is {spec.shape.value} but declares options"
+
+        if spec.shape == ParameterShape.OPAQUE:
+            assert not spec.presets, f"{label} is opaque, so it cannot be configured at all"
+            assert spec.scalar_alternative is None, f"{label} is opaque but offers a scalar alternative"
+
+        keys = {field.key for field in spec.item_fields}
+        assert len(keys) == len(spec.item_fields), f"{label} has duplicate item_field keys"
+        values = {option.value for option in spec.options}
+        assert len(values) == len(spec.options), f"{label} has duplicate option values"
+
+        for option in spec.options:
+            if option.knob_min is not None and option.knob_max is not None:
+                assert option.knob_min <= option.knob_max, f"{label}:{option.value} has inverted knob bounds"
+            if option.knob is None:
+                assert option.knob_min is None, f"{label}:{option.value} bounds a knob it does not declare"
+                assert option.knob_max is None, f"{label}:{option.value} bounds a knob it does not declare"
+
+        # `choices` is a closed set and `suggestions` an open hint; declaring both makes the
+        # stricter one unenforceable and the looser one a lie.
+        for field in spec.item_fields:
+            assert not (field.choices and field.suggestions), (
+                f"{label}:{field.key} declares both choices and suggestions"
+            )
+
+
+@pytest.mark.parametrize("name", ALL_NAMES, ids=lambda n: n.value)
+def test_presets_are_well_formed_for_their_shape(name: GuardrailName) -> None:
+    """A preset is a usable value for its parameter, and names a real taxonomy category."""
+    categories = {category.value for category in GuardrailCategory}
+    for spec in get_parameter_schema(name):
+        for preset in spec.presets:
+            label = f"{name.value}:{spec.name}:{preset.label}"
+            if preset.category is not None:
+                assert preset.category in categories, f"{label} names unknown category {preset.category!r}"
+            if spec.shape == ParameterShape.OBJECT_LIST:
+                # A preset supplies one record of the list, so several presets compose into one value.
+                assert isinstance(preset.value, dict), f"{label} must be one object_list record"
+                declared = {field.key for field in spec.item_fields}
+                assert set(preset.value) <= declared, (
+                    f"{label} sets keys outside the declared item_fields: {set(preset.value) - declared}"
+                )
+                required = {field.key for field in spec.item_fields if field.required}
+                assert required <= set(preset.value), f"{label} omits required keys {required - set(preset.value)}"
+
+
+def test_client_object_parameters_are_declared_opaque() -> None:
+    """The parameters that take a live SDK object are marked ``opaque``, not left as bare json.
+
+    ``boto3_session`` and ``api_client`` accept a configured client instance. No value a user could
+    type is ever correct, so a config UI must be told to render nothing rather than a JSON editor.
+    """
+    for guardrail, param in (("bedrock_guardrails", "boto3_session"), ("watsonx_guardian", "api_client")):
+        specs = {spec.name: spec for spec in get_parameter_schema(GuardrailName(guardrail))}
+        assert specs[param].shape == ParameterShape.OPAQUE, f"{guardrail}:{param} is not declared opaque"

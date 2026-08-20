@@ -9,12 +9,52 @@
         "env_var": null,
         "item_fields": [],
         "name": "detection_config",
-        "options": [],
+        "options": [
+          {
+            "description": "Prompt injection, jailbreak, and data-exfiltration attempts.",
+            "knob": null,
+            "knob_max": null,
+            "knob_min": null,
+            "label": "Security",
+            "value": "security"
+          },
+          {
+            "description": "Harmful, toxic, and otherwise unsafe content.",
+            "knob": null,
+            "knob_max": null,
+            "knob_min": null,
+            "label": "Safety",
+            "value": "safety"
+          },
+          {
+            "description": "Policy and regulatory violations.",
+            "knob": null,
+            "knob_max": null,
+            "knob_min": null,
+            "label": "Compliance",
+            "value": "compliance"
+          },
+          {
+            "description": "Claims unsupported by the provided context. Needs context documents.",
+            "knob": null,
+            "knob_max": null,
+            "knob_min": null,
+            "label": "Hallucination",
+            "value": "hallucination"
+          }
+        ],
         "presets": [],
         "required": true,
-        "scalar_alternative": null,
+        "scalar_alternative": {
+          "choices": null,
+          "description": "Use a detection configuration already registered with Alinia instead of choosing detections here.",
+          "key": "detection_config_id",
+          "label": "Detection configuration ID",
+          "required": false,
+          "suggestions": []
+        },
         "secret": false,
-        "shape": null,
+        "shape": "option_map",
         "stage": "create",
         "type": "json"
       },
@@ -65,7 +105,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_map",
         "stage": "create",
         "type": "json"
       },
@@ -82,7 +122,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_map",
         "stage": "create",
         "type": "json"
       },
@@ -133,7 +173,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_list",
         "stage": "validate",
         "type": "json"
       }
@@ -298,7 +338,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_list",
         "stage": "create",
         "type": "json"
       }
@@ -478,7 +518,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": true,
-        "shape": null,
+        "shape": "opaque",
         "stage": "create",
         "type": "json"
       }
@@ -1789,7 +1829,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_map",
         "stage": "create",
         "type": "json"
       }
@@ -2123,14 +2163,104 @@
         "description": "The evaluators to run, each a dict with at least an ``\"evaluator\"`` key plus optional ``\"criteria\"`` / ``\"explain_strategy\"``. Example: ``[{\"evaluator\": \"judge\", \"criteria\": \"patronus:prompt-injection\"}]``. Must be non-empty.",
         "effectively_required": false,
         "env_var": null,
-        "item_fields": [],
+        "item_fields": [
+          {
+            "choices": null,
+            "description": "The Patronus evaluator family to run.",
+            "key": "evaluator",
+            "label": "Evaluator",
+            "required": true,
+            "suggestions": [
+              "judge",
+              "lynx",
+              "toxicity",
+              "pii",
+              "phi",
+              "answer-relevance",
+              "context-relevance",
+              "context-sufficiency",
+              "hallucination",
+              "glider"
+            ]
+          },
+          {
+            "choices": null,
+            "description": "A managed criteria alias, or the name of a criteria registered with your Patronus account.",
+            "key": "criteria",
+            "label": "Criteria",
+            "required": false,
+            "suggestions": [
+              "patronus:prompt-injection",
+              "patronus:toxicity",
+              "patronus:pii",
+              "patronus:hallucination"
+            ]
+          },
+          {
+            "choices": null,
+            "description": "When Patronus should return an explanation with the verdict.",
+            "key": "explain_strategy",
+            "label": "Explanation",
+            "required": false,
+            "suggestions": [
+              "never",
+              "on-fail",
+              "on-success",
+              "always"
+            ]
+          }
+        ],
         "name": "evaluators",
         "options": [],
-        "presets": [],
+        "presets": [
+          {
+            "category": "prompt_injection",
+            "description": "Jailbreak and instruction-override attempts in the prompt.",
+            "label": "Prompt injection",
+            "value": {
+              "criteria": "patronus:prompt-injection",
+              "evaluator": "judge"
+            }
+          },
+          {
+            "category": "toxicity",
+            "description": "Abusive, hateful, or harassing language.",
+            "label": "Toxicity",
+            "value": {
+              "criteria": "patronus:toxicity",
+              "evaluator": "toxicity"
+            }
+          },
+          {
+            "category": "pii",
+            "description": "Personally identifiable information in the text.",
+            "label": "PII",
+            "value": {
+              "criteria": "patronus:pii",
+              "evaluator": "pii"
+            }
+          },
+          {
+            "category": "hallucination",
+            "description": "Claims unsupported by the retrieved context. Needs retrieved context and the model output.",
+            "label": "Hallucination",
+            "value": {
+              "evaluator": "lynx"
+            }
+          },
+          {
+            "category": "off_topic",
+            "description": "Whether the response actually answers the prompt. Needs the model output.",
+            "label": "Answer relevance",
+            "value": {
+              "evaluator": "answer-relevance"
+            }
+          }
+        ],
         "required": true,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "object_list",
         "stage": "create",
         "type": "json"
       },
@@ -2201,7 +2331,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_map",
         "stage": "create",
         "type": "json"
       },
@@ -2235,7 +2365,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "string_list",
         "stage": "validate",
         "type": "json"
       }
@@ -3067,12 +3197,37 @@
         "env_var": null,
         "item_fields": [],
         "name": "detectors",
-        "options": [],
+        "options": [
+          {
+            "description": "General harm detection across the Granite Guardian risk taxonomy.",
+            "knob": "threshold",
+            "knob_max": 1.0,
+            "knob_min": 0.0,
+            "label": "Granite Guardian",
+            "value": "granite_guardian"
+          },
+          {
+            "description": null,
+            "knob": "threshold",
+            "knob_max": 1.0,
+            "knob_min": 0.0,
+            "label": "Hate, abuse, and profanity",
+            "value": "hap"
+          },
+          {
+            "description": "Personally identifiable information.",
+            "knob": "threshold",
+            "knob_max": 1.0,
+            "knob_min": 0.0,
+            "label": "PII",
+            "value": "pii"
+          }
+        ],
         "presets": [],
         "required": false,
         "scalar_alternative": null,
         "secret": false,
-        "shape": null,
+        "shape": "option_map",
         "stage": "create",
         "type": "json"
       },
@@ -3089,7 +3244,7 @@
         "required": false,
         "scalar_alternative": null,
         "secret": true,
-        "shape": null,
+        "shape": "opaque",
         "stage": "create",
         "type": "json"
       }
