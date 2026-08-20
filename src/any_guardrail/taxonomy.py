@@ -171,7 +171,22 @@ class GuardrailMetadata(BaseModel):
     """The decision form(s) it can produce."""
 
     backend: BackendType
-    """How it executes."""
+    """How it executes by default — the path taken when no ``provider`` is supplied."""
+
+    alternate_backends: frozenset[BackendType] = Field(default_factory=frozenset)
+    """Other backends the same guardrail class can run on via a different ``provider``.
+
+    Empty for all but the guardrails whose alternates cross a :class:`BackendType`
+    boundary. Swapping ``HuggingFaceProvider`` for ``EncoderfileProvider`` (or
+    ``LlamafileProvider``) stays inside ``LOCAL_ENCODER``/``LOCAL_DECODER``, so those
+    guardrails leave this empty; SusFactor, which also runs against 0DIN's hosted API,
+    declares ``{HOSTED_API}``.
+
+    ``AnyGuardrail.list_guardrails(backend=...)`` and ``group_by("backend")`` filter on
+    the scalar ``backend`` only, so a guardrail is never double-counted; read this field
+    via ``AnyGuardrail.metadata(name)`` to discover the alternates. Likewise
+    ``requires_api_key`` describes the default path — an alternate hosted backend may
+    still need a credential."""
 
     required_validate_kwargs: frozenset[str] = Field(default_factory=frozenset)
     """``validate()`` arguments that must be supplied (beyond the primary text)."""
@@ -220,7 +235,16 @@ class GuardrailMetadata(BaseModel):
             raise ValueError(msg)
         return self
 
+    @model_validator(mode="after")
+    def _backend_not_repeated_in_alternates(self) -> Self:
+        """Ensure ``alternate_backends`` lists genuine alternatives to ``backend``."""
+        if self.backend in self.alternate_backends:
+            msg = f"backend {self.backend!r} must not also appear in alternate_backends"
+            raise ValueError(msg)
+        return self
+
     @field_serializer(
+        "alternate_backends",
         "categories",
         "stages",
         "output_shapes",
