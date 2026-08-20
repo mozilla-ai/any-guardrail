@@ -48,6 +48,11 @@ jobs:
           # Bedrock API key (bearer token). boto3 >= 1.39 reads AWS_BEARER_TOKEN_BEDROCK
           # natively for bedrock / bedrock-runtime calls; no SigV4 creds needed.
           AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEDROCK_API_KEY }}
+          # 0DIN Portal API key for SusFactor's hosted backend, exchanged for a
+          # short-lived JWT at request time. test_susfactor_api.py skips until it is
+          # set; test_susfactor.py (the gated local ONNX model) probes HF_TOKEN's
+          # access to 0dinai/susfactor-e5-large-onnx and skips if it lacks the gate.
+          ODIN_API_KEY: ${{ secrets.ODIN_API_KEY }}
           AWS_DEFAULT_REGION: us-east-1
           HF_HUB_DOWNLOAD_TIMEOUT: "300"
           HF_HUB_ETAG_TIMEOUT: "30"

@@ -1,9 +1,12 @@
+import ast
+import pathlib
 import threading
 from typing import Any
 from unittest import mock
 
 import pytest
 
+from any_guardrail.providers import zero_din as zero_din_module
 from any_guardrail.providers.zero_din import (
     _API_KEY_ENV_VAR,
     _DEFAULT_AUTH_URL,
@@ -338,3 +341,22 @@ def test_concurrent_first_calls_mint_exactly_one_token() -> None:
         thread.join()
 
     assert mints == 1
+
+
+def test_the_provider_module_needs_no_optional_extra() -> None:
+    """The hosted path must work on a bare `pip install any-guardrail`.
+
+    Checked statically rather than via ``sys.modules``: the HuggingFace provider imports
+    numpy at its own module top, so it is already imported by the time this test runs.
+    """
+    allowed = {"os", "threading", "time", "typing", "requests", "any_guardrail", "__future__"}
+    tree = ast.parse(pathlib.Path(zero_din_module.__file__).read_text(encoding="utf-8"))
+
+    roots: set[str] = set()
+    for node in tree.body:  # module scope only
+        if isinstance(node, ast.Import):
+            roots.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+            roots.add(node.module.split(".")[0])
+
+    assert roots <= allowed, f"unexpected module-scope imports: {sorted(roots - allowed)}"
