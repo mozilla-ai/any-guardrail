@@ -360,3 +360,30 @@ def test_the_provider_module_needs_no_optional_extra() -> None:
             roots.add(node.module.split(".")[0])
 
     assert roots <= allowed, f"unexpected module-scope imports: {sorted(roots - allowed)}"
+
+
+def _non_json_response(status_code: int, text: str) -> mock.MagicMock:
+    """A response whose body is not JSON at all — e.g. a proxy error page."""
+    response = mock.MagicMock()
+    response.status_code = status_code
+    response.json.side_effect = ValueError("Expecting value: line 1 column 1 (char 0)")
+    response.text = text
+    return response
+
+
+def test_a_non_json_score_response_yields_no_chunk_scores() -> None:
+    """A 200 that isn't JSON carries no verdict, so it must fail closed like a missing score."""
+    provider, _ = _loaded(_non_json_response(200, "<html>502 Bad Gateway</html>"))
+
+    result = provider.infer(_payload())
+
+    assert result.data["chunk_scores"] == []
+    assert result.data["raw"] == "<html>502 Bad Gateway</html>"
+
+
+def test_a_non_json_mint_response_names_the_endpoint() -> None:
+    """Credentials are not a verdict: this raises, but with a message better than a JSONDecodeError."""
+    provider, _ = _provider(_non_json_response(200, "<html>maintenance</html>"))
+
+    with pytest.raises(ValueError, match="access-token endpoint returned a non-JSON response"):
+        provider.load_model(SUSFACTOR_API_MODEL_ID)

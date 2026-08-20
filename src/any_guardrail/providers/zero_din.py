@@ -213,7 +213,13 @@ class ZeroDinProvider(Provider[AnyDict, AnyDict]):
             msg = f"Request to the 0DIN SusFactor API failed with status code {response.status_code}: {response.text}"
             raise ValueError(msg)
 
-        body = response.json()
+        try:
+            body = response.json()
+        except ValueError:
+            # A 200 that isn't JSON at all (a proxy error page, a truncated body) carries
+            # no verdict either — treat it exactly like a missing score.
+            return GuardrailInferenceOutput(data={"chunk_scores": [], "raw": response.text})
+
         score = body.get("score") if isinstance(body, dict) else None
         if isinstance(score, bool) or not isinstance(score, (int, float)):
             # Present but unparsable: hand the guardrail an empty score list so it
@@ -280,7 +286,14 @@ class ZeroDinProvider(Provider[AnyDict, AnyDict]):
             )
             raise ValueError(msg)
 
-        body = response.json()
+        try:
+            body = response.json()
+        except ValueError as exc:
+            # Surface a named endpoint instead of a bare JSONDecodeError. Unlike scoring,
+            # this is a credential/transport problem, so it raises rather than failing closed.
+            msg = f"The 0DIN access-token endpoint returned a non-JSON response: {response.text!r}"
+            raise ValueError(msg) from exc
+
         minted = body.get("token") if isinstance(body, dict) else None
         if not isinstance(minted, str) or not minted:
             msg = f"The 0DIN access-token endpoint returned no usable 'token' field: {body!r}"
