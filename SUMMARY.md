@@ -10,6 +10,7 @@
 * [Customer Service Policy Guardrail](cookbook/customer_service_policy_guardrail.md)
 * [Custom Blocklists with Azure Content Safety](cookbook/azure_blocklist_slang_filter.md)
 * [Running Guardrails with EncoderFile](cookbook/encoderfile_guardrail.md)
+* [SusFactor: Local Model vs Hosted 0DIN API](cookbook/susfactor_hosted_api.md)
 * [Granite Guardian with Llamafile vs HuggingFace](cookbook/llamafile_granite_guardian.md)
 * [Azure Prompt Shields Guardrail Usage](cookbook/azure_prompt_shields_guardrail.md)
 * [Lakera Guard Guardrail Usage](cookbook/lakera_guard_guardrail.md)
@@ -76,3 +77,4 @@
 * Providers
   * [EncoderFile](api/providers/encoderfile.md)
   * [Llamafile](api/providers/llamafile.md)
+  * [0DIN Defense API](api/providers/zero-din.md)
