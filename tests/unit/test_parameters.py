@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 import any_guardrail._parameter_data as parameter_data_module
 import any_guardrail.parameters as parameters_module
@@ -21,8 +22,18 @@ from any_guardrail.parameter_registry import (
     get_parameter_schema,
     get_requirement_groups,
 )
-from any_guardrail.parameters import ParameterSpec, ParameterStage, ParameterType, RequirementGroup
+from any_guardrail.parameters import (
+    ParameterField,
+    ParameterOption,
+    ParameterPreset,
+    ParameterShape,
+    ParameterSpec,
+    ParameterStage,
+    ParameterType,
+    RequirementGroup,
+)
 from any_guardrail.registry import GUARDRAIL_METADATA
+from any_guardrail.taxonomy import GuardrailCategory
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
@@ -293,3 +304,67 @@ def test_json_export_pairs_parameters_with_requirement_groups() -> None:
         assert isinstance(entry["requirement_groups"], list)
     watsonx = payload["watsonx_guardian"]["requirement_groups"]
     assert len(watsonx) == 3
+
+
+# --- Value shapes for JSON parameters (ParameterShape and companions) -----------------------------
+
+
+def test_shape_metadata_defaults_to_absent() -> None:
+    """A spec that declares no shape carries no structure, so pre-shape consumers see no change."""
+    spec = ParameterSpec(name="p", stage=ParameterStage.CREATE, type=ParameterType.JSON, required=True)
+    assert spec.shape is None
+    assert spec.item_fields == ()
+    assert spec.options == ()
+    assert spec.presets == ()
+    assert spec.scalar_alternative is None
+
+
+def test_shape_companions_are_frozen() -> None:
+    """The companion models are immutable, like every other model in this module."""
+    for model in (
+        ParameterField(key="k", label="K"),
+        ParameterOption(value="v", label="V"),
+        ParameterPreset(label="L", value={"a": 1}),
+    ):
+        with pytest.raises(ValidationError):
+            model.label = "mutated"
+
+
+def test_shape_metadata_round_trips_through_json() -> None:
+    """The structure survives ``model_dump(mode="json")``, which is how consumers receive it."""
+    spec = ParameterSpec(
+        name="evaluators",
+        stage=ParameterStage.CREATE,
+        type=ParameterType.JSON,
+        required=True,
+        shape=ParameterShape.OBJECT_LIST,
+        item_fields=(ParameterField(key="evaluator", label="Evaluator", required=True, suggestions=("judge",)),),
+        presets=(
+            ParameterPreset(
+                label="Prompt injection",
+                value={"evaluator": "judge", "criteria": "patronus:prompt-injection"},
+                category=GuardrailCategory.PROMPT_INJECTION.value,
+            ),
+        ),
+    )
+    dumped = spec.model_dump(mode="json")
+    assert dumped["shape"] == "object_list"
+    assert dumped["item_fields"] == [
+        {
+            "key": "evaluator",
+            "label": "Evaluator",
+            "required": True,
+            "suggestions": ["judge"],
+            "choices": None,
+            "description": None,
+        }
+    ]
+    assert dumped["presets"][0]["value"] == {"evaluator": "judge", "criteria": "patronus:prompt-injection"}
+    assert dumped["presets"][0]["category"] == "prompt_injection"
+    assert ParameterSpec(**dumped) == spec
+
+
+def test_a_preset_value_may_be_a_dict() -> None:
+    """Presets carry value fragments, so ``value`` must accept non-scalars without complaint."""
+    preset = ParameterPreset(label="L", value=[{"evaluator": "lynx"}])
+    assert preset.value == [{"evaluator": "lynx"}]
