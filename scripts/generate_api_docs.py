@@ -645,6 +645,7 @@ def _pascal_class_name(value: str) -> str:
 PROVIDERS = [
     ("any_guardrail.providers.encoderfile", "EncoderfileProvider", "encoderfile.md"),
     ("any_guardrail.providers.llamafile", "LlamafileProvider", "llamafile.md"),
+    ("any_guardrail.providers.zero_din", "ZeroDinProvider", "zero-din.md"),
 ]
 
 

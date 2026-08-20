@@ -2163,10 +2163,11 @@
     "parameters": [
       {
         "choices": [
-          "0dinai/susfactor-e5-large-onnx"
+          "0dinai/susfactor-e5-large-onnx",
+          "susfactor-api"
         ],
         "default": null,
-        "description": "Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large-onnx``.",
+        "description": "Optional model ID. Must be one of ``SUPPORTED_MODELS``; defaults to ``0dinai/susfactor-e5-large-onnx`` locally, or to the ``provider``'s own ``default_model_id`` when one is supplied.",
         "effectively_required": false,
         "env_var": null,
         "name": "model_id",
@@ -2190,7 +2191,7 @@
       {
         "choices": null,
         "default": null,
-        "description": "Optional pre-built ``onnxruntime.InferenceSession``. If supplied together with ``tokenizer``, it is used directly and no download/model loading happens.",
+        "description": "Optional pre-built ``onnxruntime.InferenceSession``. If supplied together with ``tokenizer``, it is used directly and no download/model loading happens. Ignored when ``provider`` is set.",
         "effectively_required": false,
         "env_var": null,
         "name": "session",

@@ -1,5 +1,6 @@
 {
   "alinia": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "content_safety",
@@ -34,6 +35,7 @@
     "vendor": "Alinia AI"
   },
   "any_llm": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "general_judge"
@@ -66,6 +68,7 @@
     "vendor": "Mozilla AI"
   },
   "azure_content_safety": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "content_safety",
@@ -93,6 +96,7 @@
     "vendor": "Microsoft"
   },
   "azure_prompt_shields": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "prompt_injection"
@@ -121,6 +125,7 @@
     "vendor": "Microsoft"
   },
   "bedrock_guardrails": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "content_safety",
@@ -151,6 +156,7 @@
     "vendor": "Amazon"
   },
   "bielik_guard": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "content_safety",
@@ -178,6 +184,7 @@
     "vendor": "SpeakLeash / Bielik.AI"
   },
   "compass_judger": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "general_judge"
@@ -204,6 +211,7 @@
     "vendor": "OpenCompass"
   },
   "deepset": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -229,6 +237,7 @@
     "vendor": "deepset"
   },
   "duo_guard": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "content_safety",
@@ -270,6 +279,7 @@
     "vendor": "DuoGuard"
   },
   "dyna_guard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety",
@@ -298,6 +308,7 @@
     "vendor": "DynaGuard"
   },
   "flowjudge": {
+    "alternate_backends": [],
     "backend": "library_wrapped",
     "categories": [
       "general_judge"
@@ -325,6 +336,7 @@
     "vendor": "Flow AI"
   },
   "gli_guard": {
+    "alternate_backends": [],
     "backend": "library_wrapped",
     "categories": [
       "content_safety",
@@ -352,6 +364,7 @@
     "vendor": "Fastino"
   },
   "gli_ner_pii": {
+    "alternate_backends": [],
     "backend": "library_wrapped",
     "categories": [
       "pii"
@@ -382,6 +395,7 @@
     "vendor": "Fastino"
   },
   "glider": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "general_judge"
@@ -409,6 +423,7 @@
     "vendor": "Patronus AI"
   },
   "gpt_oss_safeguard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety",
@@ -434,6 +449,7 @@
     "vendor": "OpenAI"
   },
   "granite_guardian": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "bias",
@@ -469,6 +485,7 @@
     "vendor": "IBM"
   },
   "harm_guard": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "content_safety",
@@ -498,6 +515,7 @@
     "vendor": "hbseong"
   },
   "injec_guard": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -523,6 +541,7 @@
     "vendor": "leolee99"
   },
   "jasper": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -548,6 +567,7 @@
     "vendor": "JasperLS"
   },
   "kanana_safeguard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety",
@@ -576,6 +596,7 @@
     "vendor": "Kakao"
   },
   "lakera_guard": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "content_safety",
@@ -604,6 +625,7 @@
     "vendor": "Lakera"
   },
   "lettuce_detect": {
+    "alternate_backends": [],
     "backend": "library_wrapped",
     "categories": [
       "hallucination"
@@ -634,6 +656,7 @@
     "vendor": "KRLabs"
   },
   "llama_guard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -670,6 +693,7 @@
     "vendor": "Meta"
   },
   "nemotron_content_safety": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -697,6 +721,7 @@
     "vendor": "NVIDIA"
   },
   "off_topic": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "off_topic"
@@ -724,6 +749,7 @@
     "vendor": "GovTech Singapore"
   },
   "openai_moderation": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "content_safety",
@@ -751,6 +777,7 @@
     "vendor": "OpenAI"
   },
   "pangolin": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -776,6 +803,7 @@
     "vendor": "dcarpintero"
   },
   "patronus": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "general_judge",
@@ -810,6 +838,7 @@
     "vendor": "Patronus AI"
   },
   "poly_guard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -850,6 +879,7 @@
     "vendor": "ToxicityPrompts"
   },
   "prometheus": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "general_judge"
@@ -893,6 +923,7 @@
     "vendor": "KAIST / prometheus-eval"
   },
   "prompt_guard": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -918,6 +949,7 @@
     "vendor": "Meta"
   },
   "protectai": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -943,6 +975,7 @@
     "vendor": "ProtectAI"
   },
   "qwen3_guard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -971,6 +1004,7 @@
     "vendor": "Qwen"
   },
   "qwen3_guard_stream": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -1000,6 +1034,7 @@
     "vendor": "Qwen"
   },
   "selene": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "general_judge"
@@ -1026,6 +1061,7 @@
     "vendor": "Atla"
   },
   "sentinel": {
+    "alternate_backends": [],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -1051,6 +1087,7 @@
     "vendor": "Qualifire"
   },
   "shield_gemma": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"
@@ -1076,6 +1113,9 @@
     "vendor": "Google"
   },
   "susfactor": {
+    "alternate_backends": [
+      "hosted_api"
+    ],
     "backend": "local_encoder",
     "categories": [
       "prompt_injection"
@@ -1101,6 +1141,7 @@
     "vendor": "0DIN"
   },
   "watsonx_guardian": {
+    "alternate_backends": [],
     "backend": "hosted_api",
     "categories": [
       "bias",
@@ -1133,6 +1174,7 @@
     "vendor": "IBM"
   },
   "wild_guard": {
+    "alternate_backends": [],
     "backend": "local_decoder",
     "categories": [
       "content_safety"

@@ -599,6 +599,9 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         stages=frozenset({GuardrailStage.INPUT}),
         output_shapes=frozenset({OutputShape.BINARY, OutputShape.SCORE}),
         backend=BackendType.LOCAL_ENCODER,
+        # The local ONNX model is gated on HuggingFace; the same classifier is also
+        # reachable through 0DIN's hosted API via `provider=ZeroDinProvider()`.
+        alternate_backends=frozenset({BackendType.HOSTED_API}),
         vendor="0DIN",
         default_license="proprietary",
     ),

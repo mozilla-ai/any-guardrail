@@ -299,3 +299,58 @@ def test_output_shapes_score_signal_accuracy() -> None:
         assert declares_score == has_score, (
             f"{name.value}: expected SCORE/RUBRIC membership {has_score}, got {output_shapes}"
         )
+
+
+def _metadata(**overrides: object) -> GuardrailMetadata:
+    """Build a minimal valid GuardrailMetadata, overriding individual fields."""
+    fields: dict[str, object] = {
+        "description": "X — y.",
+        "display_name": "X",
+        "categories": frozenset({GuardrailCategory.PROMPT_INJECTION}),
+        "primary_category": GuardrailCategory.PROMPT_INJECTION,
+        "stages": frozenset({GuardrailStage.INPUT}),
+        "output_shapes": frozenset({OutputShape.BINARY}),
+        "backend": BackendType.LOCAL_ENCODER,
+        "vendor": "X",
+        "default_license": "apache-2.0",
+    }
+    fields.update(overrides)
+    return GuardrailMetadata(**fields)  # type: ignore[arg-type]
+
+
+def test_alternate_backends_defaults_to_empty() -> None:
+    """Only guardrails whose alternates cross a BackendType boundary declare any."""
+    assert _metadata().alternate_backends == frozenset()
+    declared = {name for name in ALL_NAMES if GUARDRAIL_METADATA[name].alternate_backends}
+    assert declared == {GuardrailName.SUSFACTOR}
+
+
+def test_susfactor_declares_its_hosted_alternate() -> None:
+    """SusFactor's gated local model is also reachable through 0DIN's hosted API."""
+    meta = GUARDRAIL_METADATA[GuardrailName.SUSFACTOR]
+    assert meta.backend == BackendType.LOCAL_ENCODER
+    assert meta.alternate_backends == frozenset({BackendType.HOSTED_API})
+
+
+def test_backend_repeated_in_alternate_backends_rejected() -> None:
+    """alternate_backends must list genuine alternatives, not restate `backend`."""
+    with pytest.raises(ValueError, match="alternate_backends"):
+        _metadata(
+            backend=BackendType.LOCAL_ENCODER,
+            alternate_backends=frozenset({BackendType.LOCAL_ENCODER}),
+        )
+
+
+def test_alternate_backends_serialize_as_a_sorted_string_list() -> None:
+    """Set-valued fields serialize deterministically so the JSON export is stable."""
+    meta = _metadata(alternate_backends=frozenset({BackendType.LOCAL_DECODER, BackendType.HOSTED_API}))
+
+    assert meta.model_dump()["alternate_backends"] == ["hosted_api", "local_decoder"]
+
+
+def test_backend_grouping_still_partitions_every_guardrail() -> None:
+    """alternate_backends is metadata only: it must not leak into backend grouping."""
+    groups = AnyGuardrail.group_by("backend")
+
+    assert sum(len(names) for names in groups.values()) == len(ALL_NAMES)
+    assert GuardrailName.SUSFACTOR not in groups.get(BackendType.HOSTED_API.value, [])
