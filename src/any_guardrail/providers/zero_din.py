@@ -61,11 +61,10 @@ layer never imports from ``any_guardrail.guardrails`` (a unit test pins them equ
 class ZeroDinProvider(Provider[AnyDict, AnyDict]):
     """Execution provider for 0DIN's hosted SusFactor scoring API.
 
-    Swap it in to run the ``Susfactor`` guardrail against 0DIN Defense instead of the
-    gated local ONNX model — the guardrail class, its ``threshold``, and its
-    ``GuardrailOutput`` shape are unchanged::
-
-        AnyGuardrail.create(GuardrailName.SUSFACTOR, provider=ZeroDinProvider())
+    Pass it as ``AnyGuardrail.create(GuardrailName.SUSFACTOR, provider=ZeroDinProvider())``
+    to run the ``Susfactor`` guardrail against 0DIN Defense instead of the gated local
+    ONNX model — the guardrail class, its ``threshold``, and its ``GuardrailOutput``
+    shape are unchanged.
 
     Authentication is a two-step exchange. A long-lived 0DIN Portal API key is posted
     to ``https://0din.ai/api/v1/access_tokens`` to mint a JWT valid for 900 seconds,
