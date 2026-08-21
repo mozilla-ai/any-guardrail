@@ -186,6 +186,14 @@ def test_kanana_fails_closed() -> None:
     assert result.extra == {"parse_failure": True}
 
 
+def test_kanana_prompt_2_1b_dropped_from_supported_models() -> None:
+    """An unloadable variant fails fast with a clear ValueError, not deep inside model loading."""
+    assert "kakaocorp/kanana-safeguard-prompt-2.1b" not in KananaSafeguard.SUPPORTED_MODELS
+    assert "kakaocorp/kanana-safeguard-prompt-2.1b" not in KANANA_CATEGORIES
+    with pytest.raises(ValueError, match="Only supports"):
+        KananaSafeguard(model_id="kakaocorp/kanana-safeguard-prompt-2.1b")
+
+
 @pytest.mark.parametrize(
     ("text", "expected_valid"),
     [
