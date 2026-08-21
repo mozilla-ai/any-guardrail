@@ -1157,11 +1157,10 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": [
         "kakaocorp/kanana-safeguard-8b",
-        "kakaocorp/kanana-safeguard-siren-8b",
-        "kakaocorp/kanana-safeguard-prompt-2.1b"
+        "kakaocorp/kanana-safeguard-siren-8b"
       ],
       "default": null,
-      "description": "Optional HuggingFace model ID; one of ``SUPPORTED_MODELS`` (``kakaocorp/kanana-safeguard-8b``, ``kakaocorp/kanana-safeguard-siren-8b``, ``kakaocorp/kanana-safeguard-prompt-2.1b``). Defaults to the harm model ``kakaocorp/kanana-safeguard-8b``. Each variant carries its own unsafe-code taxonomy (see the class docstring).",
+      "description": "Optional HuggingFace model ID; one of ``SUPPORTED_MODELS`` (``kakaocorp/kanana-safeguard-8b``, ``kakaocorp/kanana-safeguard-siren-8b``). Defaults to the harm model ``kakaocorp/kanana-safeguard-8b``. Each variant carries its own unsafe-code taxonomy (see the class docstring).",
       "effectively_required": false,
       "env_var": null,
       "name": "model_id",
@@ -1173,7 +1172,7 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": null,
-      "description": "Optional assistant response. Only the harm model (``kakaocorp/kanana-safeguard-8b``) is trained to judge an assistant turn; the ``-siren-8b`` and ``-prompt-2.1b`` variants silently ignore this argument.",
+      "description": "Optional assistant response. Only the harm model (``kakaocorp/kanana-safeguard-8b``) is trained to judge an assistant turn; the ``-siren-8b`` variant silently ignores this argument.",
       "effectively_required": false,
       "env_var": null,
       "name": "output_text",
