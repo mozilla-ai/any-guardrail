@@ -574,7 +574,7 @@
       "prompt_injection"
     ],
     "default_license": "apache-2.0",
-    "description": "Korean safety decoder models covering harmful content, legal risk, and prompt attacks.",
+    "description": "Korean safety decoder models covering harmful content and legal risk.",
     "display_name": "Kanana Safeguard",
     "multilingual": true,
     "multimodal": false,

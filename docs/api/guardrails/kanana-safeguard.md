@@ -1,6 +1,6 @@
 # KananaSafeguard
 
-Korean safety decoder models covering harmful content, legal risk, and prompt attacks.
+Korean safety decoder models covering harmful content and legal risk.
 
 Decoder LLMs, trained primarily for Korean text, that emit a single verdict token:
 ``<SAFE>`` or an ``<UNSAFE-*>`` code. Two variants cover different taxonomies:

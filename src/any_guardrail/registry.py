@@ -414,7 +414,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         ),
     ),
     GuardrailName.KANANA_SAFEGUARD: GuardrailMetadata(
-        description="Korean safety decoder models covering harmful content, legal risk, and prompt attacks.",
+        description="Korean safety decoder models covering harmful content and legal risk.",
         display_name="Kanana Safeguard",
         categories=frozenset({GuardrailCategory.CONTENT_SAFETY, GuardrailCategory.PROMPT_INJECTION}),
         primary_category=GuardrailCategory.CONTENT_SAFETY,

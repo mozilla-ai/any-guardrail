@@ -31,7 +31,7 @@ Query this catalog programmatically with `AnyGuardrail.list_guardrails(...)` and
 | [DuoGuard](duo-guard.md) | Multilingual multi-label safety classifier scoring text across 12 harm categories including jailbreak prompts. |
 | [GLiGuard](gli-guard.md) | Schema-driven safety, toxicity, jailbreak, and refusal detector. |
 | [gpt-oss-safeguard](gpt-oss-safeguard.md) | Policy-grounded reasoning safety classifier that judges text against a bring-your-own written policy. |
-| [Kanana Safeguard](kanana-safeguard.md) | Korean safety decoder models covering harmful content, legal risk, and prompt attacks. |
+| [Kanana Safeguard](kanana-safeguard.md) | Korean safety decoder models covering harmful content and legal risk. |
 | [Llama Guard](llama-guard.md) | Decoder-LLM safety classifier judging prompts and responses against the 14-category MLCommons hazard taxonomy. |
 | [Nemotron Content Safety](nemotron-content-safety.md) | Reasoning safety classifier covering a 22-category content-safety taxonomy. |
 | [OpenAI Moderation](openai-moderation.md) | Hosted moderation API flagging content across 13 harm categories with calibrated scores. |
