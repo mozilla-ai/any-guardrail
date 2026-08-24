@@ -1,5 +1,6 @@
 """Tests for the span / cross-encoder / library-wrapped guardrails and FlowJudge init paths."""
 
+import importlib.util
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -190,3 +191,41 @@ def test_flowjudge_accepts_prebuilt_metric() -> None:
 def test_flowjudge_requires_metric_or_convenience_fields() -> None:
     with patch.object(Flowjudge, "_load_model", return_value="model"), pytest.raises(ValueError, match="metric"):
         Flowjudge(name="only-name")
+
+
+# --- Guarded-import health for the library-wrapped guardrails -------------------
+#
+# These four modules wrap their upstream import in `try/except ImportError` and stash the
+# failure in MISSING_PACKAGES_ERROR, so `__init__` can re-raise a helpful pip hint. The
+# side effect is that a *broken* upstream release is swallowed at import time: the names
+# the module meant to bind are simply absent, and the first symptom is an unrelated-looking
+# AttributeError from whichever test patches one of them.
+#
+# That is exactly how gliner2 2.0.0 landed — it moved torch/transformers/peft/safetensors
+# into a new `local` extra while still importing them unconditionally, so the package
+# installed fine but could not be imported, and three GLiGuard tests failed with
+# "module ... does not have the attribute 'GLiNER2'" naming neither gliner2 nor peft.
+#
+# So distinguish the two cases. Package absent (a partial dev install) is fine and skips.
+# Package present but unimportable is a real problem, and the assertion names the cause.
+
+_GUARDED_IMPORTS = [
+    ("any_guardrail.guardrails.flowjudge.flowjudge", "flow_judge", "flowjudge"),
+    ("any_guardrail.guardrails.gli_guard.gli_guard", "gliner2", "gliner"),
+    ("any_guardrail.guardrails.gli_ner_pii.gli_ner_pii", "gliner2", "gliner"),
+    ("any_guardrail.guardrails.lettuce_detect.lettuce_detect", "lettucedetect", "lettucedetect"),
+]
+
+
+@pytest.mark.parametrize(("module_path", "package", "extra"), _GUARDED_IMPORTS, ids=lambda v: str(v).split(".")[-1])
+def test_installed_backend_actually_imports(module_path: str, package: str, extra: str) -> None:
+    """An installed optional backend must import; a broken release fails loudly, not silently."""
+    if importlib.util.find_spec(package) is None:
+        pytest.skip(f"{package} not installed (any-guardrail[{extra}])")
+    error = importlib.import_module(module_path).MISSING_PACKAGES_ERROR
+    assert error is None, (
+        f"{package} is installed but `import {package}` failed inside {module_path}, so the names it "
+        f"binds are missing and dependent tests will fail with a confusing AttributeError. "
+        f"This usually means the installed {package} release is broken or incompatible — check its "
+        f"declared dependencies and pin it in the [{extra}] extra. Underlying error: {error!r}"
+    )
