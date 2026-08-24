@@ -75,8 +75,8 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
     - ``explanation`` is the raw generation.
     - ``usage`` carries the prompt / completion token counts. No canonical ``score`` or ``spans``
       are produced.
-    - Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when neither
-      harmfulness field parses.
+    - Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when either
+      harmfulness field fails to parse.
 
     Expected inputs: a single ``input_text`` string (the human request) plus an optional
     ``output_text`` string (the assistant response). The prompt template always carries both slots,
@@ -208,7 +208,7 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
         harmful_request = _field(_HARMFUL_REQUEST, text)
         response_refusal = _field(_RESPONSE_REFUSAL, text)
         harmful_response = _field(_HARMFUL_RESPONSE, text)
-        if harmful_request is None and harmful_response is None:
+        if harmful_request is None or harmful_response is None:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
         categories = [
             CategoryResult(name="harmful_request", triggered=harmful_request),

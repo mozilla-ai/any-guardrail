@@ -17,8 +17,8 @@ Verdict mapping onto ``GuardrailOutput``:
 - ``explanation`` is the raw generation.
 - ``usage`` carries the prompt / completion token counts. No canonical ``score`` or ``spans``
   are produced.
-- Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when neither
-  harmfulness field parses.
+- Fails closed (``valid=False`` with ``extra={"parse_failure": True}``) when either
+  harmfulness field fails to parse.
 
 Expected inputs: a single ``input_text`` string (the human request) plus an optional
 ``output_text`` string (the assistant response). The prompt template always carries both slots,
