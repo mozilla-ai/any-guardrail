@@ -5,6 +5,7 @@ parsing of provider output into ``GuardrailOutput`` is exercised.
 """
 
 from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -23,10 +24,20 @@ from any_guardrail.guardrails.selene.selene import Selene
 from any_guardrail.guardrails.wild_guard.wild_guard import WildGuard
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailOutput
 
+NEMOTRON_4B = "nvidia/Nemotron-Content-Safety-Reasoning-4B"
+NEMOTRON_8B_V3 = "nvidia/Llama-3.1-Nemotron-Safety-Guard-8B-v3"
+
 
 def _gen(text: str) -> GuardrailInferenceOutput[Any]:
     """Mimic a provider.generate_chat output."""
     return GuardrailInferenceOutput(data={"generated_text": text, "prompt_token_count": 7, "completion_token_count": 3})
+
+
+def _nemotron(model_id: str) -> NemotronContentSafety:
+    """Nemotron instance with only the state its post-processing reads (it branches on model_id)."""
+    instance = object.__new__(NemotronContentSafety)
+    instance.model_id = model_id
+    return instance
 
 
 # --- Encoder classifiers -------------------------------------------------------
@@ -179,17 +190,99 @@ def test_wildguard_prompt_only_tolerates_missing_response_verdict() -> None:
     ],
 )
 def test_nemotron_parse(text: str, expected_valid: bool) -> None:
-    instance = object.__new__(NemotronContentSafety)
+    instance = _nemotron(NEMOTRON_4B)
     result = instance._post_processing(_gen(text))
     assert result.valid is expected_valid
+    # The 4B variant reports no taxonomy category names, so it leaves `extra` unset.
+    assert result.extra is None
 
 
 def test_nemotron_fails_closed_when_judged_response_verdict_missing() -> None:
-    instance = object.__new__(NemotronContentSafety)
+    instance = _nemotron(NEMOTRON_4B)
     data = {"generated_text": "Prompt harm: unharmful", "has_response": True}
     result = instance._post_processing(GuardrailInferenceOutput(data=data))
     assert result.valid is False
     assert result.extra == {"parse_failure": True}
+
+
+# --- Nemotron Safety Guard 8B-v3 (JSON verdicts, 23-category taxonomy) ---------
+
+
+def test_nemotron_8b_v3_prompt_matches_published_template() -> None:
+    """The assembled prompt must reproduce NVIDIA's jinja template, blank lines included."""
+    prompt = NemotronContentSafety._build_8b_v3_prompt("How to make a bomb?", None)
+    assert prompt.startswith("Task: Check if there is unsafe content")
+    assert "S14: Other. \n" in prompt  # 23-category taxonomy, with its trailing space preserved
+    assert "S23: Immoral/Unethical. \n<END UNSAFE CONTENT CATEGORIES>" in prompt
+    assert "<BEGIN CONVERSATION>\n\nuser: How to make a bomb?\n\n<END CONVERSATION>" in prompt
+    assert prompt.endswith("Output JSON: ")
+
+    with_response = NemotronContentSafety._build_8b_v3_prompt("Q", "A")
+    assert "<BEGIN CONVERSATION>\n\nuser: Q\n\nresponse: agent: A\n\n<END CONVERSATION>" in with_response
+
+
+@pytest.mark.parametrize(
+    ("text", "expected_valid", "expected_categories"),
+    [
+        ('{"User Safety": "safe"}', True, []),
+        (
+            '{"User Safety": "unsafe", "Safety Categories": "guns and illegal weapons"}',
+            False,
+            ["guns and illegal weapons"],
+        ),
+        ('{"User Safety": "unsafe", "Safety Categories": "violence, profanity"}', False, ["violence", "profanity"]),
+        # The model is told to emit bare JSON, but a fenced reply must still parse.
+        ('```json\n{"User Safety": "safe"}\n```', True, []),
+    ],
+)
+def test_nemotron_8b_v3_parse(text: str, expected_valid: bool, expected_categories: list[str]) -> None:
+    instance = _nemotron(NEMOTRON_8B_V3)
+    result = instance._post_processing(_gen(text))
+    assert result.valid is expected_valid
+    assert result.extra == {"safety_categories": expected_categories}
+    assert [c.name for c in result.categories] == ["prompt_harm", "response_harm"]
+
+
+def test_nemotron_8b_v3_judges_response() -> None:
+    instance = _nemotron(NEMOTRON_8B_V3)
+    data = {
+        "generated_text": '{"User Safety": "safe", "Response Safety": "unsafe", "Safety Categories": "malware"}',
+        "has_response": True,
+    }
+    result = instance._post_processing(GuardrailInferenceOutput(data=data))
+    assert result.valid is False
+    assert result.categories[0].triggered is False
+    assert result.categories[1].triggered is True
+    assert result.extra == {"safety_categories": ["malware"]}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "no json here at all",
+        '{"User Safety": "maybe"}',  # unrecognized rating
+        '{"User Safety": ',  # truncated generation
+        '["User Safety"]',  # valid JSON, wrong shape
+    ],
+)
+def test_nemotron_8b_v3_fails_closed_on_unparsable_verdict(text: str) -> None:
+    instance = _nemotron(NEMOTRON_8B_V3)
+    result = instance._post_processing(_gen(text))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_nemotron_8b_v3_fails_closed_when_judged_response_verdict_missing() -> None:
+    instance = _nemotron(NEMOTRON_8B_V3)
+    data = {"generated_text": '{"User Safety": "safe"}', "has_response": True}
+    result = instance._post_processing(GuardrailInferenceOutput(data=data))
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+
+
+def test_nemotron_8b_v3_rejects_think() -> None:
+    with pytest.raises(ValueError, match="think=True is not supported"):
+        NemotronContentSafety(think=True, model_id=NEMOTRON_8B_V3, provider=MagicMock())
 
 
 def test_kanana_safe_and_unsafe() -> None:

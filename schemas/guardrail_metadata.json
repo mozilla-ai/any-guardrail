@@ -699,9 +699,9 @@
       "content_safety"
     ],
     "default_license": "gemma",
-    "description": "Reasoning safety classifier covering a 22-category content-safety taxonomy.",
+    "description": "Safety classifier covering NVIDIA's multi-category content-safety taxonomy.",
     "display_name": "Nemotron Content Safety",
-    "multilingual": false,
+    "multilingual": true,
     "multimodal": false,
     "optional_validate_kwargs": [
       "output_text"
@@ -717,7 +717,16 @@
       "output"
     ],
     "supports_batch": false,
-    "variant_licenses": [],
+    "variant_licenses": [
+      {
+        "license": "llama-3.1",
+        "model_id": "nvidia/Llama-3.1-Nemotron-Safety-Guard-8B-v3"
+      },
+      {
+        "license": "gemma",
+        "model_id": "nvidia/Nemotron-Content-Safety-Reasoning-4B"
+      }
+    ],
     "vendor": "NVIDIA"
   },
   "off_topic": {

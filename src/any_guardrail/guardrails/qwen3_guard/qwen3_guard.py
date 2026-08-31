@@ -85,7 +85,9 @@ class Qwen3Guard(ThreeStageGuardrail[Qwen3GuardPreprocessData, Qwen3GuardInferen
         model_id: Optional HuggingFace model ID, one of ``SUPPORTED_MODELS``.
             Defaults to ``Qwen/Qwen3Guard-Gen-0.6B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
-            loading a causal LM.
+            loading a causal LM; pass a ``LlamafileProvider`` to run a GGUF build instead. Only
+            the 4B and 8B checkpoints have a published llamafile, so a ``LlamafileProvider``
+            needs an explicit ``model_id=`` — the default 0.6B has no artifact.
 
     """
 

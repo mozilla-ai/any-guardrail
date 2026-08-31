@@ -380,7 +380,7 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         default_license="apache-2.0",
     ),
     GuardrailName.NEMOTRON_CONTENT_SAFETY: GuardrailMetadata(
-        description="Reasoning safety classifier covering a 22-category content-safety taxonomy.",
+        description="Safety classifier covering NVIDIA's multi-category content-safety taxonomy.",
         display_name="Nemotron Content Safety",
         categories=frozenset({GuardrailCategory.CONTENT_SAFETY}),
         primary_category=GuardrailCategory.CONTENT_SAFETY,
@@ -388,10 +388,18 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         output_shapes=frozenset({OutputShape.CATEGORICAL}),
         backend=BackendType.LOCAL_DECODER,
         optional_validate_kwargs=frozenset({"output_text"}),
+        # The Safety-Guard-8B-v3 variant is trained on 9 languages and generalizes zero-shot to ~20.
+        multilingual=True,
         vendor="NVIDIA",
-        # Fine-tune of google/gemma-3-4b-it: NVIDIA Open Model License + Gemma Terms of Use both apply;
-        # Gemma is the binding constraint for redistribution.
+        # Default (Reasoning-4B) is a google/gemma-3-4b-it fine-tune: NVIDIA Open Model License +
+        # Gemma Terms of Use both apply, and Gemma is the binding constraint for redistribution.
+        # Safety-Guard-8B-v3 is a Llama-3.1-8B-Instruct fine-tune, so it carries the NVIDIA Open
+        # Model License plus the Llama 3.1 Community License ("Built with Llama") instead.
         default_license="gemma",
+        variant_licenses=(
+            VariantLicense(model_id="nvidia/Nemotron-Content-Safety-Reasoning-4B", license="gemma"),
+            VariantLicense(model_id="nvidia/Llama-3.1-Nemotron-Safety-Guard-8B-v3", license="llama-3.1"),
+        ),
     ),
     GuardrailName.POLY_GUARD: GuardrailMetadata(
         description="Multilingual safety-moderation judge reporting request harm, response harm, and refusal across 17 languages.",

@@ -4,6 +4,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from any_guardrail.api import AnyGuardrail
+from any_guardrail.providers._encoderfile_artifacts import ENCODERFILE_ARTIFACTS
+from any_guardrail.providers._llamafile_artifacts import LLAMAFILE_ARTIFACTS
 from any_guardrail.providers.llamafile import LlamafileProvider
 
 
@@ -65,8 +68,9 @@ def test_load_model_uses_binary_path(tmp_path: Any, fake_subprocess: Any, fake_r
     provider.close()
 
 
+@pytest.mark.parametrize(("model_id", "expected"), sorted(LLAMAFILE_ARTIFACTS.items()))
 def test_load_model_auto_downloads_from_artifact_map(
-    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+    model_id: str, expected: tuple[str, str], tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
 ) -> None:
     binary = tmp_path / "downloaded.llamafile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
@@ -76,12 +80,24 @@ def test_load_model_auto_downloads_from_artifact_map(
         return_value=str(binary),
     ) as mock_download:
         provider = LlamafileProvider(port=23457)
-        provider.load_model("ibm-granite/granite-guardian-4.1-8b")
+        provider.load_model(model_id)
 
     _, download_kwargs = mock_download.call_args
-    assert download_kwargs["repo_id"] == "mozilla-ai/llamafile_0.10_alpha"
-    assert download_kwargs["filename"] == "granite-guardian-4.1-8b.Q6_K.llamafile"
+    assert (download_kwargs["repo_id"], download_kwargs["filename"]) == expected
     provider.close()
+
+
+@pytest.mark.parametrize("artifacts", [LLAMAFILE_ARTIFACTS, ENCODERFILE_ARTIFACTS], ids=["llamafile", "encoderfile"])
+def test_artifact_map_keys_are_supported_models(artifacts: dict[str, tuple[str, str]]) -> None:
+    """Every mapped model_id must be some guardrail's SUPPORTED_MODELS entry.
+
+    An artifact keyed on a model the library doesn't support is unreachable: nothing would ever
+    pass that model_id to load_model(). This is what catches publishing a binary for a *near-miss*
+    model (e.g. a different size or generation of the same family) rather than the one we wire up.
+    """
+    supported = {model_id for models in AnyGuardrail.get_all_supported_models().values() for model_id in models}
+    unreachable = sorted(set(artifacts) - supported)
+    assert not unreachable, f"artifact model_ids not in any SUPPORTED_MODELS: {unreachable}"
 
 
 def test_load_model_with_repo_id_filename_override(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:

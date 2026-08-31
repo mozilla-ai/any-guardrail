@@ -13,6 +13,8 @@ from any_guardrail.parameters import ParameterSpec, RequirementGroup
 from any_guardrail.prompt_registry import get_prompt as _registry_get_prompt
 from any_guardrail.prompt_registry import list_prompt_versions as _registry_list_prompt_versions
 from any_guardrail.prompts import PromptTemplate
+from any_guardrail.providers._encoderfile_artifacts import ENCODERFILE_ARTIFACTS
+from any_guardrail.providers._llamafile_artifacts import LLAMAFILE_ARTIFACTS
 from any_guardrail.providers.base import Provider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import (
@@ -296,6 +298,52 @@ class AnyGuardrail:
                 if e.__cause__ is None:
                     raise
         return model_ids
+
+    @classmethod
+    def list_llamafile_models(cls, guardrail_name: GuardrailName | None = None) -> list[str]:
+        """List the model IDs that have a published llamafile artifact.
+
+        These are the models a bare ``LlamafileProvider()`` can auto-download, and — more
+        importantly for self-hosted serving — the ones for which a llamafile exists to put behind
+        an external ``LlamafileProvider(base_url=...)`` server. A guardrail's other
+        ``SUPPORTED_MODELS`` can still run through ``HuggingFaceProvider``, and an unpublished
+        GGUF can still be used via ``binary_path=`` or ``repo_id=`` + ``filename=``.
+
+        Args:
+            guardrail_name: Optional guardrail to restrict the answer to. When given, the result is
+                the intersection with that guardrail's ``SUPPORTED_MODELS`` — note this imports the
+                guardrail class, whereas the unfiltered call stays import-free.
+
+        Returns:
+            Sorted model IDs. Empty when the named guardrail has no published artifact.
+
+        """
+        return cls._filter_artifact_models(LLAMAFILE_ARTIFACTS, guardrail_name)
+
+    @classmethod
+    def list_encoderfile_models(cls, guardrail_name: GuardrailName | None = None) -> list[str]:
+        """List the model IDs that have a published encoderfile artifact.
+
+        The encoder counterpart to :meth:`list_llamafile_models`; see there for the semantics.
+
+        Args:
+            guardrail_name: Optional guardrail to restrict the answer to.
+
+        Returns:
+            Sorted model IDs. Empty when the named guardrail has no published artifact.
+
+        """
+        return cls._filter_artifact_models(ENCODERFILE_ARTIFACTS, guardrail_name)
+
+    @classmethod
+    def _filter_artifact_models(
+        cls, artifacts: dict[str, tuple[str, str]], guardrail_name: GuardrailName | None
+    ) -> list[str]:
+        """Return the artifact map's model IDs, optionally narrowed to one guardrail."""
+        if guardrail_name is None:
+            return sorted(artifacts)
+        supported = set(cls.get_supported_model(guardrail_name))
+        return sorted(model_id for model_id in artifacts if model_id in supported)
 
     @classmethod
     def create(

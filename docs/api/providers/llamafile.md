@@ -23,6 +23,11 @@ Outside a ``with`` block the provider still cleans up via ``atexit`` on
 interpreter exit, so notebook and REPL usage works without explicit
 teardown. Call ``provider.close()`` directly to release the port early.
 
+Auto-download only works for models with a published artifact; call
+:meth:`~any_guardrail.api.AnyGuardrail.list_llamafile_models` to see which
+those are. Two guardrails default to a model that has none — ``Qwen3Guard``
+and ``PolyGuard`` — so they need an explicit ``model_id=``.
+
 ## Constructor
 
 | Parameter | Type | Required | Default | Description |

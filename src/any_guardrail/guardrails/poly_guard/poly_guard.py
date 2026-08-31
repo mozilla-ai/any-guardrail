@@ -93,7 +93,10 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
         model_id: Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to
             ``ToxicityPrompts/PolyGuard-Ministral``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading a
-            causal LM.
+            causal LM; pass a ``LlamafileProvider`` to run a GGUF build instead. Note that only the
+            Qwen variants have a published llamafile — the default Ministral checkpoint is under a
+            non-commercial license and is not redistributed — so a ``LlamafileProvider`` needs an
+            explicit ``model_id=``.
 
     """
 
@@ -123,7 +126,9 @@ class PolyGuard(ThreeStageGuardrail[PolyGuardPreprocessData, PolyGuardInferenceD
             provider: Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is
                 built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A
                 supplied ``HuggingFaceProvider`` is corrected to those classes at load time; any
-                other provider is used as-is.
+                other provider is used as-is. With a ``LlamafileProvider``, pass
+                ``model_id="ToxicityPrompts/PolyGuard-Qwen"`` (or ``-Qwen-Smol``): the default
+                Ministral checkpoint has no published artifact.
             prompt: Optional prompt-template override, used as-is (system prompt plus a user
                 template filling ``{prompt}`` / ``{response}``). Defaults to ``None`` — the registry
                 default, or the version named by ``prompt_version``.
