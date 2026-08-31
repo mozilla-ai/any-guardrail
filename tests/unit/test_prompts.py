@@ -327,11 +327,22 @@ def test_glider_pre_processing_uses_registry_prompt() -> None:
 
 
 def test_nemotron_reference_matches_module_constant() -> None:
-    from any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety import NEMOTRON_INSTRUCTION
+    from any_guardrail.guardrails.nemotron_content_safety.nemotron_content_safety import (
+        NEMOTRON_8B_V3_INSTRUCTION,
+        NEMOTRON_8B_V3_OUTPUT_FORMAT,
+        NEMOTRON_INSTRUCTION,
+    )
 
     template = PROMPT_REGISTRY[GuardrailName.NEMOTRON_CONTENT_SAFETY].resolve()
     assert template.overridable is False
     assert template.segments["instruction"] == NEMOTRON_INSTRUCTION
+    # The 8B-v3 segments embed a literal JSON object, so the registry stores their braces doubled
+    # (a placeholder-free str.format template). render() restores the text the model actually sees.
+    rendered = template.render()
+    assert rendered["instruction_8b_v3"] == NEMOTRON_8B_V3_INSTRUCTION
+    assert rendered["output_format_8b_v3"] == NEMOTRON_8B_V3_OUTPUT_FORMAT
+    # Doubling the braces is what keeps the JSON out of the derived placeholder set.
+    assert template.variables == frozenset()
 
 
 def test_gpt_oss_reference_matches_module_constant() -> None:

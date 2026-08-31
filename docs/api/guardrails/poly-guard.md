@@ -42,7 +42,7 @@ For more information, see the model cards:
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``ToxicityPrompts/PolyGuard-Ministral``; ``ToxicityPrompts/PolyGuard-Qwen`` and ``ToxicityPrompts/PolyGuard-Qwen-Smol`` are the Qwen-based alternatives. |
-| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A supplied ``HuggingFaceProvider`` is corrected to those classes at load time; any other provider is used as-is. |
+| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. When ``None``, a ``HuggingFaceProvider`` is built targeting a causal LM (``AutoModelForCausalLM`` + ``AutoTokenizer``). A supplied ``HuggingFaceProvider`` is corrected to those classes at load time; any other provider is used as-is. With a ``LlamafileProvider``, pass ``model_id="ToxicityPrompts/PolyGuard-Qwen"`` (or ``-Qwen-Smol``): the default Ministral checkpoint has no published artifact. |
 | `prompt` | `PromptTemplate | None` | No | `None` | Optional prompt-template override, used as-is (system prompt plus a user template filling ``{prompt}`` / ``{response}``). Defaults to ``None`` — the registry default, or the version named by ``prompt_version``. |
 | `prompt_version` | `str | None` | No | `None` | Registered prompt version to use when ``prompt`` is not given. Defaults to ``None`` (the default version). See ``AnyGuardrail.list_prompt_versions``. |
 

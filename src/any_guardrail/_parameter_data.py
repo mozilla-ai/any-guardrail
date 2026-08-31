@@ -1354,7 +1354,7 @@ _PARAMETER_DATA_JSON = r"""
     {
       "choices": null,
       "default": false,
-      "description": "If ``True``, request chain-of-thought reasoning (``/think``) before the verdict; otherwise ``/no_think``. Slower but can improve borderline judgments; the reasoning is stripped before parsing but kept in ``GuardrailOutput.explanation``.",
+      "description": "If ``True``, request chain-of-thought reasoning (``/think``) before the verdict; otherwise ``/no_think``. Slower but can improve borderline judgments; the reasoning is stripped before parsing but kept in ``GuardrailOutput.explanation``. Supported only by the 4B variant.",
       "effectively_required": false,
       "env_var": null,
       "name": "think",
@@ -1365,7 +1365,8 @@ _PARAMETER_DATA_JSON = r"""
     },
     {
       "choices": [
-        "nvidia/Nemotron-Content-Safety-Reasoning-4B"
+        "nvidia/Nemotron-Content-Safety-Reasoning-4B",
+        "nvidia/Llama-3.1-Nemotron-Safety-Guard-8B-v3"
       ],
       "default": null,
       "description": "Optional HuggingFace model ID; must be one of ``SUPPORTED_MODELS``. Defaults to ``nvidia/Nemotron-Content-Safety-Reasoning-4B``.",

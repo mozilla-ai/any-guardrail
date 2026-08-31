@@ -18,6 +18,8 @@ from any_guardrail.guardrails.off_topic.off_topic import OffTopic
 from any_guardrail.guardrails.openai_moderation.openai_moderation import OpenaiModeration
 from any_guardrail.guardrails.patronus import Patronus
 from any_guardrail.guardrails.watsonx_guardian import WatsonxGuardian
+from any_guardrail.providers._encoderfile_artifacts import ENCODERFILE_ARTIFACTS
+from any_guardrail.providers._llamafile_artifacts import LLAMAFILE_ARTIFACTS
 from any_guardrail.providers.huggingface import HuggingFaceProvider
 
 
@@ -214,6 +216,48 @@ def test_get_all_supported_models_reraises_uncaused_import_error() -> None:
         pytest.raises(ImportError, match="Could not resolve guardrail class"),
     ):
         AnyGuardrail.get_all_supported_models()
+
+
+# --- Published binary-artifact discovery ---------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("lister", "artifacts"),
+    [
+        (AnyGuardrail.list_llamafile_models, LLAMAFILE_ARTIFACTS),
+        (AnyGuardrail.list_encoderfile_models, ENCODERFILE_ARTIFACTS),
+    ],
+    ids=["llamafile", "encoderfile"],
+)
+def test_list_artifact_models_returns_sorted_map_keys(lister: Any, artifacts: dict[str, Any]) -> None:
+    assert lister() == sorted(artifacts)
+
+
+def test_list_llamafile_models_filtered_by_guardrail() -> None:
+    """Filtering narrows to the intersection with that guardrail's SUPPORTED_MODELS."""
+    # PolyGuard's default (Ministral) is non-commercial and deliberately unpublished, so the
+    # filtered answer is a strict subset of SUPPORTED_MODELS.
+    poly = AnyGuardrail.list_llamafile_models(GuardrailName.POLY_GUARD)
+    assert poly == ["ToxicityPrompts/PolyGuard-Qwen", "ToxicityPrompts/PolyGuard-Qwen-Smol"]
+    assert set(poly) < set(AnyGuardrail.get_supported_model(GuardrailName.POLY_GUARD))
+
+
+def test_list_encoderfile_models_filtered_by_guardrail() -> None:
+    assert AnyGuardrail.list_encoderfile_models(GuardrailName.DEEPSET) == ["deepset/deberta-v3-base-injection"]
+
+
+@pytest.mark.parametrize(
+    ("lister", "guardrail_name"),
+    [
+        # WildGuard needs apply_chat_template=False, which LlamafileProvider rejects outright.
+        (AnyGuardrail.list_llamafile_models, GuardrailName.WILD_GUARD),
+        # Llama Guard is a decoder; it has no encoderfile by construction.
+        (AnyGuardrail.list_encoderfile_models, GuardrailName.LLAMA_GUARD),
+    ],
+    ids=["llamafile-wildguard", "encoderfile-llamaguard"],
+)
+def test_list_artifact_models_empty_for_unpublished_guardrail(lister: Any, guardrail_name: GuardrailName) -> None:
+    assert lister(guardrail_name) == []
 
 
 def test_post_processing_implementation() -> None:

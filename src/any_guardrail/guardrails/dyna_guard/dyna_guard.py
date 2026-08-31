@@ -93,7 +93,8 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
         model_id: Optional HuggingFace model ID. Must be one of ``SUPPORTED_MODELS``;
             defaults to ``tomg-group-umd/DynaGuard-8B``.
         provider: Optional pre-configured provider. Defaults to a ``HuggingFaceProvider``
-            loading the model as a causal LM.
+            loading the model as a causal LM; pass a ``LlamafileProvider`` to run the default
+            8B checkpoint as a GGUF build instead.
 
     """
 
@@ -132,6 +133,8 @@ class DynaGuard(ThreeStageGuardrail[DynaGuardPreprocessData, DynaGuardInferenceD
                 ``HuggingFaceProvider`` loading the model as a causal LM. When a
                 ``HuggingFaceProvider`` is supplied, it is loaded with
                 ``model_class=AutoModelForCausalLM`` / ``tokenizer_class=AutoTokenizer``.
+                A ``LlamafileProvider`` is used as-is; only the default ``DynaGuard-8B``
+                has a published llamafile artifact.
             prompt: Optional prompt-template override, used as-is (system prompt plus a user
                 template filling ``{policy}`` / ``{transcript}``). Defaults to ``None`` — the
                 registry default, or the version named by ``prompt_version``.

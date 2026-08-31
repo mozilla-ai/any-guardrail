@@ -80,6 +80,11 @@ class LlamafileProvider(Provider[AnyDict, AnyDict]):
     interpreter exit, so notebook and REPL usage works without explicit
     teardown. Call ``provider.close()`` directly to release the port early.
 
+    Auto-download only works for models with a published artifact; call
+    :meth:`~any_guardrail.api.AnyGuardrail.list_llamafile_models` to see which
+    those are. Two guardrails default to a model that has none — ``Qwen3Guard``
+    and ``PolyGuard`` — so they need an explicit ``model_id=``.
+
     Args:
         binary_path: Path to a pre-downloaded ``.llamafile``. If omitted, the
             artifact is auto-downloaded — first by trying ``repo_id``/``filename``

@@ -309,6 +309,61 @@ Respond with exactly:
 Prompt harm: harmful/unharmful
 Response Harm: harmful/unharmful"""
 
+# The 8B-v3 variant carries NVIDIA's own published prompt (a jinja template in the model
+# card's inference_script.py), not an any-guardrail adaptation. Two details are load-bearing
+# and easy to lose: every category line ends with a trailing space, and the taxonomy is 23
+# categories -- "Other" is inserted at S14, shifting Manipulation..Immoral/Unethical down one
+# relative to the 4B taxonomy above. Written as explicit per-line literals so the
+# trailing-whitespace pre-commit hook can't silently strip those spaces.
+_NEMOTRON_8B_V3_INSTRUCTION = (
+    "Task: Check if there is unsafe content in the user or agent messages in the below "
+    "conversation in accordance with our safety policy with the below categories. Provide a "
+    "'safe' or 'unsafe' rating for both the user message and the agent response. If there is "
+    "unsafe content, please also provide a list of violated categories according to our safety "
+    "policy below.\n"
+    "\n"
+    "<BEGIN UNSAFE CONTENT CATEGORIES>\n"
+    "S1: Violence. \n"
+    "S2: Sexual. \n"
+    "S3: Criminal Planning/Confessions. \n"
+    "S4: Guns and Illegal Weapons. \n"
+    "S5: Controlled/Regulated Substances. \n"
+    "S6: Suicide and Self Harm. \n"
+    "S7: Sexual (minor). \n"
+    "S8: Hate/Identity Hate. \n"
+    "S9: PII/Privacy. \n"
+    "S10: Harassment. \n"
+    "S11: Threat. \n"
+    "S12: Profanity. \n"
+    "S13: Needs Caution. \n"
+    "S14: Other. \n"
+    "S15: Manipulation. \n"
+    "S16: Fraud/Deception. \n"
+    "S17: Malware. \n"
+    "S18: High Risk Gov Decision Making. \n"
+    "S19: Political/Misinformation/Conspiracy. \n"
+    "S20: Copyright/Trademark/Plagiarism. \n"
+    "S21: Unauthorized Advice. \n"
+    "S22: Illegal Activity. \n"
+    "S23: Immoral/Unethical. \n"
+    "<END UNSAFE CONTENT CATEGORIES>"
+)
+
+# Trailing half of the 8B-v3 prompt, appended after the <BEGIN/END CONVERSATION> block the
+# guardrail assembles. The braces are doubled because PromptTemplate derives its ``variables``
+# with str.Formatter: an unescaped literal JSON object would be misread as a placeholder.
+# ``PromptTemplate.render()`` (no arguments) restores the single braces the model expects.
+_NEMOTRON_8B_V3_OUTPUT_FORMAT = (
+    "Provide your safety assessment for the above conversation in the below output JSON format:\n"
+    '{{"User Safety": safe or unsafe rating for the user message, "Response Safety": safe or '
+    "unsafe rating for the agent response. Omit if no agent response present. "
+    '"Safety Categories": a comma-separated list of applicable safety categories from the '
+    "provided taxonomy. Omit if all safe.}}\n"
+    "\n"
+    "Do not include anything other than the output JSON in your response.\n"
+    "Output JSON: "
+)
+
 _GPTOSS_OUTPUT_INSTRUCTION = (
     "After your analysis, end your reply with a final line containing exactly one word: "
     "VIOLATION if the content violates the policy, or SAFE if it does not."
@@ -587,12 +642,16 @@ PROMPT_REGISTRY: dict[GuardrailName, PromptSpec] = {
     GuardrailName.NEMOTRON_CONTENT_SAFETY: PromptSpec(
         versions={
             "default": PromptTemplate(
-                segments={"instruction": _NEMOTRON_INSTRUCTION},
+                segments={
+                    "instruction": _NEMOTRON_INSTRUCTION,
+                    "instruction_8b_v3": _NEMOTRON_8B_V3_INSTRUCTION,
+                    "output_format_8b_v3": _NEMOTRON_8B_V3_OUTPUT_FORMAT,
+                },
                 assembly=PromptAssembly.ASSEMBLED,
                 overridable=False,
                 provenance="adapted",
                 source="https://huggingface.co/nvidia/Nemotron-Content-Safety-Reasoning-4B",
-                description="Reference: 22-category (S1-S22) content-safety instruction; the guardrail appends the prompt/response and a /think directive at runtime.",
+                description="Reference: per-variant content-safety instructions. `instruction` is the adapted 22-category (S1-S22) prompt for Reasoning-4B, to which the guardrail appends the prompt/response and a /think directive. `instruction_8b_v3` + `output_format_8b_v3` are NVIDIA's own published 23-category (S1-S23) prompt for Safety-Guard-8B-v3, which the guardrail wraps around a <BEGIN CONVERSATION> block; see https://huggingface.co/nvidia/Llama-3.1-Nemotron-Safety-Guard-8B-v3.",
             ),
         },
     ),

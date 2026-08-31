@@ -42,7 +42,7 @@ For more information, see:
 |-----------|------|----------|---------|-------------|
 | `strict` | `bool` | No | `True` | If ``True`` (default), only ``Safe`` verdicts pass validation; set ``False`` to let ``Controversial`` content pass (``valid=True``), leaving it reflected only in ``score`` and ``extra["severity"]``. |
 | `model_id` | `str | None` | No | `None` | Optional HuggingFace model ID, one of ``SUPPORTED_MODELS``. Defaults to ``Qwen/Qwen3Guard-Gen-0.6B``. |
-| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading a causal LM. |
+| `provider` | `Provider[dict[str, Any], dict[str, Any]] | None` | No | `None` | Optional pre-configured provider. Defaults to a ``HuggingFaceProvider`` loading a causal LM; pass a ``LlamafileProvider`` to run a GGUF build instead. Only the 4B and 8B checkpoints have a published llamafile, so a ``LlamafileProvider`` needs an explicit ``model_id=`` — the default 0.6B has no artifact. |
 
 Initialize the Qwen3Guard guardrail.
 
