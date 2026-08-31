@@ -27,7 +27,7 @@ import numpy as np
 if TYPE_CHECKING:
     from typing import Self
 
-from any_guardrail.providers._encoderfile_artifacts import resolve_artifact_path
+from any_guardrail.providers._encoderfile_artifacts import resolve_artifact
 from any_guardrail.providers.base import Provider
 from any_guardrail.types import (
     AnyDict,
@@ -43,7 +43,6 @@ except ImportError as e:
     MISSING_PACKAGES_ERROR = e
 
 
-_DEFAULT_ENCODERFILE_REPO = "mozilla-ai/encoderfile"
 _STARTUP_POLL_INTERVAL = 0.25
 
 
@@ -102,16 +101,17 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
 
     Args:
         binary_path: Path to a pre-built ``.encoderfile``. If omitted, the
-            platform-appropriate artifact is auto-downloaded from
-            ``mozilla-ai/encoderfile`` using the model_id passed to
-            ``load_model``. Mutually exclusive with ``base_url``.
+            platform-appropriate artifact is auto-downloaded from the model's
+            own HF repo, looked up by the model_id passed to ``load_model`` in
+            the curated
+            :data:`~any_guardrail.providers._encoderfile_artifacts.ENCODERFILE_ARTIFACTS`
+            map. Mutually exclusive with ``base_url``.
         base_url: External-server mode. Point at an encoderfile server you spun
             up yourself (e.g. ``"http://localhost:9999"``). When set, the
             provider skips download + subprocess spawn entirely; ``load_model``
             only polls the server for readiness, and ``close()`` is a no-op.
-            Mutually exclusive with ``binary_path``, ``port``, and a
-            non-default ``encoderfile_repo``. Must start with ``http://`` or
-            ``https://``.
+            Mutually exclusive with ``binary_path``, ``port``, and
+            ``encoderfile_repo``. Must start with ``http://`` or ``https://``.
         port: TCP port to bind the encoderfile HTTP server. Defaults to a
             kernel-chosen free port. Mutually exclusive with ``base_url``.
         host: Bind address. Defaults to ``"127.0.0.1"``.
@@ -120,9 +120,12 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         request_timeout: Per-request timeout for ``/predict`` calls.
         cache_dir: Directory passed to ``hf_hub_download`` for auto-downloaded
             binaries.
-        encoderfile_repo: Override the source HF repo. Defaults to
-            ``mozilla-ai/encoderfile``. Mutually exclusive with ``base_url``
-            when set to a non-default value.
+        encoderfile_repo: Override the HF repo the artifact is pulled from — a
+            fork or mirror. Defaults to ``None``, meaning the per-model repo
+            resolved from the artifact map. The filename is still derived from
+            the map and the platform tag, so the override repo must use the
+            same flat ``{basename}.{platform_tag}.encoderfile`` layout.
+            Mutually exclusive with ``base_url``.
 
     """
 
@@ -135,7 +138,7 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
         startup_timeout: float = 60.0,
         request_timeout: float = 60.0,
         cache_dir: str | None = None,
-        encoderfile_repo: str = _DEFAULT_ENCODERFILE_REPO,
+        encoderfile_repo: str | None = None,
     ) -> None:
         """Initialize the encoderfile provider."""
         self._external_mode = base_url is not None
@@ -169,11 +172,11 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
             if not base_url.startswith(("http://", "https://")):
                 msg = f"base_url must start with http:// or https://, got {base_url!r}"
                 raise ValueError(msg)
-            conflicts: AnyDict = {"binary_path": binary_path, "port": port}
-            # ``encoderfile_repo`` has a non-None default, so only flag it when
-            # the user actively overrode it.
-            if encoderfile_repo != _DEFAULT_ENCODERFILE_REPO:
-                conflicts["encoderfile_repo"] = encoderfile_repo
+            conflicts: AnyDict = {
+                "binary_path": binary_path,
+                "port": port,
+                "encoderfile_repo": encoderfile_repo,
+            }
             bad = sorted(k for k, v in conflicts.items() if v is not None)
             if bad:
                 msg = f"base_url is mutually exclusive with: {bad}"
@@ -188,10 +191,10 @@ class EncoderfileProvider(Provider[AnyDict, AnyDict]):
             return Path(self.binary_path)
 
         platform_tag = _detect_platform_tag()
-        artifact_path = resolve_artifact_path(model_id, platform_tag)
+        repo_id, filename = resolve_artifact(model_id, platform_tag)
         downloaded = hf_hub_download(
-            repo_id=self.encoderfile_repo,
-            filename=artifact_path,
+            repo_id=self.encoderfile_repo or repo_id,
+            filename=filename,
             cache_dir=self.cache_dir,
         )
         return Path(downloaded)

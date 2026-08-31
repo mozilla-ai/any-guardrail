@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from any_guardrail.api import AnyGuardrail
+from any_guardrail.providers._encoderfile_artifacts import ENCODERFILE_ARTIFACTS
 from any_guardrail.providers.encoderfile import EncoderfileProvider, _detect_platform_tag
 from any_guardrail.types import GuardrailInferenceOutput, GuardrailPreprocessOutput
 
@@ -102,9 +104,13 @@ def test_load_model_uses_binary_path(tmp_path: Any, fake_subprocess: Any, fake_r
     assert provider.base_url == "http://127.0.0.1:12345"
 
 
-def test_load_model_auto_downloads_correct_artifact(tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any) -> None:
+@pytest.mark.parametrize(("model_id", "expected"), sorted(ENCODERFILE_ARTIFACTS.items()))
+def test_load_model_auto_downloads_correct_artifact(
+    model_id: str, expected: tuple[str, str], tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+) -> None:
     binary = tmp_path / "downloaded.encoderfile"
     binary.write_bytes(b"#!/bin/sh\necho stub\n")
+    expected_repo, expected_basename = expected
 
     with (
         patch(
@@ -114,20 +120,62 @@ def test_load_model_auto_downloads_correct_artifact(tmp_path: Any, fake_subproce
         patch("any_guardrail.providers.encoderfile._detect_platform_tag", return_value="aarch64-apple-darwin"),
     ):
         provider = EncoderfileProvider(port=12346)
-        provider.load_model("ProtectAI/deberta-v3-base-prompt-injection-v2")
+        provider.load_model(model_id)
 
     _, download_kwargs = mock_download.call_args
-    assert download_kwargs["repo_id"] == "mozilla-ai/encoderfile"
-    assert download_kwargs["filename"] == (
-        "protectai/deberta-v3-base-prompt-injection-v2/"
-        "deberta-v3-base-prompt-injection-v2.aarch64-apple-darwin.encoderfile"
-    )
+    assert download_kwargs["repo_id"] == expected_repo
+    assert download_kwargs["filename"] == f"{expected_basename}.aarch64-apple-darwin.encoderfile"
+
+
+def test_load_model_encoderfile_repo_overrides_the_resolved_repo(
+    tmp_path: Any, fake_subprocess: Any, fake_ready_probe: Any
+) -> None:
+    """``encoderfile_repo=`` redirects the repo but keeps the map-derived filename."""
+    binary = tmp_path / "downloaded.encoderfile"
+    binary.write_bytes(b"#!/bin/sh\necho stub\n")
+
+    with (
+        patch(
+            "any_guardrail.providers.encoderfile.hf_hub_download",
+            return_value=str(binary),
+        ) as mock_download,
+        patch("any_guardrail.providers.encoderfile._detect_platform_tag", return_value="x86_64-linux-gnu"),
+    ):
+        provider = EncoderfileProvider(port=12354, encoderfile_repo="someone-else/my-fork")
+        provider.load_model("dcarpintero/pangolin-guard-base")
+
+    _, download_kwargs = mock_download.call_args
+    assert download_kwargs["repo_id"] == "someone-else/my-fork"
+    assert download_kwargs["filename"] == "pangolin-guard-base.x86_64-linux-gnu.encoderfile"
+
+
+def test_artifact_map_keys_are_supported_models() -> None:
+    """Every mapped model_id must be some guardrail's SUPPORTED_MODELS entry.
+
+    An artifact keyed on a model the library doesn't support is unreachable — nothing would ever
+    pass that model_id to load_model(). This is what catches publishing a binary for a near-miss
+    model rather than the one we actually wire up.
+    """
+    supported = {model_id for models in AnyGuardrail.get_all_supported_models().values() for model_id in models}
+    unreachable = sorted(set(ENCODERFILE_ARTIFACTS) - supported)
+    assert not unreachable, f"artifact model_ids not in any SUPPORTED_MODELS: {unreachable}"
 
 
 def test_load_model_unknown_model_id_raises(tmp_path: Any) -> None:
     provider = EncoderfileProvider(port=12347)
     with pytest.raises(KeyError, match="No encoderfile artifact registered"):
         provider.load_model("unknown/model")
+
+
+def test_load_model_withdrawn_sentinel_artifact_raises_cleanly() -> None:
+    """Sentinel is elastic-2.0 and gated; its artifact was withdrawn upstream (#209).
+
+    It must surface the map's KeyError rather than letting a stale entry reach HuggingFace and
+    come back as an opaque 404.
+    """
+    provider = EncoderfileProvider(port=12355)
+    with pytest.raises(KeyError, match="No encoderfile artifact registered"):
+        provider.load_model("qualifire/prompt-injection-sentinel")
 
 
 def test_infer_parses_response(tmp_path: Any, fake_subprocess: Any) -> None:
@@ -404,11 +452,12 @@ def test_external_mode_rejects_mutually_exclusive_kwargs(kwargs: dict[str, Any],
         EncoderfileProvider(base_url="http://localhost:9999", **kwargs)
 
 
-def test_external_mode_default_encoderfile_repo_is_not_a_conflict() -> None:
-    """The default value of ``encoderfile_repo`` is not flagged — only an active override is."""
+def test_external_mode_omitted_encoderfile_repo_is_not_a_conflict() -> None:
+    """Omitting ``encoderfile_repo`` is not flagged — only an active override is."""
     # Should not raise.
     provider = EncoderfileProvider(base_url="http://localhost:9999")
     assert provider.base_url == "http://localhost:9999"
+    assert provider.encoderfile_repo is None
 
 
 def test_external_mode_rejects_invalid_url_scheme() -> None:

@@ -22,14 +22,14 @@ teardown. Call ``provider.close()`` directly to release the port early.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `binary_path` | `str | None` | No | `None` | Path to a pre-built ``.encoderfile``. If omitted, the platform-appropriate artifact is auto-downloaded from ``mozilla-ai/encoderfile`` using the model_id passed to ``load_model``. Mutually exclusive with ``base_url``. |
-| `base_url` | `str | None` | No | `None` | External-server mode. Point at an encoderfile server you spun up yourself (e.g. ``"http://localhost:9999"``). When set, the provider skips download + subprocess spawn entirely; ``load_model`` only polls the server for readiness, and ``close()`` is a no-op. Mutually exclusive with ``binary_path``, ``port``, and a non-default ``encoderfile_repo``. Must start with ``http://`` or ``https://``. |
+| `binary_path` | `str | None` | No | `None` | Path to a pre-built ``.encoderfile``. If omitted, the platform-appropriate artifact is auto-downloaded from the model's own HF repo, looked up by the model_id passed to ``load_model`` in the curated :data:`~any_guardrail.providers._encoderfile_artifacts.ENCODERFILE_ARTIFACTS` map. Mutually exclusive with ``base_url``. |
+| `base_url` | `str | None` | No | `None` | External-server mode. Point at an encoderfile server you spun up yourself (e.g. ``"http://localhost:9999"``). When set, the provider skips download + subprocess spawn entirely; ``load_model`` only polls the server for readiness, and ``close()`` is a no-op. Mutually exclusive with ``binary_path``, ``port``, and ``encoderfile_repo``. Must start with ``http://`` or ``https://``. |
 | `port` | `int | None` | No | `None` | TCP port to bind the encoderfile HTTP server. Defaults to a kernel-chosen free port. Mutually exclusive with ``base_url``. |
 | `host` | `str` | No | `"127.0.0.1"` | Bind address. Defaults to ``"127.0.0.1"``. |
 | `startup_timeout` | `float` | No | `60.0` | Seconds to wait for the server to become ready. Also applies to external-server readiness polling. |
 | `request_timeout` | `float` | No | `60.0` | Per-request timeout for ``/predict`` calls. |
 | `cache_dir` | `str | None` | No | `None` | Directory passed to ``hf_hub_download`` for auto-downloaded binaries. |
-| `encoderfile_repo` | `str` | No | `"mozilla-ai/encoderfile"` | Override the source HF repo. Defaults to ``mozilla-ai/encoderfile``. Mutually exclusive with ``base_url`` when set to a non-default value. |
+| `encoderfile_repo` | `str | None` | No | `None` | Override the HF repo the artifact is pulled from — a fork or mirror. Defaults to ``None``, meaning the per-model repo resolved from the artifact map. The filename is still derived from the map and the platform tag, so the override repo must use the same flat ``{basename}.{platform_tag}.encoderfile`` layout. Mutually exclusive with ``base_url``. |
 
 Initialize the encoderfile provider.
 
