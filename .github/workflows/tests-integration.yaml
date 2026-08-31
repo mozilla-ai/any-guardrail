@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       include_heavy:
-        description: "Also run heavy e2e tests (ShieldGemma, Glider, Granite Guardian — need >5 GB RAM / a GPU)"
+        description: "Also run heavy e2e tests (the large HuggingFace decoders and the llamafile artifacts — need >5 GB RAM/disk or a GPU)"
         type: boolean
         default: false
 

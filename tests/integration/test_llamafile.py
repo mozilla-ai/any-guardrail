@@ -7,7 +7,8 @@ owns that model.
 Two tiers:
 
 - ``test_granite_guardian_via_llamafile`` is the canary. It is ``heavy`` (the
-  binary is ~5.5 GB), so CI runs it only via the ``include_heavy`` workflow input.
+  binary is ~5.5 GB), so the integration workflow (which runs on every push to
+  ``main``) picks it up only via the ``include_heavy`` dispatch input.
 - ``test_guardrail_via_llamafile`` covers the rest of the fleet, ~58 GB in total.
   That is far beyond a GitHub runner, so it is skipped in CI entirely and is meant
   to be run locally when the artifact map changes — the same treatment
