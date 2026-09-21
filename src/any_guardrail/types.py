@@ -21,17 +21,22 @@ from any_guardrail.prompts import PromptAssembly, PromptSpec, PromptTemplate
 # ``GuardrailOutput``. ``taxonomy`` is a leaf module (imports only pydantic), so
 # this does not create an import cycle.
 from any_guardrail.taxonomy import (
-    BackendType,
+    AlternateDeployment,
+    DeploymentType,
     GuardrailCategory,
     GuardrailMetadata,
     GuardrailStage,
+    HardwareRequirement,
+    InterfaceType,
+    ModelArchitecture,
+    NetworkEgress,
     OutputShape,
 )
 
 __all__ = [
+    "AlternateDeployment",
     "AnyDict",
     "AuthoredContent",
-    "BackendType",
     "BenchmarkResult",
     "BenchmarkSource",
     "BenchmarkSourceKind",
@@ -40,6 +45,7 @@ __all__ = [
     "ChatMessages",
     "ComparisonCohort",
     "ContentKind",
+    "DeploymentType",
     "GuardrailCategory",
     "GuardrailInferenceOutput",
     "GuardrailMetadata",
@@ -47,7 +53,11 @@ __all__ = [
     "GuardrailPreprocessOutput",
     "GuardrailStage",
     "GuardrailUsage",
+    "HardwareRequirement",
     "InferenceT",
+    "InterfaceType",
+    "ModelArchitecture",
+    "NetworkEgress",
     "OutputShape",
     "ParameterSpec",
     "ParameterStage",

@@ -16,10 +16,12 @@ from any_guardrail.prompts import PromptTemplate
 from any_guardrail.providers.base import Provider
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import (
-    BackendType,
+    DeploymentType,
     GuardrailCategory,
     GuardrailMetadata,
     GuardrailStage,
+    InterfaceType,
+    ModelArchitecture,
     OutputShape,
 )
 from any_guardrail.types import GuardrailOutput
@@ -27,7 +29,12 @@ from any_guardrail.types import GuardrailOutput
 # Metadata dimensions that hold a set of values (matched by any-overlap) vs a
 # single scalar value (matched by equality) when filtering / grouping.
 _SET_DIMENSIONS = {"category": "categories", "stage": "stages", "output_shape": "output_shapes"}
-_SCALAR_DIMENSIONS = {"backend": "backend", "vendor": "vendor"}
+_SCALAR_DIMENSIONS = {
+    "deployment_type": "deployment_type",
+    "interface": "interface",
+    "architecture": "architecture",
+    "vendor": "vendor",
+}
 
 
 class AnyGuardrail:
@@ -60,7 +67,9 @@ class AnyGuardrail:
         category: GuardrailCategory | Iterable[GuardrailCategory] | None = None,
         stage: GuardrailStage | Iterable[GuardrailStage] | None = None,
         output_shape: OutputShape | Iterable[OutputShape] | None = None,
-        backend: BackendType | None = None,
+        deployment_type: DeploymentType | None = None,
+        interface: InterfaceType | None = None,
+        architecture: ModelArchitecture | None = None,
         requires_api_key: bool | None = None,
         multilingual: bool | None = None,
         multimodal: bool | None = None,
@@ -78,7 +87,9 @@ class AnyGuardrail:
             category: Keep guardrails detecting any of these categories.
             stage: Keep guardrails that run at any of these stages.
             output_shape: Keep guardrails producing any of these output shapes.
-            backend: Keep guardrails with this backend.
+            deployment_type: Keep guardrails whose default path has this deployment type.
+            interface: Keep guardrails whose default path uses this interface.
+            architecture: Keep guardrails whose default path uses this model architecture.
             requires_api_key: Keep guardrails matching this API-key requirement.
             multilingual: Keep guardrails matching this multilingual flag.
             multimodal: Keep guardrails matching this multimodal flag.
@@ -109,7 +120,11 @@ class AnyGuardrail:
                 continue
             if want_output_shape is not None and meta.output_shapes.isdisjoint(want_output_shape):
                 continue
-            if backend is not None and meta.backend != backend:
+            if deployment_type is not None and meta.deployment_type != deployment_type:
+                continue
+            if interface is not None and meta.interface != interface:
+                continue
+            if architecture is not None and meta.architecture != architecture:
                 continue
             if requires_api_key is not None and meta.requires_api_key != requires_api_key:
                 continue
@@ -128,7 +143,8 @@ class AnyGuardrail:
 
         Args:
             dimension: One of ``"category"``, ``"stage"``, ``"output_shape"``,
-                ``"backend"``, or ``"vendor"``. For set-valued dimensions a guardrail
+                ``"deployment_type"``, ``"interface"``, ``"architecture"``, or ``"vendor"``.
+                For set-valued dimensions a guardrail
                 appears under every value it carries.
 
         Returns:

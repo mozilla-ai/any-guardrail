@@ -6,10 +6,15 @@ from .prompt_registry import PROMPT_REGISTRY
 from .providers import HuggingFaceProvider, Provider
 from .registry import GUARDRAIL_METADATA
 from .taxonomy import (
-    BackendType,
+    AlternateDeployment,
+    DeploymentType,
     GuardrailCategory,
     GuardrailMetadata,
     GuardrailStage,
+    HardwareRequirement,
+    InterfaceType,
+    ModelArchitecture,
+    NetworkEgress,
     OutputShape,
 )
 from .types import (
@@ -43,9 +48,9 @@ __all__ = [
     "CONTENT_REGISTRY",
     "GUARDRAIL_METADATA",
     "PROMPT_REGISTRY",
+    "AlternateDeployment",
     "AnyGuardrail",
     "AuthoredContent",
-    "BackendType",
     "BenchmarkResult",
     "BenchmarkSource",
     "BenchmarkSourceKind",
@@ -54,6 +59,7 @@ __all__ = [
     "ChatMessages",
     "ComparisonCohort",
     "ContentKind",
+    "DeploymentType",
     "EvaluateArgumentError",
     "Guardrail",
     "GuardrailCategory",
@@ -64,8 +70,12 @@ __all__ = [
     "GuardrailPreprocessOutput",
     "GuardrailStage",
     "GuardrailUsage",
+    "HardwareRequirement",
     "HuggingFaceProvider",
     "InferenceT",
+    "InterfaceType",
+    "ModelArchitecture",
+    "NetworkEgress",
     "OutputShape",
     "ParameterSpec",
     "ParameterStage",
