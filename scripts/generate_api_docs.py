@@ -567,7 +567,16 @@ def _taxonomy_page() -> str:
         ),
     ]
 
-    for enum_name in ("GuardrailCategory", "GuardrailStage", "OutputShape", "BackendType"):
+    for enum_name in (
+        "GuardrailCategory",
+        "GuardrailStage",
+        "OutputShape",
+        "DeploymentType",
+        "InterfaceType",
+        "ModelArchitecture",
+        "HardwareRequirement",
+        "NetworkEgress",
+    ):
         cls = getattr(taxonomy_mod, enum_name)
         lines.append(_section(enum_name))
         doc = _clean_docstring(inspect.getdoc(cls))

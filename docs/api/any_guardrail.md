@@ -11,7 +11,7 @@ Create a guardrail instance.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `guardrail_name` | `GuardrailName` | Yes | — | The name of the guardrail to use. |
-| `provider` | `Provider[Any, Any] | None` | No | `None` | Optional provider instance to use for model loading and inference. |
+| `provider` | `Optional[Provider[Any, Any]]` | No | `None` | Optional provider instance to use for model loading and inference. |
 
 **Returns:** `Guardrail`
 
@@ -44,7 +44,9 @@ Runs entirely against the import-free registry — no backends are loaded.
 | `category` | `GuardrailCategory | Iterable[GuardrailCategory] | None` | No | `None` | Keep guardrails detecting any of these categories. |
 | `stage` | `GuardrailStage | Iterable[GuardrailStage] | None` | No | `None` | Keep guardrails that run at any of these stages. |
 | `output_shape` | `OutputShape | Iterable[OutputShape] | None` | No | `None` | Keep guardrails producing any of these output shapes. |
-| `backend` | `BackendType | None` | No | `None` | Keep guardrails with this backend. |
+| `deployment_type` | `DeploymentType | None` | No | `None` | Keep guardrails whose default path has this deployment type. |
+| `interface` | `InterfaceType | None` | No | `None` | Keep guardrails whose default path uses this interface. |
+| `architecture` | `ModelArchitecture | None` | No | `None` | Keep guardrails whose default path uses this model architecture. |
 | `requires_api_key` | `bool | None` | No | `None` | Keep guardrails matching this API-key requirement. |
 | `multilingual` | `bool | None` | No | `None` | Keep guardrails matching this multilingual flag. |
 | `multimodal` | `bool | None` | No | `None` | Keep guardrails matching this multimodal flag. |
@@ -60,7 +62,7 @@ Group guardrails by one metadata dimension.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `dimension` | `str` | Yes | — | One of ``"category"``, ``"stage"``, ``"output_shape"``, ``"backend"``, or ``"vendor"``. For set-valued dimensions a guardrail appears under every value it carries. |
+| `dimension` | `str` | Yes | — | One of ``"category"``, ``"stage"``, ``"output_shape"``, ``"deployment_type"``, ``"interface"``, ``"architecture"``, or ``"vendor"``. For set-valued dimensions a guardrail appears under every value it carries. |
 
 **Returns:** `dict[str, list[GuardrailName]]`
 

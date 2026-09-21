@@ -10,6 +10,7 @@ import ast
 import inspect
 import subprocess
 import sys
+from enum import Enum
 from pathlib import Path
 
 import pytest
@@ -19,10 +20,15 @@ from any_guardrail import AnyGuardrail, GuardrailName
 from any_guardrail.base import Guardrail, ThreeStageGuardrail
 from any_guardrail.registry import GUARDRAIL_METADATA
 from any_guardrail.taxonomy import (
-    BackendType,
+    AlternateDeployment,
+    DeploymentType,
     GuardrailCategory,
     GuardrailMetadata,
     GuardrailStage,
+    HardwareRequirement,
+    InterfaceType,
+    ModelArchitecture,
+    NetworkEgress,
     OutputShape,
 )
 
@@ -158,7 +164,10 @@ def test_primary_not_in_categories_rejected() -> None:
             primary_category=GuardrailCategory.PII,
             stages=frozenset({GuardrailStage.INPUT}),
             output_shapes=frozenset({OutputShape.BINARY}),
-            backend=BackendType.LOCAL_ENCODER,
+            deployment_type=DeploymentType.OWNED,
+            interface=InterfaceType.IN_MEMORY,
+            architecture=ModelArchitecture.ENCODER,
+            hardware_requirement=HardwareRequirement.CPU,
             vendor="X",
             default_license="apache-2.0",
         )
@@ -173,8 +182,10 @@ def test_metadata_query_loads_no_guardrail_modules() -> None:
     """
     code = (
         "import sys\n"
-        "from any_guardrail import AnyGuardrail, GuardrailCategory, BackendType\n"
-        "AnyGuardrail.list_guardrails(category=GuardrailCategory.PROMPT_INJECTION, backend=BackendType.LOCAL_ENCODER)\n"
+        "from any_guardrail import AnyGuardrail, GuardrailCategory, DeploymentType\n"
+        "AnyGuardrail.list_guardrails(\n"
+        "    category=GuardrailCategory.PROMPT_INJECTION, deployment_type=DeploymentType.OWNED\n"
+        ")\n"
         "AnyGuardrail.group_by('category')\n"
         "AnyGuardrail.metadata(next(iter(__import__('any_guardrail').GuardrailName)))\n"
         "impl = [m for m in sys.modules if m.startswith('any_guardrail.guardrails.')]\n"
@@ -212,11 +223,13 @@ def test_list_guardrails_no_filter_returns_all() -> None:
 
 
 def test_list_guardrails_and_semantics_across_dimensions() -> None:
-    """Filters AND together: category ∩ backend narrows the result."""
+    """Filters AND together: category ∩ architecture narrows the result."""
     pi = set(AnyGuardrail.list_guardrails(category=GuardrailCategory.PROMPT_INJECTION))
-    encoders = set(AnyGuardrail.list_guardrails(backend=BackendType.LOCAL_ENCODER))
+    encoders = set(AnyGuardrail.list_guardrails(architecture=ModelArchitecture.ENCODER))
     combined = set(
-        AnyGuardrail.list_guardrails(category=GuardrailCategory.PROMPT_INJECTION, backend=BackendType.LOCAL_ENCODER)
+        AnyGuardrail.list_guardrails(
+            category=GuardrailCategory.PROMPT_INJECTION, architecture=ModelArchitecture.ENCODER
+        )
     )
     assert combined == pi & encoders
     assert combined  # non-empty: several encoder injection classifiers exist
@@ -249,12 +262,20 @@ def test_group_by_covers_every_guardrail() -> None:
     assert list(groups) == sorted(groups)
 
 
-def test_group_by_scalar_dimension() -> None:
+@pytest.mark.parametrize(
+    ("dimension", "enum_cls"),
+    [
+        ("deployment_type", DeploymentType),
+        ("interface", InterfaceType),
+        ("architecture", ModelArchitecture),
+    ],
+)
+def test_group_by_scalar_dimension(dimension: str, enum_cls: type[Enum]) -> None:
     """Grouping by a scalar dimension partitions the guardrails."""
-    groups = AnyGuardrail.group_by("backend")
+    groups = AnyGuardrail.group_by(dimension)
     counts = {k: len(v) for k, v in groups.items()}
     assert sum(counts.values()) == len(ALL_NAMES)
-    assert set(groups) <= {b.value for b in BackendType}
+    assert set(groups) <= {member.value for member in enum_cls}
 
 
 def test_group_by_unknown_dimension_raises() -> None:
@@ -310,7 +331,10 @@ def _metadata(**overrides: object) -> GuardrailMetadata:
         "primary_category": GuardrailCategory.PROMPT_INJECTION,
         "stages": frozenset({GuardrailStage.INPUT}),
         "output_shapes": frozenset({OutputShape.BINARY}),
-        "backend": BackendType.LOCAL_ENCODER,
+        "deployment_type": DeploymentType.OWNED,
+        "interface": InterfaceType.IN_MEMORY,
+        "architecture": ModelArchitecture.ENCODER,
+        "hardware_requirement": HardwareRequirement.CPU,
         "vendor": "X",
         "default_license": "apache-2.0",
     }
@@ -318,39 +342,149 @@ def _metadata(**overrides: object) -> GuardrailMetadata:
     return GuardrailMetadata(**fields)  # type: ignore[arg-type]
 
 
-def test_alternate_backends_defaults_to_empty() -> None:
-    """Only guardrails whose alternates cross a BackendType boundary declare any."""
-    assert _metadata().alternate_backends == frozenset()
-    declared = {name for name in ALL_NAMES if GUARDRAIL_METADATA[name].alternate_backends}
-    assert declared == {GuardrailName.SUSFACTOR}
+# Guardrails whose default (HuggingFaceProvider) deployment also ships a curated
+# EncoderfileProvider/LlamafileProvider binary (OWNED/HTTP) and, via that same provider's
+# base_url=, an external-server mode (EXTERNAL/HTTP) -- see providers/_encoderfile_artifacts.py
+# and providers/_llamafile_artifacts.py.
+_ENCODERFILE_OR_LLAMAFILE_ALTERNATES = {
+    GuardrailName.PROTECTAI,
+    GuardrailName.JASPER,
+    GuardrailName.DEEPSET,
+    GuardrailName.DUOGUARD,
+    GuardrailName.SENTINEL,
+    GuardrailName.GRANITE_GUARDIAN,
+}
+
+
+def test_alternate_deployments_defaults_to_empty() -> None:
+    """Only guardrails with a genuinely different reachable (deployment_type, interface) declare any."""
+    assert _metadata().alternate_deployments == ()
+    declared = {name for name in ALL_NAMES if GUARDRAIL_METADATA[name].alternate_deployments}
+    assert declared == _ENCODERFILE_OR_LLAMAFILE_ALTERNATES | {GuardrailName.SUSFACTOR}
 
 
 def test_susfactor_declares_its_hosted_alternate() -> None:
     """SusFactor's gated local model is also reachable through 0DIN's hosted API."""
     meta = GUARDRAIL_METADATA[GuardrailName.SUSFACTOR]
-    assert meta.backend == BackendType.LOCAL_ENCODER
-    assert meta.alternate_backends == frozenset({BackendType.HOSTED_API})
+    assert meta.deployment_type == DeploymentType.OWNED
+    assert meta.interface == InterfaceType.IN_MEMORY
+    assert meta.alternate_deployments == (
+        AlternateDeployment(deployment_type=DeploymentType.EXTERNAL, interface=InterfaceType.HTTP),
+    )
 
 
-def test_backend_repeated_in_alternate_backends_rejected() -> None:
-    """alternate_backends must list genuine alternatives, not restate `backend`."""
-    with pytest.raises(ValueError, match="alternate_backends"):
+def test_encoderfile_backed_guardrails_declare_both_alternates() -> None:
+    """A curated Encoderfile/Llamafile artifact adds an owned+http alternate, and that same
+    provider's base_url= adds an external+http one -- a distinction the old BackendType
+    couldn't express (it left these guardrails' alternates empty entirely).
+    """
+    for name in _ENCODERFILE_OR_LLAMAFILE_ALTERNATES:
+        meta = GUARDRAIL_METADATA[name]
+        assert meta.deployment_type == DeploymentType.OWNED
+        assert meta.interface == InterfaceType.IN_MEMORY
+        assert set(meta.alternate_deployments) == {
+            AlternateDeployment(deployment_type=DeploymentType.OWNED, interface=InterfaceType.HTTP),
+            AlternateDeployment(deployment_type=DeploymentType.EXTERNAL, interface=InterfaceType.HTTP),
+        }
+
+
+def test_default_pair_repeated_in_alternate_deployments_rejected() -> None:
+    """alternate_deployments must list genuine alternatives, not restate the default pair."""
+    with pytest.raises(ValueError, match="alternate_deployments"):
         _metadata(
-            backend=BackendType.LOCAL_ENCODER,
-            alternate_backends=frozenset({BackendType.LOCAL_ENCODER}),
+            deployment_type=DeploymentType.OWNED,
+            interface=InterfaceType.IN_MEMORY,
+            alternate_deployments=(
+                AlternateDeployment(deployment_type=DeploymentType.OWNED, interface=InterfaceType.IN_MEMORY),
+            ),
         )
 
 
-def test_alternate_backends_serialize_as_a_sorted_string_list() -> None:
-    """Set-valued fields serialize deterministically so the JSON export is stable."""
-    meta = _metadata(alternate_backends=frozenset({BackendType.LOCAL_DECODER, BackendType.HOSTED_API}))
+def test_alternate_deployments_serialize_as_a_sorted_list() -> None:
+    """alternate_deployments serializes deterministically so the JSON export is stable."""
+    meta = _metadata(
+        alternate_deployments=(
+            AlternateDeployment(deployment_type=DeploymentType.OWNED, interface=InterfaceType.HTTP),
+            AlternateDeployment(deployment_type=DeploymentType.EXTERNAL, interface=InterfaceType.HTTP),
+        )
+    )
 
-    assert meta.model_dump()["alternate_backends"] == ["hosted_api", "local_decoder"]
+    assert meta.model_dump()["alternate_deployments"] == [
+        {"deployment_type": "external", "interface": "http"},
+        {"deployment_type": "owned", "interface": "http"},
+    ]
 
 
-def test_backend_grouping_still_partitions_every_guardrail() -> None:
-    """alternate_backends is metadata only: it must not leak into backend grouping."""
-    groups = AnyGuardrail.group_by("backend")
+def test_deployment_type_grouping_still_partitions_every_guardrail() -> None:
+    """alternate_deployments is metadata only: it must not leak into deployment_type grouping."""
+    groups = AnyGuardrail.group_by("deployment_type")
 
     assert sum(len(names) for names in groups.values()) == len(ALL_NAMES)
-    assert GuardrailName.SUSFACTOR not in groups.get(BackendType.HOSTED_API.value, [])
+    assert GuardrailName.SUSFACTOR not in groups.get(DeploymentType.EXTERNAL.value, [])
+
+
+def test_in_memory_with_external_rejected() -> None:
+    """IN_MEMORY can never pair with EXTERNAL: a same-process call can't reach a process this
+    library doesn't control.
+    """
+    with pytest.raises(ValueError, match="impossible"):
+        _metadata(deployment_type=DeploymentType.EXTERNAL, interface=InterfaceType.IN_MEMORY, hardware_requirement=None)
+
+
+def test_in_memory_with_external_rejected_in_alternate() -> None:
+    """The IN_MEMORY/EXTERNAL constraint also applies to every alternate_deployments entry."""
+    with pytest.raises(ValueError, match="impossible"):
+        _metadata(
+            alternate_deployments=(
+                AlternateDeployment(deployment_type=DeploymentType.EXTERNAL, interface=InterfaceType.IN_MEMORY),
+            )
+        )
+
+
+def test_hardware_requirement_required_when_owned_rejected() -> None:
+    """An OWNED guardrail must declare its own compute requirement."""
+    with pytest.raises(ValueError, match="hardware_requirement is required"):
+        _metadata(deployment_type=DeploymentType.OWNED, hardware_requirement=None)
+
+
+def test_hardware_requirement_forbidden_when_external_rejected() -> None:
+    """An EXTERNAL guardrail's hardware is the vendor's concern, not the caller's."""
+    with pytest.raises(ValueError, match="must be None"):
+        _metadata(
+            deployment_type=DeploymentType.EXTERNAL,
+            interface=InterfaceType.HTTP,
+            hardware_requirement=HardwareRequirement.CPU,
+        )
+
+
+@pytest.mark.parametrize(
+    ("deployment_type", "interface", "expected"),
+    [
+        (DeploymentType.OWNED, InterfaceType.IN_MEMORY, NetworkEgress.NONE),
+        (DeploymentType.OWNED, InterfaceType.HTTP, NetworkEgress.LOCAL),
+        (DeploymentType.OWNED, InterfaceType.GRPC, NetworkEgress.LOCAL),
+        (DeploymentType.EXTERNAL, InterfaceType.HTTP, NetworkEgress.REMOTE),
+        (DeploymentType.EXTERNAL, InterfaceType.GRPC, NetworkEgress.REMOTE),
+    ],
+)
+def test_network_egress_derivation(
+    deployment_type: DeploymentType, interface: InterfaceType, expected: NetworkEgress
+) -> None:
+    """network_egress is derived, not authored: none for IN_MEMORY, local for OWNED+wire,
+    remote for EXTERNAL.
+    """
+    hardware_requirement = HardwareRequirement.CPU if deployment_type == DeploymentType.OWNED else None
+    meta = _metadata(deployment_type=deployment_type, interface=interface, hardware_requirement=hardware_requirement)
+    assert meta.network_egress == expected
+
+
+def test_network_egress_is_not_authored_on_registry_entries() -> None:
+    """Every registry entry's network_egress is exactly what deployment_type/interface imply."""
+    for name in ALL_NAMES:
+        meta = GUARDRAIL_METADATA[name]
+        if meta.interface == InterfaceType.IN_MEMORY:
+            assert meta.network_egress == NetworkEgress.NONE
+        elif meta.deployment_type == DeploymentType.OWNED:
+            assert meta.network_egress == NetworkEgress.LOCAL
+        else:
+            assert meta.network_egress == NetworkEgress.REMOTE

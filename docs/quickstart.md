@@ -37,12 +37,12 @@ assert result.valid
 Every guardrail carries static, queryable metadata (what it detects, where it runs, how it executes) that you can filter and group **without importing any model backend** — handy for building your own catalog or picking a guardrail programmatically:
 
 ```python
-from any_guardrail import AnyGuardrail, BackendType, GuardrailCategory, GuardrailName
+from any_guardrail import AnyGuardrail, DeploymentType, GuardrailCategory, GuardrailName
 
-# Which guardrails detect prompt injection and run as a local encoder classifier?
+# Which guardrails detect prompt injection and run their own model in-process?
 names = AnyGuardrail.list_guardrails(
     category=GuardrailCategory.PROMPT_INJECTION,
-    backend=BackendType.LOCAL_ENCODER,
+    deployment_type=DeploymentType.OWNED,
 )
 assert GuardrailName.PROTECTAI in names
 
