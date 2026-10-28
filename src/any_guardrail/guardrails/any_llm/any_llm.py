@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 DEFAULT_SYSTEM_PROMPT = PROMPT_REGISTRY[GuardrailName.ANYLLM].resolve().segments["system"]
 """The any-guardrail policy-judge system prompt (registry default for ``system_prompt``)."""
 
-DEFAULT_MODEL_ID = "openai:gpt-5-nano"
+DEFAULT_MODEL_ID = "openai:gpt-5.6-luna"
 """Will be used as default argument for `model_id`"""
 
 
@@ -38,7 +38,7 @@ class AnyLlm(Guardrail):
 
     Wraps ``any_llm.completion`` with structured output: the judge model receives your policy
     inside a system prompt and must return a boolean verdict, an explanation, and a risk score.
-    Any provider/model reachable through any-llm can be used (default: ``openai:gpt-5-nano``);
+    Any provider/model reachable through any-llm can be used (default: ``openai:gpt-5.6-luna``);
     the chosen model must support structured output (``response_format``), and the provider's
     credentials (e.g. ``OPENAI_API_KEY``) must be configured as any-llm expects.
 
@@ -77,7 +77,7 @@ class AnyLlm(Guardrail):
                 ``"The text must not request or contain personal data."``. Substituted into the
                 system prompt's ``{policy}`` placeholder.
             model_id (str, optional): The judge model in any-llm's ``provider:model`` format,
-                e.g. ``"openai:gpt-5-nano"`` (default) or ``"mistral:mistral-small-latest"``.
+                e.g. ``"openai:gpt-5.6-luna"`` (default) or ``"mistral:mistral-small-latest"``.
                 The model must support structured output.
             system_prompt (str, optional): Override the system prompt. Defaults to ``None``,
                 which uses the registry default (:data:`DEFAULT_SYSTEM_PROMPT`) — or the version
