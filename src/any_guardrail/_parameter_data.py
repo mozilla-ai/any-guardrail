@@ -123,8 +123,8 @@ _PARAMETER_DATA_JSON = r"""
     },
     {
       "choices": null,
-      "default": "openai:gpt-5-nano",
-      "description": "The judge model in any-llm's ``provider:model`` format, e.g. ``\"openai:gpt-5-nano\"`` (default) or ``\"mistral:mistral-small-latest\"``. The model must support structured output.",
+      "default": "openai:gpt-5.6-luna",
+      "description": "The judge model in any-llm's ``provider:model`` format, e.g. ``\"openai:gpt-5.6-luna\"`` (default) or ``\"mistral:mistral-small-latest\"``. The model must support structured output.",
       "effectively_required": false,
       "env_var": null,
       "name": "model_id",
