@@ -44,6 +44,7 @@
     * [Azure Content Safety](api/guardrails/azure-content-safety.md)
     * [Bedrock Guardrails](api/guardrails/bedrock-guardrails.md)
     * [Bielik Guard](api/guardrails/bielik-guard.md)
+    * [DeepKeep](api/guardrails/deepkeep.md)
     * [DuoGuard](api/guardrails/duo-guard.md)
     * [GLiGuard](api/guardrails/gli-guard.md)
     * [gpt-oss-safeguard](api/guardrails/gpt-oss-safeguard.md)

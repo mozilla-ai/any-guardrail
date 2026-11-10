@@ -57,6 +57,25 @@ GUARDRAIL_METADATA: dict[GuardrailName, GuardrailMetadata] = {
         vendor="Amazon",
         default_license="proprietary",
     ),
+    GuardrailName.DEEPKEEP: GuardrailMetadata(
+        description="DeepKeep firewall API for input screening with configurable safety policies.",
+        display_name="DeepKeep",
+        categories=frozenset(
+            {
+                GuardrailCategory.CONTENT_SAFETY,
+                GuardrailCategory.PROMPT_INJECTION,
+                GuardrailCategory.PII,
+                GuardrailCategory.TOXICITY,
+            }
+        ),
+        primary_category=GuardrailCategory.CONTENT_SAFETY,
+        stages=frozenset({GuardrailStage.INPUT}),
+        output_shapes=frozenset({OutputShape.BINARY}),
+        backend=BackendType.HOSTED_API,
+        requires_api_key=True,
+        vendor="DeepKeep",
+        default_license="proprietary",
+    ),
     GuardrailName.DEEPSET: GuardrailMetadata(
         description="Binary prompt-injection classifier.",
         display_name="Deepset",

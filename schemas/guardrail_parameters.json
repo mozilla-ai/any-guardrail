@@ -492,6 +492,71 @@
     ],
     "requirement_groups": []
   },
+  "deepkeep": {
+    "parameters": [
+      {
+        "choices": null,
+        "default": null,
+        "description": "DeepKeep API key. Required; stored as a secret by Otari.",
+        "effectively_required": false,
+        "env_var": null,
+        "name": "api_key",
+        "required": true,
+        "secret": true,
+        "stage": "create",
+        "type": "string"
+      },
+      {
+        "choices": null,
+        "default": null,
+        "description": "HTTP(S) deployment base URL; use HTTPS outside trusted local networks.",
+        "effectively_required": false,
+        "env_var": null,
+        "name": "endpoint",
+        "required": true,
+        "secret": false,
+        "stage": "create",
+        "type": "string"
+      },
+      {
+        "choices": null,
+        "default": null,
+        "description": "DeepKeep input firewall ID, not the LLM model name.",
+        "effectively_required": false,
+        "env_var": null,
+        "name": "firewall_id",
+        "required": true,
+        "secret": false,
+        "stage": "create",
+        "type": "string"
+      },
+      {
+        "choices": null,
+        "default": 10.0,
+        "description": "Positive finite connect/read timeout in seconds. Defaults to 10.",
+        "effectively_required": false,
+        "env_var": null,
+        "name": "timeout",
+        "required": false,
+        "secret": false,
+        "stage": "create",
+        "type": "number"
+      },
+      {
+        "choices": null,
+        "default": false,
+        "description": "Request content logging at DeepKeep. Defaults to False.",
+        "effectively_required": false,
+        "env_var": null,
+        "name": "logs",
+        "required": false,
+        "secret": false,
+        "stage": "create",
+        "type": "boolean"
+      }
+    ],
+    "requirement_groups": []
+  },
   "deepset": {
     "parameters": [
       {

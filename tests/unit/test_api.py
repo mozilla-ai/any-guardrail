@@ -119,6 +119,7 @@ def test_model_load() -> None:
         # Guardrails that load a model directly or wrap an external library (no
         # HuggingFaceProvider.load_model to assert against).
         if guardrail_name in (
+            GuardrailName.DEEPKEEP,  # API-based; requires credentials and a configured firewall
             GuardrailName.LETTUCE_DETECT,  # Wraps the lettucedetect library
             GuardrailName.GLI_GUARD,  # Wraps the gliner2 library
             GuardrailName.GLI_NER_PII,  # Wraps the gliner2 library
