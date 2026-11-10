@@ -210,6 +210,34 @@
     "variant_licenses": [],
     "vendor": "OpenCompass"
   },
+  "deepkeep": {
+    "alternate_backends": [],
+    "backend": "hosted_api",
+    "categories": [
+      "content_safety",
+      "pii",
+      "prompt_injection",
+      "toxicity"
+    ],
+    "default_license": "proprietary",
+    "description": "DeepKeep firewall API for input screening with configurable safety policies.",
+    "display_name": "DeepKeep",
+    "multilingual": false,
+    "multimodal": false,
+    "optional_validate_kwargs": [],
+    "output_shapes": [
+      "binary"
+    ],
+    "primary_category": "content_safety",
+    "required_validate_kwargs": [],
+    "requires_api_key": true,
+    "stages": [
+      "input"
+    ],
+    "supports_batch": false,
+    "variant_licenses": [],
+    "vendor": "DeepKeep"
+  },
   "deepset": {
     "alternate_backends": [],
     "backend": "local_encoder",

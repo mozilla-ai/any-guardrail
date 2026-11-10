@@ -131,6 +131,7 @@ _BUILDERS: dict[GuardrailName, _Builder] = {
     GuardrailName.OFFTOPIC: _pair("comparison_text"),
     # Single input, no response/second-text slot.
     GuardrailName.BEDROCK_GUARDRAILS: _single(),
+    GuardrailName.DEEPKEEP: _single(),
     GuardrailName.DEEPSET: _single(),
     GuardrailName.DUOGUARD: _single(),
     GuardrailName.INJECGUARD: _single(),

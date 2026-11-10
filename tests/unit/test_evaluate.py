@@ -28,6 +28,7 @@ PAIR_OUTPUT_TEXT = [
 # The `_single()` bucket, minus ANYLLM (requires `policy`, tested separately).
 SINGLE_NO_REQUIRED_KWARGS = [
     GuardrailName.BEDROCK_GUARDRAILS,
+    GuardrailName.DEEPKEEP,
     GuardrailName.DEEPSET,
     GuardrailName.DUOGUARD,
     GuardrailName.INJECGUARD,

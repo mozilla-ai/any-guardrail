@@ -27,6 +27,7 @@ class GuardrailName(StrEnum):
 
     ANYLLM = "any_llm"
     BEDROCK_GUARDRAILS = "bedrock_guardrails"
+    DEEPKEEP = "deepkeep"
     DEEPSET = "deepset"
     DUOGUARD = "duo_guard"
     FLOWJUDGE = "flowjudge"

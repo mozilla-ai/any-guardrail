@@ -77,6 +77,7 @@ _SECRET_PARAMS: dict[str, frozenset[str]] = {
     "azure_content_safety": frozenset({"api_key"}),
     "azure_prompt_shields": frozenset({"api_key"}),
     "bedrock_guardrails": frozenset({"aws_access_key_id", "aws_secret_access_key", "boto3_session"}),
+    "deepkeep": frozenset({"api_key"}),
     "lakera_guard": frozenset({"api_key"}),
     "openai_moderation": frozenset({"api_key"}),
     "patronus": frozenset({"api_key"}),
