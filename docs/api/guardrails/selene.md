@@ -19,7 +19,8 @@ Verdict mapping onto ``GuardrailOutput``:
   better, so a high-quality response yields a low risk.
 - ``explanation`` is the model's full generation (reasoning plus the result line).
 - ``extra["rubric_score"]`` is the raw integer 1-5.
-- When no ``**Result:**`` score can be parsed, the output fails closed: ``valid=False``
+- When no ``**Result:**`` score can be parsed, or the generation holds several with different
+  values (the reasoning may quote the graded response, which can contain a result line), the output fails closed: ``valid=False``
   with ``extra={"parse_failure": True}``.
 
 Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the

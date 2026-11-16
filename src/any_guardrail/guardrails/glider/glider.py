@@ -53,7 +53,8 @@ class Glider(ThreeStageGuardrail[ChatMessages, AnyDict]):
     - ``explanation`` is the model's ``<reasoning>`` block (the full generation when
       the block is missing).
     - ``extra`` holds the raw integer ``rubric_score`` and the ``highlights`` string.
-    - When no ``<score>`` can be parsed, the output fails closed: ``valid=False``
+    - When no ``<score>`` can be parsed, or the generation holds several with different
+      values (the reasoning and highlights quote the judged text, which can contain a tag), the output fails closed: ``valid=False``
       with ``extra={"parse_failure": True}``.
 
     Inputs are single strings: ``input_text`` (required) plus an optional
@@ -211,11 +212,13 @@ class Glider(ThreeStageGuardrail[ChatMessages, AnyDict]):
 
     def _post_processing(self, model_outputs: GuardrailInferenceOutput[AnyDict]) -> GuardrailOutput:
         generated_text = model_outputs.data["generated_text"]
-        score_match = SCORE_PATTERN.search(generated_text)
-        if score_match is None:
+        # <reasoning> and <highlight> quote the judged text, which can itself contain a <score> tag.
+        # Position cannot tell the judge's own tag from a quoted one, so differing values fail closed.
+        scores = {int(m.group(1)) for m in SCORE_PATTERN.finditer(generated_text)}
+        if len(scores) != 1:
             return GuardrailOutput(valid=False, explanation=generated_text, extra={"parse_failure": True})
 
-        rubric_score = int(score_match.group(1))
+        rubric_score = scores.pop()
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
         reasoning_match = REASONING_PATTERN.search(generated_text)
         highlight_match = HIGHLIGHT_PATTERN.search(generated_text)

@@ -50,7 +50,8 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
       better, so a high-quality response yields a low risk.
     - ``explanation`` is the model's full generation (reasoning plus the result line).
     - ``extra["rubric_score"]`` is the raw integer 1-5.
-    - When no ``**Result:**`` score can be parsed, the output fails closed: ``valid=False``
+    - When no ``**Result:**`` score can be parsed, or the generation holds several with different
+      values (the reasoning may quote the graded response, which can contain a result line), the output fails closed: ``valid=False``
       with ``extra={"parse_failure": True}``.
 
     Inputs are single strings: ``input_text`` is the instruction and ``output_text`` is the
@@ -201,10 +202,12 @@ class Selene(ThreeStageGuardrail[SelenePreprocessData, SeleneInferenceData]):
 
     def _post_processing(self, model_outputs: GuardrailInferenceOutput[SeleneInferenceData]) -> GuardrailOutput:
         text = model_outputs.data["generated_text"]
-        match = _RESULT_PATTERN.search(text)
-        if match is None:
+        # The reasoning may quote the graded response, which can itself end in a result line.
+        # Position cannot tell the judge's own marker from a quoted one, so differing values fail closed.
+        scores = {int(m.group(1)) for m in _RESULT_PATTERN.finditer(text)}
+        if len(scores) != 1:
             return GuardrailOutput(valid=False, explanation=text, extra={"parse_failure": True})
-        rubric_score = int(match.group(1))
+        rubric_score = scores.pop()
         passed = rubric_score >= self.pass_threshold if self.higher_is_better else rubric_score <= self.pass_threshold
         return GuardrailOutput(
             valid=passed,
