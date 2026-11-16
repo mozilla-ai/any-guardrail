@@ -36,6 +36,7 @@ LLAMA_GUARD_CATEGORIES = {
 """MLCommons-aligned hazard taxonomy used by Llama Guard 3 and 4."""
 
 _CATEGORY_CODE_PATTERN = re.compile(r"\bS(\d{1,2})\b")
+_SAFE_VERDICT_PATTERN = re.compile(r"\s*safe\b", re.IGNORECASE)
 
 
 def _parse_violated_categories(generated_text: str) -> list[CategoryResult]:
@@ -68,8 +69,10 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
 
     Verdict mapping onto ``GuardrailOutput``:
 
-    - ``valid`` is ``False`` when the generation contains ``unsafe`` (case-insensitive), ``True``
-      otherwise.
+    - ``valid`` is ``False`` when the generation contains ``unsafe`` (case-insensitive) and ``True``
+      when it starts with the ``safe`` verdict. Any other generation (empty, truncated, a refusal,
+      unrelated text) carries no verdict and fails closed: ``valid=False`` with
+      ``extra={"parse_failure": True}``.
     - ``categories`` lists the violated hazard codes parsed from the generation, one
       ``CategoryResult`` per code (``name`` = ``Sx``, ``description`` = the taxonomy label,
       ``triggered=True``), deduplicated in order of first appearance; empty when the verdict is
@@ -217,12 +220,17 @@ class LlamaGuard(ThreeStageGuardrail[LlamaGuardPreprocessData, LlamaGuardInferen
     def _post_processing(self, model_outputs: GuardrailInferenceOutput[LlamaGuardInferenceData]) -> GuardrailOutput:
         generated_text: str = model_outputs.data["generated_text"]
         unsafe = "unsafe" in generated_text.lower()
+        usage = GuardrailUsage(
+            prompt_tokens=model_outputs.data.get("prompt_token_count"),
+            completion_tokens=model_outputs.data.get("completion_token_count"),
+        )
+        # Fail closed when the generation carries no verdict at all (empty, truncated, a refusal):
+        # only an explicit leading ``safe`` passes, matching the other generative guardrails.
+        if not unsafe and _SAFE_VERDICT_PATTERN.match(generated_text) is None:
+            return GuardrailOutput(valid=False, explanation=generated_text, extra={"parse_failure": True}, usage=usage)
         return GuardrailOutput(
             valid=not unsafe,
             explanation=generated_text,
             categories=_parse_violated_categories(generated_text) if unsafe else [],
-            usage=GuardrailUsage(
-                prompt_tokens=model_outputs.data.get("prompt_token_count"),
-                completion_tokens=model_outputs.data.get("completion_token_count"),
-            ),
+            usage=usage,
         )

@@ -99,6 +99,33 @@ def test_post_processing_safe_output_has_no_categories() -> None:
     assert result.usage.completion_tokens == 4
 
 
+def test_post_processing_safe_verdict_after_leading_newlines_passes() -> None:
+    """Llama Guard 3 emits leading newlines before ``safe`` too; that is still a clean verdict."""
+    result = _guardrail_without_weights()._post_processing(_inference_output("\n\nsafe"))
+
+    assert result.valid is True
+    assert result.extra is None
+
+
+@pytest.mark.parametrize(
+    "generated_text",
+    [
+        "",  # empty generation
+        "None",  # LlamafileProvider stringifies a null message content
+        "I'm sorry, but I can't help with that.",  # refusal / off-format text
+        "\n\nuns",  # truncated before the verdict was complete
+    ],
+)
+def test_post_processing_fails_closed_without_verdict(generated_text: str) -> None:
+    """A generation with no ``safe``/``unsafe`` verdict must not be reported as safe."""
+    result = _guardrail_without_weights()._post_processing(_inference_output(generated_text))
+
+    assert result.valid is False
+    assert result.extra == {"parse_failure": True}
+    assert result.categories == []
+    assert result.explanation == generated_text
+
+
 def test_taxonomy_covers_all_fourteen_categories() -> None:
     assert len(LLAMA_GUARD_CATEGORIES) == 14
     assert _parse_violated_categories("S1, S14")[1].description == "Code Interpreter Abuse"

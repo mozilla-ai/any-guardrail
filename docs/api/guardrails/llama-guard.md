@@ -17,8 +17,10 @@ text-only ``validate()`` anyway.
 
 Verdict mapping onto ``GuardrailOutput``:
 
-- ``valid`` is ``False`` when the generation contains ``unsafe`` (case-insensitive), ``True``
-  otherwise.
+- ``valid`` is ``False`` when the generation contains ``unsafe`` (case-insensitive) and ``True``
+  when it starts with the ``safe`` verdict. Any other generation (empty, truncated, a refusal,
+  unrelated text) carries no verdict and fails closed: ``valid=False`` with
+  ``extra={"parse_failure": True}``.
 - ``categories`` lists the violated hazard codes parsed from the generation, one
   ``CategoryResult`` per code (``name`` = ``Sx``, ``description`` = the taxonomy label,
   ``triggered=True``), deduplicated in order of first appearance; empty when the verdict is
