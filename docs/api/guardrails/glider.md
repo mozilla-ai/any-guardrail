@@ -19,7 +19,8 @@ Verdict mapping onto ``GuardrailOutput``:
 - ``explanation`` is the model's ``<reasoning>`` block (the full generation when
   the block is missing).
 - ``extra`` holds the raw integer ``rubric_score`` and the ``highlights`` string.
-- When no ``<score>`` can be parsed, the output fails closed: ``valid=False``
+- When no ``<score>`` can be parsed, or the generation holds several with different
+  values (the reasoning and highlights quote the judged text, which can contain a tag), the output fails closed: ``valid=False``
   with ``extra={"parse_failure": True}``.
 
 Inputs are single strings: ``input_text`` (required) plus an optional
