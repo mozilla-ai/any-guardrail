@@ -88,7 +88,9 @@ class AnyLlm(Guardrail):
                 is not given. Defaults to ``None`` (the default version). See
                 :meth:`any_guardrail.AnyGuardrail.list_prompt_versions`.
             **kwargs: Additional keyword arguments passed through to the `any_llm.completion`
-                function (e.g. ``api_key``, ``temperature``).
+                function (e.g. ``api_key``, ``reasoning_effort``). The default model is a reasoning
+                model: OpenAI only accepts sampling parameters such as ``temperature`` for it when
+                ``reasoning_effort="none"`` is passed as well.
 
         Returns:
             GuardrailOutput where ``score`` is the LLM-reported risk in [0, 1]
